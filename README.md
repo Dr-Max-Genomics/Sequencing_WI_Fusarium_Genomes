@@ -394,8 +394,8 @@ If you use this pipeline, please cite the relevant tools:
 
 For questions or issues with this pipeline:
 - **Author:** Maxwell Chibuogwu
-- **Project:** Silage Microbiome Study
-- **Institution:** USDA (via SciNet)
+- **Project:** Wisconsin Fusarium Genomes
+- **Institution:** USDA-ARS Dairy Forage Research Center (via SciNet)
 
 ---
 
