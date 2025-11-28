@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#SBATCH --job-name="Demultiplex"   	   #name of this job
+#SBATCH -A silage_microbiome		   #name of account
+#SBATCH -p atlas
+#SBATCH --qos=normal		 	   #Quality of service for the job
+#SBATCH -n 40                   	   #number of logical cores
+#SBATCH -t 24:00:00        		   #time allocated for this job hours:mins:seconds
+#SBATCH --mail-user=maxwell.chibuogwu@usda.gov   #enter your email address to receive emails
+#SBATCH --mail-type=BEGIN,END,FAIL #will receive an email when job starts, ends or fails
+#SBATCH -o "stdout.%j.%N"          # standard output, %j adds job number to output file name and %N adds the node name
+#SBATCH -e "stderr.%j.%N"          #optional, prints standard error
+
+
+
+
+
+# [EDIT THE CODE BELOW] Load modules, insert code, and run programs
+
+#module load <module_name>         # optional, uncomment the line and load
+date
+module purge
+
+module load samtools
+while read in; do samtools fastq *${in}.bam | gzip > ${in}.fastq.gz; done < barlist.txt
+
+module purge
+date
