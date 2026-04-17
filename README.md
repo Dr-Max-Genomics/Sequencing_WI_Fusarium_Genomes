@@ -38,9 +38,9 @@ using Oxford Nanopore long-read sequencing data on USDA SCINet's Ceres and Atlas
 
 ## 1. Overview
 
-This pipeline takes raw Oxford Nanopore basecalled reads from barcoded *Fusarium* isolates
+This pipeline takes raw Oxford Nanopore basecalled reads (or POD5s to be basecalled using Atlas' GPU) from barcoded *Fusarium* isolates
 and produces annotated genome assemblies. Isolates are processed in batches — some batches
-contain 10 isolates, others 2 — and the pipeline is designed to resume cleanly at any stage
+contain 10 isolates, others less — and the pipeline is designed to resume cleanly at any stage
 for any subset of barcodes.
 
 **Genome size:** ~50–55 Mb (typical for *Fusarium* spp.)  
@@ -51,6 +51,9 @@ for any subset of barcodes.
 ### Pipeline at a glance
 
 ```
+POD5 files from Sequencer
+        │
+        ▼
 Raw basecalled reads (barcoded)
         │
         ▼
@@ -67,7 +70,8 @@ Stage 2 — Genome assembly
         │
         ▼
 Stage 3 — Assembly evaluation
-        └── BUSCO (hypocreales / sordariomycetes lineages)
+        ├── 3.1 BUSCO (hypocreales / sordariomycetes lineages)
+        └── Merqury, CRAQ, and Quast
         │
         ▼
 Stage 4 — Genome annotation
@@ -75,7 +79,20 @@ Stage 4 — Genome annotation
         ├── 4.2  Repeat element detection (EarlGrey)
         ├── 4.3  Soft-mask assembly (Funannotate mask)
         ├── 4.4  BUSCO-based Augustus training
-        └── 4.5  Gene prediction (Funannotate predict)
+        ├── 4.5  Gene prediction (Funannotate predict)
+        └── 4.6  Functional annotation (Funannotate annotate): Interproscan, Eggnog Mapper
+        │
+        ▼
+Stage 5 — Genome-Wide Ananlyses
+        ├── 5.1  TelomereSearch.py 
+        ├── 5.2  AntiSMASH
+        ├── 5.3  CAZymes analysis (Funannotate XXX))
+        ├── 5.4  BigScape
+        ├── 5.5  Proteins
+        ├── 5.6  Effectorome
+            ├── 5.6a  Signal6 (Web or local)
+            └── 5.6b  Effector3.0
+        └── 4.8 C
 ```
 
 ---
@@ -84,7 +101,7 @@ Stage 4 — Genome annotation
 
 ```
 Sequencing_WI_Fusarium_Genomes/
-├── README.md               ← This file — how the pipeline works (timeless)
+├── README.md               ← This file — how the pipeline works
 ├── BATCHES.md              ← Isolate-level status tracker across all batches
 ├── PROGRESS.md             ← Session-by-session run log
 ├── CHANGELOG.md            ← Pipeline and parameter version history
@@ -176,7 +193,7 @@ cd Sequencing_WI_Fusarium_Genomes
 
 ```bash
 # 1. Start an interactive session (never run jobs on the login node)
-srun -N 1 -n 2 --mem=100000 -p short -q msn -t 1-0 --pty bash
+srun -A account_name -N 1 -n 40 -p ceres -t 1-0 --pty bash
 
 # 2. Load environment
 module load miniconda
@@ -197,7 +214,7 @@ TEST=1 bash scripts/04_nanofilt.sh
 bash scripts/04_nanofilt.sh
 
 # 7. Monitor jobs
-squeue --me
+squeue -all --me
 ```
 
 ---
