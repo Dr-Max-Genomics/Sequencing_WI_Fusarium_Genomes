@@ -402,6 +402,27 @@ sbatch -N 1 -n 20 --mem=50000 -p short -q msn -t 2-0 \
   --busco_db sordariomycetes \
   --optimize_augustus"
 ```
+#### 4.6 Functional Annotation (InterPro Scan and Funannotate predict)
+
+a. Runtime 2 hours per isolate.
+```bash
+sbatch -A silage_microbiome -N 1 -n 32 --mem=50GB -p ceres -t 1-00 \
+  --wrap="interproscan.sh \
+  -i barXX_predict_results/FusBarXX_new.proteins.fa \
+  -f xml \
+  -dp -goterms -iprlookup -pa \
+  --cpu 80"
+```
+
+b. Runtime 1 hour per isolate (input is directory from funannotate predict)
+```bash
+sbatch -A silage_microbiome -N 1 -n 32 --mem=150GB -p ceres -t 5:00:00 \
+  --wrap="funannotate annotate \
+  -i BarXX_Predict_Results/ \
+  --iprscan FusBarXX_IP.proteins.fa.xml \
+  --antismash FusBarXX.scaffolds_antiSMASH.gbk \
+  --cpus 32"
+```
 
 ---
 
