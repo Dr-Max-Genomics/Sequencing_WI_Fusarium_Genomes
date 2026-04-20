@@ -60,6 +60,53 @@
 ## Log entries
 <!-- ─── Most recent entry at TOP ─────────────────────────── -->
 
+```
+## 2026-04-20 — [Ceres ] — Batch: [batch_2025-Dec]
+
+**Working directory:** /90daydata/silage_microbiome/[path]/
+**Barcodes in scope:** barcode36, 37, ##
+```
+
+### What I ran
+- Script / command
+```bash
+ml purge 
+ml interproscan
+sbatch -A silage_microbiome -N 1 -n 80 -p ceres -t 1-00 --wrap="interproscan.sh -i bar36_predict_results/FusBar36_new.proteins.fa -f tsv,xml -dp --cpu 80 -goterms -iprlookup -pa"
+
+#module purge before loading miniconda
+#Running annotate without eggnog
+
+a. export APPTAINERENV_FUNANNOTATE_DB=/90daydata/silage_microbiome/max_seq/jan_batch2_all_barcodes/11_FunAnnotate/DB_FunannotateDatabase/funannotate_db
+a1? export APPTAINERENV_FUNANNOTATE_DB=/90daydata/silage_microbiome/max_seq/jan_batch2_all_barcodes/11_FunAnnotate/BD_BuscoDatabase/DB_FunannotateDatabase/funannotate_db
+
+1. export AUGUSTUS_CONFIG_PATH=/90daydata/silage_microbiome/max_seq/jan_batch2_all_barcodes/11_FunAnnotate/augustus/config
+2. funannotate setup -u -w -d $APPTAINERENV_FUNANNOTATE_DB #Maybe remove
+sbatch -A silage_microbiome -N 1 -n 32 --mem=150GB -p ceres -t 6:00:00 --wrap="funannotate annotate -i Bar37_predict_results/ --iprscan FusBar37_IP.proteins.fa.xml --antismash FusBar37.scaffolds_antiSMASH.gbk --out bar37_annotate_results --cpus 32"
+
+```
+- params.env version: Running Interproscan on 4/18/26 - optimal 32 cores; 50GB mem at least 4hrs
+- Job IDs (sbatch):
+
+### Outcome
+- [ ] Completed successfully
+- [ ] Completed with warnings (see notes)
+- [ ] Failed — see notes
+
+### Notes / observations
+-
+
+### Parameter changes from last session
+| Parameter | Previous | This session | Reason |
+|-----------|----------|--------------|--------|
+|           |          |              |        |
+
+### Next step
+- Script / stage:
+- Prep needed:
+```
+
+
 ---
 
 ## 2025-02-14 — Pipeline formalized — Both batches context
