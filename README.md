@@ -5,7 +5,7 @@ using Oxford Nanopore long-read sequencing data on USDA SCINet's Ceres and Atlas
 
 **Maintainer:** Maxwell Chibuogwu (Dr. Max), Postdoctoral Fellow — USDA-ARS DFRC, Madison, WI  
 **Project:** Wisconsin *Fusarium* Isolate Genomics  
-**Contact:** [your.email@usda.gov]
+**Contact:** [maxwell.chibuogwu@usda.gov]
 
 > Isolates are sequenced and processed in batches over time.
 > For the current status of each isolate, see [`BATCHES.md`](BATCHES.md).
