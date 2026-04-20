@@ -92,7 +92,7 @@ Stage 5 — Genome-Wide Ananlyses
         ├── 5.6  Effectorome
             ├── 5.6a  Signal6 (Web or local)
             └── 5.6b  Effector3.0
-        └── 4.8 C
+        └── 5.7 C
 ```
 
 ---
