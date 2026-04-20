@@ -411,7 +411,7 @@ sbatch -A silage_microbiome -N 1 -n 32 --mem=50GB -p ceres -t 1-00 \
   -i barXX_predict_results/FusBarXX_new.proteins.fa \
   -f xml \
   -dp -goterms -iprlookup -pa \
-  --cpu 80"
+  --cpu 32"
 ```
 
 b. Runtime 1 hour per isolate (input is directory from funannotate predict)
