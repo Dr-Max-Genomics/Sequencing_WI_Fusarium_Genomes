@@ -446,15 +446,12 @@ export THREADS=70
 export MEM_HIGH=900000          # MB — dedup, porechop, BUSCO
 export MEM_MED=300000           # MB — concat, Flye
 export MEM_LOW=50000            # MB — annotation steps
-export PARTITION_MEM="short-mem"
-export QOS_MEM="msn-mem"
-export PARTITION_STD="short"
-export QOS_STD="msn"
 
 # ── Paths (set once per system) ──────────────────────────
 export FUNANNOTATE_DB=/project/silage_microbiome/max.chi/funannotate_db
 export AUGUSTUS_CONFIG_PATH=/project/silage_microbiome/max.chi/augustus_config
 export EARLGREY_SIF=/project/silage_microbiome/max.chi/earlgrey_dfam3.7_latest.sif
+export GENEMARK_PATH=XX../gmes_linux_64_4/
 ```
 
 After editing, reload in your current session:
@@ -558,14 +555,15 @@ bash scripts/04_nanofilt.sh
 **Interactive session (always start here):**
 
 ```bash
-srun -N 1 -n 2 --mem=100000 -p short -q msn -t 1-0 --pty bash
+srun -A silage_microbiome -N 1 -n 32 -p ceres -t 1-0 --pty bash
 ```
 
 **Job monitoring:**
 
 ```bash
-squeue --me              # your running/queued jobs
+squeue -all --me         # your running/queued jobs
 scancel JOBID            # cancel a job
+cat slurm-JOBID.out      # view stdout
 cat logs/step-JOBID.out  # view stdout
 cat logs/step-JOBID.err  # view stderr
 ```
