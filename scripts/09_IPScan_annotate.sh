@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+#SBATCH -A silage_microbiome
+#SBATCH -N 1
+#SBATCH -n 32
+#SBATCH --mem=64G
+#SBATCH -p ceres
+#SBATCH --time=6:00:00
+#SBATCH --job-name=iprscan
+#SBATCH --output=logs/iprscan_%j.out
+#SBATCH --error=logs/iprscan_%j.err
+
 # -------------------------------
 # Setup
 # -------------------------------
