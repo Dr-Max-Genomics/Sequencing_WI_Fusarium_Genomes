@@ -1,0 +1,52 @@
+# Ignore data and large outputs
+# -------------------------
+# Bioinformatics data files
+# -------------------------
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+*.bam
+*.sam
+*.cram
+*.vcf
+*.vcf.gz
+*.fasta
+*.fa
+*.fa.gz
+
+# Large directories
+00_Raw_Data/
+results/
+
+# -------------------------
+# Logs and scheduler output
+# -------------------------
+*.log
+*.err
+*.out
+slurm-*.out
+
+# -------------------------
+# Python / Conda noise
+# -------------------------
+__pycache__/
+*.pyc
+envs/
+*.conda
+*.yaml~
+
+# -------------------------
+# R / RStudio noise
+# -------------------------
+.Rhistory
+.Rproj.user/
+.RData
+
+# -------------------------
+# Misc
+# -------------------------
+temp/
+*.tmp
+*.swp
+.DS_Store
