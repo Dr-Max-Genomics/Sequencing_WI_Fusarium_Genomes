@@ -4,7 +4,7 @@
 # Project + Batch Configuration
 # -------------------------------
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT_ROOT="${PROJECT_ROOT:-/project/silage_microbiome/max.chi/fusarium_sequencing}"
 
 # Set this once per batch
 BATCH_ID="jan_batch2_all_barcodes"

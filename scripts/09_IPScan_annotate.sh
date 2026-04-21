@@ -5,7 +5,7 @@ set -euo pipefail
 # Setup
 # -------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PROJECT_ROOT="/project/silage_microbiome/max.chi/fusarium_sequencing"
 source "${PROJECT_ROOT}/config/paths.sh"
 
 mkdir -p "${INTERPROSCAN_DIR}" "${LOG_DIR}/interproscan"
