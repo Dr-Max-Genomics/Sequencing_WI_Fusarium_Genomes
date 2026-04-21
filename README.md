@@ -368,10 +368,21 @@ funannotate sort -i polishedXX_assembly.fasta --minlen 1000 \
 ```
 
 #### 4.2 Repeat element detection (EarlGrey)
+This step identifies transposable elements (TEs) to create a custom repeat library for soft masking. Soft masking changes the nucleotides of transposable elements and repeats to lower case so they are skipped by the annotation. Hard masking on the other hand deletes the repeated elements.
 
 ```bash
+# Earl Grey is run via an apptainer (formerly singularity) container.
+# Pull the container image first.
+apptainer pull --disable-cache docker://tobybaril/earlgrey_dfam3.7:latest
+# Run Earl Grey
+export EARLGREY_SIF=earlgrey_dfam3.7_latest.sif
 apptainer run $EARLGREY_SIF
 earlGrey -g barXX_assem_sort.fa -s fcXX -t 20 -o TE_EarlGrey/
+
+# -g: Input genome FASTA.
+# -s: Species name.
+# -t: Number of threads.
+# -o: Output directory.
 ```
 
 #### 4.3 Soft-mask assembly
