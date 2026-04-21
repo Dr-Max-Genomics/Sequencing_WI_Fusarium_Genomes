@@ -168,7 +168,7 @@ Going forward, add a new dated entry per session at the top of this section.
 
 **Cluster:** Ceres & Atlas  
 **Sequenced:** Fall 2025  
-**Working directory:** `/90daydata/silage_microbiome/[path — fill in]/`
+**Working directory:** `/90daydata/silage_microbiome/[path — fill in]/` 
 **Scripts directory:** `/project/silage_microbiome/max.chi/fusarium_sequencing/scripts`
 
 #### Stages completed (all barcodes unless noted)
