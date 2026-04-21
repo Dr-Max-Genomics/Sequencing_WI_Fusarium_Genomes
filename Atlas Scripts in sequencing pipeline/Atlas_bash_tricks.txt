@@ -1,0 +1,23 @@
+# Salloc
+salloc -A silage_microbiome -p gpu-a100 -n 2 --gres=gpu:a100:1 -t 20:00:00
+
+# Start interactive session
+srun -A silage_microbiome --pty -n 16 -N 1 --mem=10G bash
+
+# Submit job script
+sbatch submit.sh
+
+# Check active jobs
+squeue -all --me
+
+# Check Job Statistics
+sstat jobID --all
+
+# Check Job Efficiency
+seff jobID
+
+# Check accounts
+sacctmgr show associations where user=$USER format=account%20,qos%50
+
+#Lifesaver to restart 90daydata storage files
+find /90daydata/silage_microbiome -type f -exec touch {} +
