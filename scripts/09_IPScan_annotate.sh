@@ -9,7 +9,6 @@ set -euo pipefail
 #SBATCH --time=6:00:00
 #SBATCH --job-name=iprscan
 #SBATCH --output=slurm_logs/iprscan_%j.out
-#SBATCH --error=slurm_logs/iprscan_%j.err
 
 # -------------------------------
 # Setup
