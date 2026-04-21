@@ -104,7 +104,7 @@ sbatch -A silage_microbiome -N 1 -n 32 --mem=150GB -p ceres -t 6:00:00 --wrap="f
 ### Next step
 - Script / stage:
 - Prep needed:
-```
+
 
 
 ---
@@ -157,19 +157,19 @@ Going forward, add a new dated entry per session at the top of this section.
 
 
 #### Notes
-- barcode54 absent from batch — not sequenced in this run
 - wtdbg2 was trialed on one barcode during assembly troubleshooting; BUSCO was run
   on that assembly but score not recorded. All final assemblies used Flye.
-  See CHANGELOG.md v1.1 for assembler decision rationale.
+  Check CHANGELOG.md v1.1 for possible assembler decision rationale.
 - Porechop must be loaded with miniconda unloaded — documented in README.md §11
 
 ---
 
 ### Batch 2 retrospective (batch_2025-fall) — barcodes 36–45
 
-**Cluster:** Ceres / Atlas  
+**Cluster:** Ceres & Atlas  
 **Sequenced:** Fall 2025  
 **Working directory:** `/90daydata/silage_microbiome/[path — fill in]/`
+**Scripts directory:** `/project/silage_microbiome/max.chi/fusarium_sequencing/scripts`
 
 #### Stages completed (all barcodes unless noted)
 
