@@ -43,7 +43,7 @@ and produces annotated genome assemblies. Isolates are processed in batches — 
 contain 10 isolates, others less — and the pipeline is designed to resume cleanly at any stage
 for any subset of barcodes.
 
-**Genome size:** ~50–55 Mb (typical for *Fusarium* spp.)  
+**Genome size:** ~45–55 Mb (typical for *Fusarium* spp.)  
 **Target coverage:** 100×  
 **Minimum read length:** 500 bp  
 **Basecalling:** Dorado, SUP model recommended
