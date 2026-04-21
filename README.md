@@ -566,12 +566,12 @@ bash scripts/04_nanofilt.sh
 
 | Stage | Script | Nodes | CPUs | Memory | Time | Partition |
 |-------|--------|-------|------|--------|------|-----------|
-| Deduplication | 02 | 1 | 70 | 900 GB | 1 day | short-mem |
-| Porechop | 03 | 1 | 70 | 900 GB | 1 day | short-mem |
-| NanoFilt/NanoPlot | 04–05 | 1 | 70 | 900 GB | 1 day | short-mem |
-| Flye assembly | 06 | 1 | 40 | 300 GB | 1 day | short |
-| BUSCO evaluation | 07 | 1 | 70 | 900 GB | 1 day | short-mem |
-| Gene prediction | 08 | 1 | 20 | 50 GB | 2 days | short |
+| Deduplication | 02 | 1 | 70 | 300 GB | 1 day | ceres |
+| Porechop | 03 | 1 | 70 | 150 GB | 1 day | ceres |
+| NanoFilt/NanoPlot | 04–05 | 1 | 70 | 150 GB | 1 day | ceres |
+| Flye assembly | 06 | 1 | 40 | 50 GB | 1 day | ceres |
+| BUSCO evaluation | 07 | 1 | 70 | 50 GB | 1 day | ceres |
+| Gene prediction | 08 | 1 | 20 | 50 GB | 2 days | ceres |
 
 **Interactive session (always start here):**
 
