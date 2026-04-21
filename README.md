@@ -423,7 +423,7 @@ sbatch -N 1 -n 20 --mem=50000 -p short -q msn -t 2-0 \
   --busco_db sordariomycetes \
   --optimize_augustus"
 ```
-#### 4.6 Functional Annotation (InterPro Scan and Funannotate predict)
+#### 4.6 Functional Annotation (InterPro Scan and Funannotate annotate)
 
 a. Runtime 2 hours per isolate.
 ```bash
