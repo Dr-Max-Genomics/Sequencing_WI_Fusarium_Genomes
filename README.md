@@ -336,15 +336,25 @@ cp wtdbg2 wtpoa-cns /path/to/conda/env/bin/
 ### Stage 3 — Assembly evaluation
 
 ```bash
+# Run BUSCO on the polished assembly.
 bash scripts/07_busco_eval.sh
 # Equivalent sbatch:
-sbatch -N 1 -n 70 --mem=900000 -p short-mem -q msn-mem \
+sbatch -A silage_microbiome -N 1 -n 20 --mem=40000 -p ceres -t 1:00:00 \
   --wrap='busco -i polishedXX_assembly.fasta \
-  -o assembly_output_eval/busco -l hypocreales \
-  --mode genome -c 70'
+  -o polishedXX_assembly_output_eval/busco \
+  -l hypocreales \
+  --mode genome -c 20 \
+  --offline'
+
+# -i: Input FASTA file.
+# -o: Output directory name.
+# -l: Lineage dataset to use (e.g., hypocreales for Fusarium).
+# --mode: Type of analysis (genome, transcriptome, proteins).
+# -c: Number of cores/threads.
+# --offline: would make it possible to run busco offline - avoiding redownloads of databases
 ```
 
-**Output:** `short_summary.*.busco.txt`
+**Output:** The key output is the `short_summary.*.busco.txt`, which gives percentages for Complete, Fragmented, and Missing BUSCO genes.
 
 ---
 
