@@ -63,15 +63,15 @@ It is the single source of truth for "what has been done to which isolate."
 
 | Barcode | Isolate ID | S1 | S2 | S3 | S4 | S5 | Notes |
 |---------|------------|----|----|----|----|----|-------|
-| barcode49 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode50 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode51 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode52 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode53 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode55 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode56 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode57 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode58 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
+| barcode49 | isolate_F-Arl-23.2 | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode50 | isolate_F-22-6 | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode51 | isolate_F-22-24 | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode52 | isolate_F-22-6 | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode53 | isolate_F-23-5.2 | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode55 | isolate_F-23-2.3 | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode56 | isolate_F-23-4.4 | 🟢 | 🟢 | 🟢 | 🔵 | ⚪ | [Published Reference Genome](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_054553065.1/) |
+| barcode57 | isolate_Fg-23-1.3 | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode58 | isolate_F-Arl-23.2b | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
 
 ### batch_2025-Dec
 
@@ -83,16 +83,16 @@ It is the single source of truth for "what has been done to which isolate."
 
 | Barcode | Isolate ID | S1 | S2 | S3 | S4 | S5 | Notes |
 |---------|------------|----|----|----|----|----|-------|
-| barcode36 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode37 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode38 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode39 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode40 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode41 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode42 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode43 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode44 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode45 | isolate_ID | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
+| barcode36 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode37 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode38 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode39 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode40 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode41 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode42 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode43 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode44 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode45 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
 
 ### batch_2026-XXX
 
