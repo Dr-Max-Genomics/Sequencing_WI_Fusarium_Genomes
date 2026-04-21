@@ -8,8 +8,8 @@ set -euo pipefail
 #SBATCH -p ceres
 #SBATCH --time=6:00:00
 #SBATCH --job-name=iprscan
-#SBATCH --output=logs/iprscan_%j.out
-#SBATCH --error=logs/iprscan_%j.err
+#SBATCH --output=slurm_logs/iprscan_%j.out
+#SBATCH --error=slurm_logs/iprscan_%j.err
 
 # -------------------------------
 # Setup
