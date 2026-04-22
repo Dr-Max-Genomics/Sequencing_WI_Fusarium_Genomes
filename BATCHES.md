@@ -56,48 +56,45 @@ It is the single source of truth for "what has been done to which isolate."
 <!-- Copy this block for each new batch. Rename the heading to match the folder name. -->
 
 **Sequencing date:** 2025-02-03  
-**Barlist:** [`batches/batch_YYYY-MM/barlist.txt`](batches/batch_YYYY-MM/barlist.txt)  
 **Sample sheet:** [`batches/batch_YYYY-MM/sample_sheet.csv`](batches/batch_YYYY-MM/sample_sheet.csv)  
 **Ceres data path:** `/90daydata/silage_microbiome/[path]/`  
 **Permanent storage path:** `/project/silage_microbiome/[path]/` *(fill in when moved)*
 
-| Barcode | Isolate ID | S1 | S2 | S3 | S4 | S5 | Notes |
-|---------|------------|----|----|----|----|----|-------|
-| barcode49 | isolate_F-Arl-23.2 | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
-| barcode50 | isolate_F-22-6 | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
-| barcode51 | isolate_F-22-24 | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
-| barcode52 | isolate_F-22-6 | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
-| barcode53 | isolate_F-23-5.2 | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
-| barcode55 | isolate_F-23-2.3 | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
-| barcode56 | isolate_F-23-4.4 | 🟢 | 🟢 | 🟢 | 🔵 | ⚪ | [Published Reference Genome](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_054553065.1/) |
-| barcode57 | isolate_Fg-23-1.3 | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
-| barcode58 | isolate_F-Arl-23.2b | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| Barcode | Isolate ID | Species |S1 | S2 | S3 | S4 | S5 | Notes |
+|---------|------------|---------|----|----|----|----|----|-------|
+| barcode49 | isolate_F-Arl-23.2 | _F. proliferatum_ | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode50 | isolate_F-22-6 | _F. fujikuroi_ | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode51 | isolate_F-22-24 | _F. fujikuroi_ | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode52 | isolate_F-22-6 | _F. fujikuroi_ | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode53 | isolate_F-23-5.2 | _F. proliferatum_ | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode55 | isolate_F-23-2.3 | Put. _F. subglutinans_ | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode56 | isolate_F-23-4.4 | _F. cerealis_ | 🟢 | 🟢 | 🟢 | 🔵 | ⚪ | [Published Reference Genome](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_054553065.1/) |
+| barcode57 | isolate_Fg-23-1.3 | _F. graminearum_ | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| barcode58 | isolate_F-Arl-23.2b | _F. proliferatum_ | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
 
 ### batch_2025-Dec
 
 **Sequencing date:** 2025-12-01  
-**Barlist:** [`batches/batch_YYYY-MM/barlist.txt`](batches/batch_YYYY-MM/barlist.txt)  
 **Sample sheet:** [`batches/batch_YYYY-MM/sample_sheet.csv`](batches/batch_YYYY-MM/sample_sheet.csv)  
 **Ceres data path:** `/90daydata/silage_microbiome/[path]/`  
 **Permanent storage path:** `/project/silage_microbiome/[path]/` *(fill in when moved)*
 
-| Barcode | Isolate ID | S1 | S2 | S3 | S4 | S5 | Notes |
-|---------|------------|----|----|----|----|----|-------|
-| barcode36 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
-| barcode37 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
-| barcode38 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
-| barcode39 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
-| barcode40 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
-| barcode41 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
-| barcode42 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
-| barcode43 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
-| barcode44 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
-| barcode45 | isolate_ID | 🟢 | 🟢 | 🟢 | ⚪ | ⚪ | |
+| Barcode | Isolate ID | Species | S1 | S2 | S3 | S4 | S5 | Notes |
+|---------|------------|---------|----|----|----|----|----|-------|
+| barcode36 | isolate_F-22-12a | _F. sporotrichioides_ | 🟢 | 🟢 | 🟢 | 🔵 | ⚪ | |
+| barcode37 | isolate_F-22-12b | _F. sporotrichioides_ | 🟢 | 🟢 | 🟢 | 🔵 | ⚪ | |
+| barcode38 | isolate_Fg-22-214.4 | _F. graminearum_ | 🟢 | 🟢 | 🟢 | 🔵 | ⚪ | |
+| barcode39 | isolate_Fg-23-10 | _F. graminearum_ | 🟢 | 🟢 | 🟢 | 🔵 | ⚪ | |
+| barcode40 | isolate_F-Arl-23.6 |isolate_F-Arl-23.2 | 🟢 | 🟢 | 🟢 | 🔵 | ⚪ | |
+| barcode41 | isolate_Fg-23-7.2 | _F. graminearum_ | 🟢 | 🟢 | 🟢 | 🔵 | ⚪ | |
+| barcode42 | isolate_F-23-8.10 | _F. proliferatum_ | 🟢 | 🟢 | 🟢 | 🔵 | ⚪ | |
+| barcode43 | isolate_Fg-23-8.6 | _F. graminearum_ | 🟢 | 🟢 | 🟢 | 🔵 | ⚪ | |
+| barcode44 | isolate_F-25-8710-1 | Put. _F. ipomoea_ | 🟢 | 🟢 | 🟢 | 🔵 | ⚪ | |
+| barcode45 | isolate_F-23-8710-3 | _F. proliferatum_ | 🟢 | 🟢 | 🟢 | 🔵 | ⚪ | |
 
 ### batch_2026-XXX
 
 **Sequencing date:** 2026-XX-XX  
-**Barlist:** [`batches/batch_YYYY-MM/barlist.txt`](batches/batch_YYYY-MM/barlist.txt)  
 **Sample sheet:** [`batches/batch_YYYY-MM/sample_sheet.csv`](batches/batch_YYYY-MM/sample_sheet.csv)  
 **Ceres data path:** `/90daydata/silage_microbiome/[path]/`  
 **Permanent storage path:** `/project/silage_microbiome/[path]/` *(fill in when moved)*
@@ -149,4 +146,4 @@ so the decision is traceable.
 
 ---
 
-*Last updated: YYYY-MM-DD*
+*Last updated: 2026-02-10*
