@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!bin/bash
 set -euo pipefail
 
 #SBATCH -A silage_microbiome
@@ -7,14 +7,15 @@ set -euo pipefail
 #SBATCH --mem=150G
 #SBATCH -p ceres
 #SBATCH -t 6:00:00
-#SBATCH --job-name="iprscan"
-#SBATCH -o slurm_logs/iprscan_%j.out
+#SBATCH --job-name=FUN_annotate
+#SBATCH --array=1-10
+#SBATCH --output=/dev/null
 
 # -------------------------------
 # Setup
 # -------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PROJECT_ROOT="/project/silage_microbiome/max.chi/fusarium_sequencing"
 source "${PROJECT_ROOT}/config/paths.sh"
 
 mkdir -p "${FUN_ANNOTATE_DIR}" "${LOG_DIR}/annotate"
@@ -48,6 +49,14 @@ if [[ ! -s "${ipr_xml}" ]]; then
   exit 1
 fi
 
+# Check AntiSMASH GBK and derive name from sample (e.g., FunAnnotate_Bar36 -> FusBar36.scaffold.gbk)
+num="${sample##*Bar}"
+anti_gbk="${ANTISMASH_DIR}/FusBar${num}.scaffolds.gbk"
+if [[ ! -s "${anti_gbk}" ]]; then
+  echo "ERROR: AntiSMASH GBK not found or empty: ${anti_gbk}" >&2
+  exit 1
+fi
+
 # Output directory for this sample
 outdir="${FUN_ANNOTATE_DIR}/${sample}"
 # Skip if annotate already produced GFF3
@@ -60,14 +69,7 @@ mkdir -p "${outdir}"
 
 # Funannotate DB + Augustus env
 export APPTAINERENV_FUNANNOTATE_DB="${FUNANNOTATE_DB_PATH}"
-export AUGUSTUS_CONFIG_PATH="${AUGUSTUS_CONFIG_PATH}"
-
-# Basic DB readiness check (conservative)
-if [[ ! -d "${APPTAINERENV_FUNANNOTATE_DB}/uniprot" ]] || [[ ! -d "${APPTAINERENV_FUNANNOTATE_DB}/pfam" ]]; then
-  echo "ERROR: Funannotate DB at ${APPTAINERENV_FUNANNOTATE_DB} looks incomplete." >&2
-  echo "       Please run 'funannotate setup' once (outside the array) and retry." >&2
-  exit 1
-fi
+export AUGUSTUS_CONFIG_PATH="${AUGUSTUS_CONFIG_PATH:-/90daydata/silage_microbiome/max_seq/jan_batch2_all_barcodes/11_FunAnnotate/augustus/config}"
 
 module load funannotate
 
@@ -78,13 +80,17 @@ if [[ ! -d "${predict_dir}" ]]; then
   exit 1
 fi
 
+echo "[$(date)] Running funannotate annotate"
 echo "Predict input: ${predict_dir}"
 echo "Output dir:    ${outdir}"
 echo "IPR XML:       ${ipr_xml}"
+echo "AntiSMASH:     ${anti_gbk}"
 
 funannotate annotate \
   -i "${predict_dir}" \
   -o "${outdir}" \
-  --iprscan "${ipr_xml}"
+  --iprscan "${ipr_xml}" \
+  --antismash "${anti_gbk}" \
+  --cpus 32
 
 echo "[$(date)] Finished funannotate annotate for sample: ${sample}"
