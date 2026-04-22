@@ -7,7 +7,7 @@
 #SBATCH -t 6:00:00
 #SBATCH --job-name=iprscan
 #SBATCH --array=1-10
-#SBATCH --output=slurm_logs/iprscan_%A_%a.out
+#SBATCH --output=/dev/null
 
 set -euo pipefail
 
