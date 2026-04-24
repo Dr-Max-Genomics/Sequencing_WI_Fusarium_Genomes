@@ -18,7 +18,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="/project/silage_microbiome/max.chi/fusarium_sequencing"
 source "${PROJECT_ROOT}/config/paths.sh"
 
-mkdir -p "${FUN_ANNOTATE_DIR}" "${LOG_DIR}/annotate"
+mkdir -p "${LOG_DIR}/annotate"
 
 SAMPLE_LIST="${BATCH_DIR}/sample_list.txt"
 if [[ ! -f "${SAMPLE_LIST}" ]]; then
@@ -69,7 +69,7 @@ mkdir -p "${outdir}"
 
 # Funannotate DB + Augustus env
 export APPTAINERENV_FUNANNOTATE_DB="${FUNANNOTATE_DB_PATH}"
-export AUGUSTUS_CONFIG_PATH="${AUGUSTUS_CONFIG_PATH:-/90daydata/silage_microbiome/max_seq/jan_batch2_all_barcodes/11_FunAnnotate/augustus/config}"
+export AUGUSTUS_CONFIG_PATH="${AUGUSTUS_CONFIG_PATH:-/90daydata/silage_microbiome/max_seq/batch1_all_barcodes/11_FunAnnotate/augustus/config}"
 
 module load funannotate
 
@@ -82,13 +82,11 @@ fi
 
 echo "[$(date)] Running funannotate annotate"
 echo "Predict input: ${predict_dir}"
-echo "Output dir:    ${outdir}"
 echo "IPR XML:       ${ipr_xml}"
 echo "AntiSMASH:     ${anti_gbk}"
 
 funannotate annotate \
   -i "${predict_dir}" \
-  -o "${outdir}" \
   --iprscan "${ipr_xml}" \
   --antismash "${anti_gbk}" \
   --cpus 32
