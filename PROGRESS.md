@@ -115,14 +115,14 @@ sbatch -A silage_microbiome -N 1 -n 32 --mem=150GB -p ceres -t 6:00:00 --wrap="f
 **Barcodes in scope:** barcode36–45 (all 10)
 
 ### What I ran
-- Script: `scripts/IPscan.sh`
-- Submitted as SLURM array job: `sbatch --array=1-10 scripts/IPscan.sh`
-- Job IDs: 20526945_1 through 20526945_10
+- Script: `scripts/09_/IPscan_annotate.sh`
+- Submitted as SLURM array job: `sbatch --array=1-10 scripts/IPscan_annotate.sh`
 
 ### Outcome
 - [x] Completed successfully — all 10 array tasks finished
 
 ### Notes / observations
+- For some reason, slurm refused to read the `#SBATCH` flags in the script, so they were passed from the terminal after `ml interproscan`
 - First use of IPscan.sh under the new repo structure
 - Fixed BASH_SOURCE[0] / PROJECT_ROOT spool path bug before submission
   (hardcoded PROJECT_ROOT in config/paths.sh — see CHANGELOG.md v1.3)
