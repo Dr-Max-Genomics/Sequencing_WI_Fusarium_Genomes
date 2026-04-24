@@ -17,6 +17,46 @@
 
 ---
 
+## v1.3 — 2026-04-21 — IPRScan added + paths.sh bug fix
+
+### What changed
+- InterProScan (`IPscan.sh`) added as a formal pipeline stage between
+  Funannotate predict and Funannotate annotate
+- Fixed critical `BASH_SOURCE[0]` bug in `config/paths.sh` — dynamic
+  PROJECT_ROOT resolution fails under sbatch because SLURM copies the
+  script to `/var/spool/slurmd/` before execution. Fixed by hardcoding
+  PROJECT_ROOT in `paths.sh`
+
+### New stage added
+
+| Stage | Script | Position in pipeline |
+|-------|--------|----------------------|
+| InterProScan | `scripts/09_IPscan_annotate.sh` | Between S4 predict and S4 annotate |
+
+### IPRScan parameters
+
+| Parameter | Value |
+|-----------|-------|
+| Format | xml |
+| CPU | 32 |
+| Flags | -dp -pa -goterms -iprlookup |
+| Execution mode | SLURM array (one task per sample) |
+| time req | 6hrs |
+| Cluster | Ceres |
+
+### First run
+- Batch: batch_2025-fall (barcode36–45)
+- Job array: 20526945_1 through 20526945_10
+- Date: 2026-04-21
+- Outcome: All 10 tasks completed successfully
+
+### Fix details — paths.sh PROJECT_ROOT
+| | Before | After |
+|--|--------|-------|
+| PROJECT_ROOT | Derived via `BASH_SOURCE[0]` | Hardcoded: `/home/maxwell.chibuogwu/Sequencing_WI_Fusarium_Genomes` |
+| Works interactively | ✅ | ✅ |
+| Works under sbatch | ❌ | ✅ |
+
 ## Unreleased — in progress
 
 ### Pending decisions
