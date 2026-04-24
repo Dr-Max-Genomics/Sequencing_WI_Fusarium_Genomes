@@ -7,7 +7,7 @@
 PROJECT_ROOT="${PROJECT_ROOT:-/project/silage_microbiome/max.chi/fusarium_sequencing}"
 
 # Set this once per batch
-BATCH_ID="jan_batch2_all_barcodes"
+BATCH_ID="batch1_all_barcodes"
 
 SCRATCH_ROOT="/90daydata/silage_microbiome/max_seq"
 
@@ -31,6 +31,7 @@ BUSCO_DIR="${BATCH_DIR}/08_Busco_Analyses"
 FUN_DB_DIR="${BATCH_DIR}/11_FunAnnotate"                 # DB + augustus etc.
 FUN_PREDICT_DIR="${BATCH_DIR}/11a_FUN_Predict_Result"    # input from predict
 INTERPROSCAN_DIR="${BATCH_DIR}/11b_InterProScan"         # global IP outputs
+ANTISMASH_DIR="${BATCH_DIR}/12a_antiSMASH_gbk"           # antismash gbk output folder
 FUN_ANNOTATE_DIR="${BATCH_DIR}/11c_FUN_Annotate_Result"  # annotate outputs
 
 # Funannotate DB + Augustus config
@@ -47,6 +48,6 @@ SCRIPTS_DIR="${PROJECT_ROOT}/scripts"
 mkdir -p \
   "$RAW_DIR" "$QC_DIR" "$TRIM_DIR" "$TRIMMED_DIR" "$SUMMARY_DIR" \
   "$ASSEMBLY_DIR" "$POLISH_DIR" "$POLISHED_DIR" "$BUSCO_DIR" \
-  "$FUN_DB_DIR" "$FUN_PREDICT_DIR" "$INTERPROSCAN_DIR" "$FUN_ANNOTATE_DIR" \
+  "$FUN_DB_DIR" "$FUN_PREDICT_DIR" "$INTERPROSCAN_DIR" "$ANTISMASH_DIR" "$FUN_ANNOTATE_DIR" \
   "$LOG_DIR"
 

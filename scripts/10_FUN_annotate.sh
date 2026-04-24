@@ -1,4 +1,4 @@
-#!bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 #SBATCH -A silage_microbiome
