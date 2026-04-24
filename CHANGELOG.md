@@ -17,21 +17,38 @@
 
 ---
 
-## v1.3 — 2026-04-21 — IPRScan added + paths.sh bug fix
+## Unreleased — in progress
+
+### Pending decisions
+- [ ] funannotate annotate not yet run for batch_2025-02 (barcode49–53, 55–58) —
+      update this file when parameters confirmed and jobs complete
+- [ ] IPRScan not yet run for batch_2025-02 — run before funannotate annotate
+- [ ] antiSMASH version and exact flags not yet documented — fill in when confirmed
+- [ ] Confirm whether `funannotate setup -u -w -d $DB` is required before annotate
+- [ ] wtdbg2 trial barcode and BUSCO score still unrecovered (see v1.1)
+- [ ] ⚠️ Resolve `10_FUN_annotate.sh` output path behavior before batch_2025-02 run —
+      see known behavior note in v1.3 below
+
+---
+
+## v1.3 — 2026-04-21 — IPRScan + funannotate annotate added; paths.sh bug fix
 
 ### What changed
-- InterProScan (`IPscan.sh`) added as a formal pipeline stage between
-  Funannotate predict and Funannotate annotate
+- InterProScan (`09_IPscan_annotate.sh`) added as a formal pipeline stage
+  between Funannotate predict and Funannotate annotate
+- Funannotate annotate run successfully for batch_2025-fall after resolving
+  `APPTAINERENV_FUNANNOTATE_DB` path (see fix details below)
 - Fixed critical `BASH_SOURCE[0]` bug in `config/paths.sh` — dynamic
   PROJECT_ROOT resolution fails under sbatch because SLURM copies the
   script to `/var/spool/slurmd/` before execution. Fixed by hardcoding
   PROJECT_ROOT in `paths.sh`
 
-### New stage added
+### New stages added
 
 | Stage | Script | Position in pipeline |
 |-------|--------|----------------------|
 | InterProScan | `scripts/09_IPscan_annotate.sh` | Between S4 predict and S4 annotate |
+| Funannotate annotate | `scripts/10_FUN_annotate.sh` | Final S4 annotation step |
 
 ### IPRScan parameters
 
@@ -39,31 +56,81 @@
 |-----------|-------|
 | Format | xml |
 | CPU | 32 |
+| Time | 6 hrs |
 | Flags | -dp -pa -goterms -iprlookup |
 | Execution mode | SLURM array (one task per sample) |
-| time req | 6hrs |
 | Cluster | Ceres |
 
-### First run
-- Batch: batch_2025-fall (barcode36–45)
-- Job array: 20526945_1 through 20526945_10
-- Date: 2026-04-21
-- Outcome: All 10 tasks completed successfully
+> Note: 80 CPUs tested on 04-20 troubleshooting run; 32 confirmed as optimal
+> and used in the final array submission.
+
+### Funannotate annotate parameters
+
+| Parameter | Value |
+|-----------|-------|
+| CPU | 32 |
+| Memory | 150 GB |
+| Time | 6 hrs |
+| eggnog | Not used (intentional) |
+| IPRScan input | Per-sample `.xml` from `11b_InterProScan/` |
+| antiSMASH input | Per-sample `.gbk` from antiSMASH output |
+| Execution mode | SLURM array (one task per sample) |
+| Cluster | Ceres |
+
+### ⚠️ Known behavior — funannotate annotate output location
+
+`10_FUN_annotate.sh` specifies `11c_FUN_Annotate_Result/` as the output directory,
+but annotate outputs were written to the predict directory instead:
+
+| | Expected | Actual |
+|--|----------|--------|
+| Script `-o` flag | `11c_FUN_Annotate_Result/` | Overridden by funannotate |
+| Actual output | — | `11a_FUN_Predict_Result/FunAnnotate_{sampleID}/annotate_misc/` |
+| Actual output | — | `11a_FUN_Predict_Result/FunAnnotate_{sampleID}/annotate_results/` |
+
+**Why this happens:** Funannotate annotate uses the `-i` input flag to locate
+the predict project directory. When it finds existing `predict_misc/` and
+`predict_results/` subdirectories there, it treats that directory as the
+project root and writes `annotate_misc/` and `annotate_results/` alongside
+them — overriding the `-o` output path in the script.
+
+**Status:** Outputs are complete and valid for batch_2025-fall. This behavior
+must be understood and either accepted or corrected before batch_2025-02 runs.
+See Unreleased checklist above.
+
+### Fix details — APPTAINERENV_FUNANNOTATE_DB path
+
+Root cause of the 04-20 funannotate annotate failure on barcode37.
+
+| | Path | Status |
+|--|------|--------|
+| Path A (correct) | `.../11_FunAnnotate/DB_FunannotateDatabase/funannotate_db` | ✅ Confirmed working |
+| Path B (incorrect) | `.../11_FunAnnotate/BD_BuscoDatabase/DB_FunannotateDatabase/funannotate_db` | ❌ Both dirs exist but Path A is correct |
+
+Set this once before any funannotate annotate run:
+```bash
+export APPTAINERENV_FUNANNOTATE_DB=/90daydata/silage_microbiome/max_seq/jan_batch2_all_barcodes/11_FunAnnotate/DB_FunannotateDatabase/funannotate_db
+```
 
 ### Fix details — paths.sh PROJECT_ROOT
+
 | | Before | After |
 |--|--------|-------|
 | PROJECT_ROOT | Derived via `BASH_SOURCE[0]` | Hardcoded: `/home/maxwell.chibuogwu/Sequencing_WI_Fusarium_Genomes` |
 | Works interactively | ✅ | ✅ |
 | Works under sbatch | ❌ | ✅ |
 
-## Unreleased — in progress
+### Batch 2 runs — 2026-04-21
 
-### Pending decisions
-- [ ] Downstream Funannotate annotation steps not yet run on either batch —
-      update this file when those stages are finalized and parameters confirmed
-- [ ] antiSMASH version and parameters not yet documented — add when confirmed
-- [ ] Confirm exact wtdbg2 trial barcode and record BUSCO result (see v1.1 note)
+| Stage | Job array | Tasks | Outcome |
+|-------|-----------|-------|---------|
+| IPRScan | 20526945_1–10 | 10 | ✅ All complete |
+| Funannotate annotate | 20535822_1–10 | 10 | ✅ All complete |
+
+### Troubleshooting note — 04-20 failed run
+- Single-sample test of funannotate annotate on barcode37 failed
+- Cause: `APPTAINERENV_FUNANNOTATE_DB` path unresolved at time of run
+- Resolution: Path A confirmed correct; array job succeeded next day
 
 ---
 
@@ -86,18 +153,18 @@
 | BUSCO lineage | hypocreales | Same as batch 1 |
 | Threads | 70 (preprocessing) / 40 (Flye) / 20 (Funannotate) | Same as batch 1 |
 | MEM_HIGH | 900,000 MB | Same as batch 1 |
-| antiSMASH | Added | Parameters — fill in version and flags used |
+| antiSMASH | Added | ⚠️ Version and flags not yet documented — fill in |
 
 ### Results summary
 - All 10 isolates (barcode36–45) assembled and evaluated successfully
 - BUSCO completeness range: 99.3–99.4% (hypocreales) — highest scores to date
 - Gene prediction (Funannotate predict) complete on all 10 isolates
 - antiSMASH complete on all 10 isolates
-- Downstream Funannotate annotation steps pending
+- IPRScan and funannotate annotate completed 2026-04-21 (see v1.3)
 
 ### Clusters used
-- Ceres: preprocessing, assembly, BUSCO
-- Atlas: [fill in which stages ran on Atlas]
+- Ceres: preprocessing, assembly, BUSCO, annotation
+- Atlas: ⚠️ fill in which stages ran on Atlas
 
 ---
 
@@ -114,8 +181,8 @@
 | Criterion | wtdbg2 | Flye | Decision |
 |-----------|--------|------|----------|
 | Assembly quality | Lower contiguity observed | Higher contiguity | Flye preferred |
-| BUSCO completeness | [score not recorded — fill in] | >99.1% all isolates | Flye preferred |
-| Runtime | [fill in] | ~58 min per isolate at 40 threads | — |
+| BUSCO completeness | ⚠️ score not recorded — fill in | >99.1% all isolates | Flye preferred |
+| Runtime | ⚠️ fill in | ~58 min per isolate at 40 threads | — |
 | Ease of use on Ceres | Required manual polish steps | Single sbatch command | Flye preferred |
 
 > ⚠️ The specific barcode trialed with wtdbg2 was not recorded. Locate the
@@ -130,7 +197,7 @@
 | Assembler | Flye (final) | wtdbg2 trialed, not used for final assemblies |
 | Flye --genome-size | 50m | Based on expected Fusarium genome size |
 | Flye --asm-coverage | 100 | Target 100× coverage |
-| Flye --iterations | 1 | [note if this was intentional or default] |
+| Flye --iterations | 1 | ⚠️ Confirm if intentional or default |
 | BUSCO lineage (assembly eval) | hypocreales | Primary lineage |
 | BUSCO lineage (Augustus training) | sordariomycetes_odb10 | For Funannotate |
 | Threads | 70 (preprocessing) / 40 (Flye) / 20 (Funannotate) | |
@@ -141,12 +208,12 @@
 - 9 isolates processed (barcode54 absent — not sequenced this batch)
 - BUSCO completeness range: 99.1–99.3% (hypocreales)
 - All isolates through Funannotate predict and antiSMASH
-- Downstream annotation steps in progress
+- IPRScan and funannotate annotate pending (see Unreleased)
 
 ### Known issues encountered
 - Porechop / miniconda module conflict — resolved by unloading miniconda
   before loading Porechop. Documented in README.md §11.
-- [Add any other issues encountered during this batch]
+- ⚠️ Add any other issues encountered during this batch
 
 ---
 
@@ -192,6 +259,8 @@
 | MEM_HIGH | 900,000 MB | v1.0 |
 | MEM_MED | 300,000 MB | v1.0 |
 | antiSMASH | Added | v1.2 |
+| IPRScan CPU | 32 | v1.3 |
+| APPTAINERENV_FUNANNOTATE_DB | Path A (see v1.3) | v1.3 |
 
 ---
 
