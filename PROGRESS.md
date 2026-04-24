@@ -109,6 +109,35 @@ sbatch -A silage_microbiome -N 1 -n 32 --mem=150GB -p ceres -t 6:00:00 --wrap="f
 
 ---
 
+## 2026-04-21 — Ceres — Batch: batch_2025-fall
+
+**Working directory:** `/90daydata/silage_microbiome/max_seq/jan_batch2_all_barcodes/`
+**Barcodes in scope:** barcode36–45 (all 10)
+
+### What I ran
+- Script: `scripts/IPscan.sh`
+- Submitted as SLURM array job: `sbatch --array=1-10 scripts/IPscan.sh`
+- Job IDs: 20526945_1 through 20526945_10
+
+### Outcome
+- [x] Completed successfully — all 10 array tasks finished
+
+### Notes / observations
+- First use of IPscan.sh under the new repo structure
+- Fixed BASH_SOURCE[0] / PROJECT_ROOT spool path bug before submission
+  (hardcoded PROJECT_ROOT in config/paths.sh — see CHANGELOG.md v1.3)
+- Output XML files written to: `11b_InterProScan/`
+
+### Parameter changes from last session
+| Parameter | Previous | This session | Reason |
+|-----------|----------|--------------|--------|
+| — | — | — | No parameter changes this session |
+
+### Next step
+- Script / stage: `funannotate annotate` (S4 downstream annotation) for batch_2025-fall
+- Prep needed: Confirm all 10 XML files are non-empty before submitting annotate step
+
+
 ## 2025-02-14 — Pipeline formalized — Both batches context
 
 **Note:** This entry reconstructs work completed prior to formal progress tracking.
