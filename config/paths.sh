@@ -32,7 +32,7 @@ FUN_DB_DIR="${BATCH_DIR}/11_FunAnnotate"                 # DB + augustus etc.
 FUN_PREDICT_DIR="${BATCH_DIR}/11a_FUN_Predict_Result"    # input from predict
 INTERPROSCAN_DIR="${BATCH_DIR}/11b_InterProScan"         # global IP outputs
 ANTISMASH_DIR="${BATCH_DIR}/12a_antiSMASH_gbk"           # antismash gbk output folder
-FUN_ANNOTATE_DIR="${BATCH_DIR}/11c_FUN_Annotate_Result"  # annotate outputs
+# The annotate outputs now live inside FUN_PREDICT_DIR per isolate:
 
 # Funannotate DB + Augustus config
 FUNANNOTATE_DB_PATH="${FUN_DB_DIR}/DB_FunannotateDatabase/funannotate_db"
