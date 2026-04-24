@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
-
 #SBATCH -A silage_microbiome
 #SBATCH -N 1
 #SBATCH -n 32
@@ -11,6 +9,7 @@ set -euo pipefail
 #SBATCH --array=1-10
 #SBATCH --output=/dev/null
 
+set -euo pipefail
 # -------------------------------
 # Setup
 # -------------------------------
