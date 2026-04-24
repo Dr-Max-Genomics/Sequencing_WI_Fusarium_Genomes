@@ -79,3 +79,12 @@ busco \
     --force
 
 echo "[$(date)] Finished ${sample_id}"
+
+
+
+
+
+barcode	sample_id	assembly_file	busco_name	funannotate_name	earlgrey_name
+05	Bar05	polished05_assembly.fasta	Bar05_busco	FusBar05_annotate	Bar05_earlgrey
+08	Bar08	polished08_assembly.fasta	Bar08_busco	FusBar08_annotate	Bar08_earlgrey
+12	Bar12	polished12_assembly.fasta	Bar12_busco	FusBar12_annotate	Bar12_earlgrey
