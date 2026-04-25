@@ -8,20 +8,19 @@
 #SBATCH --job-name=busco_eval
 #SBATCH --array=1-9
 #SBATCH --output=/dev/null
-#SBATCH --error=/dev/null
 
 set -euo pipefail
 
 # -------- resolve paths --------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PROJECT_ROOT="/project/silage_microbiome/max.chi/fusarium_sequencing"
 source "${PROJECT_ROOT}/config/paths.sh"
 
 # -------- pick this task's sample from the manifest --------
 MANIFEST="${BATCH_DIR}/batch1_manifest.tsv"
 LINE_NUM=$((SLURM_ARRAY_TASK_ID + 1))   # +1 skips header
 
-IFS=$'\t' read -r barcode sample_id assembly_file busco_name funannotate_name earlgrey_name \
+IFS=$'\t' read -r barcode sample_id assembly_file busco_name funannotate_name \
     < <(sed -n "${LINE_NUM}p" "${MANIFEST}")
 
 if [[ -z "${sample_id:-}" ]]; then
@@ -32,7 +31,7 @@ fi
 # -------- redirect everything to per-sample log --------
 mkdir -p "${LOG_DIR}/Busco_eval"
 log_file="${LOG_DIR}/Busco_eval/${sample_id}.log"
-exec >>"${log_file}" 2>&1
+exec >"${log_file}" 2>&1
 
 echo "=========================================="
 echo "[$(date)] BUSCO evaluation"
@@ -73,18 +72,8 @@ busco \
     --out_path "${BUSCO_DIR}" \
     --lineage_dataset "${LINEAGE}" \
     --mode genome \
-    --cpus 8 \
+    --cpu 8 \
     --offline \
-    --download_path "${BUSCO_DOWNLOADS}" \
-    --force
+    --download_path "${BUSCO_DOWNLOADS}" 
 
 echo "[$(date)] Finished ${sample_id}"
-
-
-
-
-
-barcode	sample_id	assembly_file	busco_name	funannotate_name	earlgrey_name
-05	Bar05	polished05_assembly.fasta	Bar05_busco	FusBar05_annotate	Bar05_earlgrey
-08	Bar08	polished08_assembly.fasta	Bar08_busco	FusBar08_annotate	Bar08_earlgrey
-12	Bar12	polished12_assembly.fasta	Bar12_busco	FusBar12_annotate	Bar12_earlgrey
