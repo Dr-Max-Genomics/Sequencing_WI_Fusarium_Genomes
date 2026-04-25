@@ -1,11 +1,12 @@
-Barcode	Species	Prefix	R1_pat
-49	
-50
-51
-52
-53
-55
-56
-57
-58
+barcode sample_id   assembly_file   busco_name  funannotate_name
+49  Fus_Bar49   polished49_assembly.fasta   Bar49_Busco FunAnnotate_Bar49
+50  Fus_Bar50   polished50_assembly.fasta   Bar50_Busco FunAnnotate_Bar50
+51  Fus_Bar51   polished51_assembly.fasta   Bar51_Busco FunAnnotate_Bar51
+52  Fus_Bar52   polished52_assembly.fasta   Bar52_Busco FunAnnotate_Bar52
+53  Fus_Bar53   polished53_assembly.fasta   Bar53_Busco FunAnnotate_Bar53
+55  Fus_Bar55   polished55_assembly.fasta   Bar55_Busco FunAnnotate_Bar55
+56  Fus_Bar56   polished56_assembly.fasta   Bar56_Busco FunAnnotate_Bar56
+57  Fus_Bar57   polished57_assembly.fasta   Bar57_Busco FunAnnotate_Bar57
+58  Fus_Bar58   polished58_assembly.fasta   Bar58_Busco FunAnnotate_Bar58
+
 

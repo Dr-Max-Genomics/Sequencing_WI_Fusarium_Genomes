@@ -18,6 +18,8 @@
 # Large directories
 00_Raw_Data/
 results/
+DB_Databases/
+Containers/
 
 # -------------------------
 # Logs and scheduler output
