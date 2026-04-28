@@ -32,18 +32,18 @@ BUSCO_DIR="${BATCH_DIR}/08_Busco_Evaluation"
 EARLGREY_DIR="${BATCH_DIR}/09_EarlGrey"
 MASK_DIR="${BATCH_DIR}/10_Mask"
 
+
 # Funannotate / annotation steps
 DB_ROOT="${PROJECT_ROOT}/DB_Databases"
 BUSCO_DOWNLOADS="${DB_ROOT}/busco_downloads"
-#FUN_DB_DIR=${BATCH_DIR}/11_FunAnnotate"                 # DB + augustus etc.
 FUN_PREDICT_DIR="${BATCH_DIR}/11a_FUN_Predict_Result"    # input from predict
 INTERPROSCAN_DIR="${BATCH_DIR}/11b_InterProScan"         # global IP outputs
-ANTISMASH_DIR="${BATCH_DIR}/12a_antiSMASH_gbk"           # antismash gbk output folder
+ANTISMASH_DIR="${BATCH_DIR}/12a_AntiSMASH_gbk"           # antismash gbk output folder
 # The annotate outputs now live inside FUN_PREDICT_DIR per isolate:
 
 # Funannotate DB + Augustus config
-#FUNANNOTATE_DB_PATH=${FUN_DB_DIR}/DB_FunannotateDatabase/funannotate_db"
 AUGUSTUS_CONFIG_PATH="${DB_ROOT}/augustus_config/config"
+PROTEIN_EVIDENCE_DIR="${DB_ROOT}/protein_evidence"
 
 # Logs
 LOG_DIR="${BATCH_DIR}/logs"
