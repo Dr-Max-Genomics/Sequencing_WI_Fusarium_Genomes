@@ -58,7 +58,7 @@ echo "  Protein evidence:  ${protein_evidence_file}"
 MASKED="${MASK_DIR}/${sample_id}_masked.fa"
 OUTPUT_DIR="${FUN_PREDICT_DIR}/${funannotate_name}"
 PROTEIN_EVIDENCE="${PROTEIN_EVIDENCE_DIR}/${protein_evidence_file}"
-AUGUSTUS_NAME="Fus_${sample_id}"
+AUGUSTUS_NAME="${sample_id}"
 
 # Validate inputs
 [[ -s "${MASKED}" ]]            || { echo "ERROR: masked genome missing: ${MASKED}" >&2; exit 1; }
