@@ -1,44 +1,90 @@
 #!/usr/bin/env bash
+#SBATCH -A silage_microbiome
+#SBATCH -N 1
+#SBATCH -n 40
+#SBATCH --mem=150G
+#SBATCH -p ceres
+#SBATCH -t 2-0
+#SBATCH --job-name=fun_predict
+#SBATCH --array=1-9
+
 set -euo pipefail
 
 # Resolve project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PROJECT_ROOT="/project/silage_microbiome/max.chi/fusarium_sequencing"
 
-# Load paths
+# Load paths and tools
 source "${PROJECT_ROOT}/config/paths.sh"
+module load funannotate
+export AUGUSTUS_CONFIG_PATH="${DB_ROOT}/augustus_config/config"
+export APPTAINERENV_FUNANNOTATE_DB="${DB_ROOT}/funannotate_db"
 
-MANIFEST="${PROJECT_ROOT}/scripts/sample_manifest.tsv"
 
-# Loop through manifest (skip header)
-tail -n +2 "$MANIFEST" | while IFS=$'\t' read -r sample_id timepoint replicate R1_path; do
+# Pick this task's sample from manifest
+MANIFEST="${BATCH_DIR}/batch1_manifest.tsv"
+LINE_NUM=$((SLURM_ARRAY_TASK_ID + 1))
 
-    echo "=== Running Porechop for sample: $sample_id ==="
+IFS=$'\t' read -r \
+    barcode sample_id assembly_file busco_name earlgrey_species \
+    funannotate_name funannotate_species protein_evidence_file antismash_file \
+    < <(sed -n "${LINE_NUM}p" "$MANIFEST")
 
-    # Output directories
-    sample_filtered="${FILTERED_DIR}/${sample_id}"
-    porechop_dir="${sample_filtered}/porechop"
-    mkdir -p "$porechop_dir"
+#Pick busco _seed species based on actual species
+case "$funannotate_species" in
+    "Fusarium graminearum"|"Fusarium cerealis")
+        BUSCO_SEED="fusarium_graminearum"
+        ;;
+    "Fusarium "*)
+        BUSCO_SEED="fusarium"
+        ;;
+    *)
+        BUSCO_SEED="fusarium"  #fallback
+        ;;
+esac
 
-    # Load Porechop environment
-    module purge
-    module load funannotate
 
-    # Run Porechop
+# Per-sample log
+mkdir -p "${LOG_DIR}/fun_predict"
+log_file="${LOG_DIR}/fun_predict/${sample_id}.log"
+exec >"${log_file}" 2>&1
 
-   # Funannotate is a pipeline for annotating eukaryotic genomes. It automates masking, gene prediction, and functional annotation.
-   # **Prerequisites: Environment Setup**
-   # Annotation requires specific environment variables to be set.
+echo "[$(date)] Starting predict: ${sample_id} (task ${SLURM_ARRAY_TASK_ID})"
+echo "  Species:           ${funannotate_species}"
+echo "  Strain:            ${sample_id}"
+echo "  Protein evidence:  ${protein_evidence_file}"
 
-   # Set the path to the Funannotate database.
+# Derive paths
+MASKED="${MASK_DIR}/${sample_id}_masked.fa"
+OUTPUT_DIR="${FUN_PREDICT_DIR}/${funannotate_name}"
+PROTEIN_EVIDENCE="${PROTEIN_EVIDENCE_DIR}/${protein_evidence_file}"
+AUGUSTUS_NAME="Fus_${sample_id}"
 
-   export APPTAINERENV_FUNANNOTATE_DB=/90daydata/silage_microbiome/max_seq/batch1_all_barcodes/11_FunAnnotate/DB_FunannotateDatabase/funannotate_db
+# Validate inputs
+[[ -s "${MASKED}" ]]            || { echo "ERROR: masked genome missing: ${MASKED}" >&2; exit 1; }
+[[ -s "${PROTEIN_EVIDENCE}" ]]  || { echo "ERROR: protein evidence missing: ${PROTEIN_EVIDENCE}" >&2; exit 1; }
 
-# Set the path for AUGUSTUS (a gene predictor) configuration files.
+mkdir -p "${FUN_PREDICT_DIR}"
 
-export AUGUSTUS_CONFIG_PATH=/90daydata/silage_microbiome/max_seq/batch1_all_barcodes/11_FunAnnotate/augustus/config
-    module unload porechop
+##############################
+# funannotate predict
+##############################
+echo "[$(date)] Running funannotate predict"
 
-    echo "=== Finished Porechop: $sample_id ==="
+if [[ ! -s "${OUTPUT_DIR}/predict_results/${funannotate_species// /_}_${sample_id}.gff3" ]]; then
+    funannotate predict \
+        -i "${MASKED}" \
+        -o "${OUTPUT_DIR}" \
+        --species "${funannotate_species}" \
+        --strain "${sample_id}" \
+        --augustus_species "${AUGUSTUS_NAME}" \
+        --busco_seed_species "${BUSCO_SEED}" \
+        --busco_db hypocreales \
+        --protein_evidence "${PROTEIN_EVIDENCE}" \
+        --optimize_augustus \
+        --cpus "${SLURM_NTASKS}"
+else
+    echo "  Skipping — output exists: ${OUTPUT_DIR}/predict_results/"
+fi
 
-done
+echo "[$(date)] Done: ${sample_id} → ${OUTPUT_DIR}/predict_results/"

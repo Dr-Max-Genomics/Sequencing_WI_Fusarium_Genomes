@@ -22,34 +22,22 @@ mkdir -p "${INTERPROSCAN_DIR}" "${LOG_DIR}/interproscan"
 
 SAMPLE_LIST="${BATCH_DIR}/sample_list.txt"
 
-# Generate sample list once if missing
-if [[ ! -f "${SAMPLE_LIST}" ]]; then
-  echo "Generating sample list at ${SAMPLE_LIST}" >&2
-  : > "${SAMPLE_LIST}"
-  for d in "${FUN_PREDICT_DIR}"/FunAnnotate_*; do
-    [[ -d "$d" ]] || continue
-    basename "$d"
-  done | sort > "${SAMPLE_LIST}"
-fi
+# Pick the task's sample from manifest
 
-# Get sample for this array task
-if [[ -z "${SLURM_ARRAY_TASK_ID:-}" ]]; then
-  echo "SLURM_ARRAY_TASK_ID is not set; run as an array job." >&2
-  exit 1
-fi
+MANIFEST="${BATCH_DIR}/batch1_manifest.tsv"
+LINE_NUM=$((SLURM_ARRAY_TASK_ID + 1))
+IFS=$'\t' read -r barcode sample_id assembly_file busco_name earlgrey_species funannotate_name \
+    funannotate_name funannotate_species protein_evidence_file antismash_file \
+    < <(sed -n "${LINE_NUM}p" "$MANIFEST")
 
-sample=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "${SAMPLE_LIST}" || true)
-if [[ -z "${sample}" ]]; then
-  echo "No sample found for SLURM_ARRAY_TASK_ID=${SLURM_ARRAY_TASK_ID}" >&2
-  exit 0
-fi
-
-log_file="${LOG_DIR}/interproscan/${sample}.log"
+#Per-sample log
+log_file="${LOG_DIR}/interproscan/${sample_id}.log"
 exec >"${log_file}" 2>&1
 
-echo "[$(date)] Starting InterProScan for sample: ${sample}"
+echo "[$(date)] Starting InterProScan for sample: ${sample_ID}"
 
-protein_dir="${FUN_PREDICT_DIR}/${sample}/predict_results"
+#Locate input proteins from predict output
+protein_dir="${FUN_PREDICT_DIR}/${funannotate_name}/predict_results"
 protein_fa=( "${protein_dir}"/*.proteins.fa )
 
 if [[ ! -f "${protein_fa[0]}" ]]; then
@@ -76,7 +64,7 @@ interproscan.sh \
   -i "${input_fa}" \
   -f xml \
   -o "${output_xml}" \
-  --cpu 32 \
+  --cpu "${SLURM_NTASKS}" \
   -dp -pa \
   -goterms -iprlookup
 

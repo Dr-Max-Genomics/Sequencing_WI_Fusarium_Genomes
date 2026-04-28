@@ -19,45 +19,37 @@ source "${PROJECT_ROOT}/config/paths.sh"
 
 mkdir -p "${LOG_DIR}/annotate"
 
-SAMPLE_LIST="${BATCH_DIR}/sample_list.txt"
-if [[ ! -f "${SAMPLE_LIST}" ]]; then
-  echo "ERROR: sample_list.txt not found at ${SAMPLE_LIST}. Run InterProScan script first." >&2
-  exit 1
-fi
 
-if [[ -z "${SLURM_ARRAY_TASK_ID:-}" ]]; then
-  echo "SLURM_ARRAY_TASK_ID is not set; run as an array job." >&2
-  exit 1
-fi
+# Pick this task's sample from manifest
+MANIFEST="${BATCH_DIR}/batch1_manifest.tsv"
+LINE_NUM=$((SLURM_ARRAY_TASK_ID + 1))
+IFS=$'\t' read -r \
+    barcode sample_id assembly_file busco_name earlgrey_species \
+    funannotate_name funannotate_species protein_evidence_file antismash_file \
+    < <(sed -n "${LINE_NUM}p" "$MANIFEST")
 
-sample=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "${SAMPLE_LIST}" || true)
-if [[ -z "${sample}" ]]; then
-  echo "No sample found for SLURM_ARRAY_TASK_ID=${SLURM_ARRAY_TASK_ID}" >&2
-  exit 0
-fi
-
-log_file="${LOG_DIR}/annotate/${sample}.log"
+#Per-sample log
+log_file="${LOG_DIR}/annotate/${sample_id}.log"
 exec >"${log_file}" 2>&1
 
-echo "[$(date)] Starting funannotate annotate for sample: ${sample}"
+echo "[$(date)] Starting funannotate annotate for sample: ${sample_id}"
 
 # Check InterProScan XML
-ipr_xml="${INTERPROSCAN_DIR}/${sample}.xml"
+ipr_xml="${INTERPROSCAN_DIR}/${sample_id}.xml"
 if [[ ! -s "${ipr_xml}" ]]; then
   echo "ERROR: InterProScan XML not found or empty: ${ipr_xml}" >&2
   exit 1
 fi
 
 # Check AntiSMASH GBK and derive name from sample (e.g., FunAnnotate_Bar36 -> FusBar36.scaffold.gbk)
-num="${sample##*Bar}"
-anti_gbk="${ANTISMASH_DIR}/FusBar${num}.scaffolds.gbk"
+anti_gbk="${ANTISMASH_DIR}/${antismash_file}"
 if [[ ! -s "${anti_gbk}" ]]; then
   echo "ERROR: AntiSMASH GBK not found or empty: ${anti_gbk}" >&2
   exit 1
 fi
 
 # Output directory for this sample
-outdir="${FUN_ANNOTATE_DIR}/${sample}"
+outdir="${FUN_ANNOTATE_DIR}/${funannotate_name}"
 # Skip if annotate already produced GFF3
 if [[ -d "${outdir}" ]] && compgen -G "${outdir}/annotate_results/*.gff3" > /dev/null; then
   echo "Annotate output appears complete (GFF3 present) in ${outdir} — skipping."
@@ -67,12 +59,12 @@ fi
 mkdir -p "${outdir}"
 
 # Funannotate DB + Augustus env
-export APPTAINERENV_FUNANNOTATE_DB="${FUNANNOTATE_DB_PATH}"
-export AUGUSTUS_CONFIG_PATH="${AUGUSTUS_CONFIG_PATH:-/90daydata/silage_microbiome/max_seq/batch1_all_barcodes/11_FunAnnotate/augustus/config}"
+export APPTAINERENV_FUNANNOTATE_DB="${DB_ROOT}/funannotate_db"
+export AUGUSTUS_CONFIG_PATH="${DB_ROOT}/augustus_config/config"
 
 module load funannotate
 
-predict_dir="${FUN_PREDICT_DIR}/${sample}"
+predict_dir="${FUN_PREDICT_DIR}/${funannotate_name}"
 
 if [[ ! -d "${predict_dir}" ]]; then
   echo "ERROR: Predict directory not found: ${predict_dir}" >&2
