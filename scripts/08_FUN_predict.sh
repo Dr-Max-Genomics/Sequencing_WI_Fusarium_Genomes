@@ -7,6 +7,7 @@
 #SBATCH -t 2-0
 #SBATCH --job-name=fun_predict
 #SBATCH --array=1-9
+#SBATCH --output=/dev/null
 
 set -euo pipefail
 
