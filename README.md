@@ -315,6 +315,28 @@ sbatch --array=1 scripts/07_busco_eval.sh
 # Full array
 sbatch --array=2-9 scripts/07_busco_eval.sh
 ```
+#### Option B: Bash driven
+
+```bash
+# Run BUSCO on the polished assembly.
+bash scripts/07_busco_eval.sh
+# Equivalent sbatch:
+sbatch -A silage_microbiome -N 1 -n 20 --mem=40000 -p ceres -t 1:00:00 \
+  --wrap='busco -i polishedXX_assembly.fasta \
+  -o polishedXX_assembly_output_eval/busco \
+  -l hypocreales \
+  --mode genome -c 20 \
+  --offline'
+
+# -i: Input FASTA file.
+# -o: Output directory name.
+# -l: Lineage dataset to use (e.g., hypocreales for Fusarium).
+# --mode: Type of analysis (genome, transcriptome, proteins).
+# -c: Number of cores/threads.
+# --offline: would make it possible to run busco offline - avoiding redownloads of databases
+```
+
+**Output:** The key output is the `short_summary.*.busco.txt`, which gives percentages for Complete, Fragmented, and Missing BUSCO genes.
 
 ---
 
@@ -329,11 +351,36 @@ Always test task 1 before submitting the full array.
 sbatch --array=1 scripts/08_sort_earlgrey_mask.sh     # test
 sbatch --array=2-9 scripts/08_sort_earlgrey_mask.sh   # full
 ```
-
 Three steps in one job per isolate:
 - `funannotate sort` — filters contigs < 1000 bp, standardizes headers
 - EarlGrey (Apptainer) — repeat element detection
 - `funannotate mask` — soft-masks assembly using EarlGrey repeat library
+- These steps identify transposable elements (TEs) to create a custom repeat library for soft masking; soft masking changes the nucleotides of transposable elements and repeats to lower case so they are skipped by the annotation. Hard masking on the other hand deletes the repeated elements.
+
+#### Option B: Bash driven sorting -> Masking
+```bash
+funannotate sort -i polishedXX_assembly.fasta --minlen 1000 \
+  -o barXX_assem_sort.fa
+```
+```bash
+# Earl Grey is run via an apptainer (formerly singularity) container.
+# Pull the container image first.
+apptainer pull --disable-cache docker://tobybaril/earlgrey_dfam3.7:latest
+# Run Earl Grey
+export EARLGREY_SIF=earlgrey_dfam3.7_latest.sif
+apptainer run $EARLGREY_SIF
+earlGrey -g barXX_assem_sort.fa -s fcXX -t 20 -o TE_EarlGrey/
+
+# -g: Input genome FASTA.
+# -s: Species name.
+# -t: Number of threads.
+# -o: Output directory.
+```
+```bash
+export AUGUSTUS_CONFIG_PATH   # set in config/params.env
+funannotate mask -i barXX_assem_sort.fa -m repeatmodeler \
+  -l fcXX-families.fa -o SM_Mask/assem_XX_masked.fa
+```
 
 #### 4.3 Gene prediction (Funannotate predict)
 
