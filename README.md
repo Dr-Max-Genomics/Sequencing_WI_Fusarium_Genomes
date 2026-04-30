@@ -119,7 +119,13 @@ Sequencing_WI_Fusarium_Genomes/
 │   ├── 05_nanoplot.sh
 │   ├── 06_flye_assemble.sh
 │   ├── 07_busco_eval.sh
-│   └── 08_funannotate.sh
+|   ├── 08_sort_earlgrey_mask.sh
+|   ├── 09_Funannotate
+│   |   ├── 09a_FUN_predict.sh
+|   |   ├── 09b_IPScan.sh
+|   |   └── 09c_FUN_annotate.sh
+|   ├── 10_Telomere_search.sh
+|   └── 11_CAZymes.sh
 │
 ├── batches/
 │   ├── batch_2025-02/
