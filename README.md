@@ -3,9 +3,9 @@
 A bioinformatics pipeline for whole genome sequencing and annotation of *Fusarium* species
 using Oxford Nanopore long-read sequencing data on USDA SCINet's Ceres and Atlas HPC clusters.
 
-**Maintainer:** Maxwell Chibuogwu (Dr. Max), Postdoctoral Fellow — USDA-ARS DFRC, Madison, WI  
-**Project:** Wisconsin *Fusarium* Isolate Genomics  
-**Contact:** [maxwell.chibuogwu@usda.gov]
+**Maintainer:** Maxwell Chibuogwu (Dr. Max), Postdoctoral Fellow — USDA-ARS DFRC, Madison, WI
+**Project:** Wisconsin *Fusarium* Isolate Genomics
+**Contact:** maxwell.chibuogwu@usda.gov
 
 > Isolates are sequenced and processed in batches over time.
 > For the current status of each isolate, see [`BATCHES.md`](BATCHES.md).
@@ -25,33 +25,35 @@ using Oxford Nanopore long-read sequencing data on USDA SCINet's Ceres and Atlas
    - [Stage 2 — Genome assembly](#stage-2--genome-assembly)
    - [Stage 3 — Assembly evaluation](#stage-3--assembly-evaluation)
    - [Stage 4 — Genome annotation](#stage-4--genome-annotation)
+   - [Stage 5 — Genome-wide analyses](#stage-5--genome-wide-analyses)
 6. [Configuration](#6-configuration)
-7. [Running on a new batch](#7-running-on-a-new-batch)
-8. [Testing a single barcode](#8-testing-a-single-barcode)
-9. [Output files](#9-output-files)
-10. [SLURM resource reference](#10-slurm-resource-reference)
-11. [Known issues and workarounds](#11-known-issues-and-workarounds)
-12. [Troubleshooting](#12-troubleshooting)
-13. [Citation](#13-citation)
+7. [The batch manifest](#7-the-batch-manifest)
+8. [Running on a new batch](#8-running-on-a-new-batch)
+9. [Testing a single array task](#9-testing-a-single-array-task)
+10. [Output files](#10-output-files)
+11. [SLURM resource reference](#11-slurm-resource-reference)
+12. [Known issues and workarounds](#12-known-issues-and-workarounds)
+13. [Troubleshooting](#13-troubleshooting)
+14. [Citation](#14-citation)
 
 ---
 
 ## 1. Overview
 
-This pipeline takes raw Oxford Nanopore basecalled reads (or POD5s to be basecalled using Atlas' GPU) from barcoded *Fusarium* isolates
-and produces annotated genome assemblies. Isolates are processed in batches — some batches
-contain 10 isolates, others less — and the pipeline is designed to resume cleanly at any stage
-for any subset of barcodes.
+This pipeline takes raw Oxford Nanopore basecalled reads (or POD5 files basecalled via
+Atlas GPU) from barcoded *Fusarium* isolates and produces annotated genome assemblies.
+Isolates are processed in batches and the pipeline is designed to resume cleanly at any
+stage for any subset of barcodes.
 
-**Genome size:** ~45–55 Mb (typical for *Fusarium* spp.)  
-**Target coverage:** 100×  
-**Minimum read length:** 500 bp  
+**Genome size:** ~45–55 Mb (typical for *Fusarium* spp.)
+**Target coverage:** 100×
+**Minimum read length:** 500 bp
 **Basecalling:** Dorado, SUP model recommended
 
 ### Pipeline at a glance
 
 ```
-POD5 files from Sequencer
+POD5 files from sequencer
         │
         ▼
 Raw basecalled reads (barcoded)
@@ -70,29 +72,27 @@ Stage 2 — Genome assembly
         │
         ▼
 Stage 3 — Assembly evaluation
-        ├── 3.1 BUSCO (hypocreales / sordariomycetes lineages)
-        └── Merqury, CRAQ, and Quast
+        ├── 3.1  BUSCO (hypocreales / sordariomycetes lineages)
+        └── 3.2  Merqury, CRAQ, Quast
         │
         ▼
-Stage 4 — Genome annotation
-        ├── 4.1  Sort and filter assembly (Funannotate sort)
-        ├── 4.2  Repeat element detection (EarlGrey)
-        ├── 4.3  Soft-mask assembly (Funannotate mask)
-        ├── 4.4  BUSCO-based Augustus training
-        ├── 4.5  Gene prediction (Funannotate predict)
-        └── 4.6  Functional annotation (Funannotate annotate): Interproscan, Eggnog Mapper
+Stage 4 — Genome annotation        [scripts/07_ → 09c_]
+        ├── 4.1  BUSCO evaluation on assembly          07_busco_eval.sh
+        ├── 4.2  Sort + EarlGrey + Mask                08_sort_earlgrey_mask.sh
+        ├── 4.3  Gene prediction (Funannotate predict) 09a_FUN_predict.sh
+        ├── 4.4  Protein domain annotation (IPRScan)   09b_IPScan.sh
+        └── 4.5  Functional annotation (Fun. annotate) 09c_FUN_annotate.sh
         │
         ▼
-Stage 5 — Genome-Wide Ananlyses
-        ├── 5.1  TelomereSearch.py 
-        ├── 5.2  AntiSMASH
-        ├── 5.3  CAZymes analysis (Funannotate XXX))
-        ├── 5.4  BigScape
-        ├── 5.5  Proteins
-        ├── 5.6  Effectorome
-            ├── 5.6a  Signal6 (Web or local)
-            └── 5.6b  Effector3.0
-        └── 5.7 C
+Stage 5 — Genome-wide analyses
+        ├── 5.1  Telomere search (TelomereSearch.py)
+        ├── 5.2  Secondary metabolite clusters (antiSMASH)
+        ├── 5.3  CAZyme analysis (Funannotate / dbCAN)
+        ├── 5.4  BGC networking (BiG-SCAPE)
+        ├── 5.5  Secretome / protein analysis
+        └── 5.6  Effectorome
+                 ├── 5.6a  SignalP
+                 └── 5.6b  Effector3.0
 ```
 
 ---
@@ -101,15 +101,13 @@ Stage 5 — Genome-Wide Ananlyses
 
 ```
 Sequencing_WI_Fusarium_Genomes/
-├── README.md               ← This file — how the pipeline works
-├── BATCHES.md              ← Isolate-level status tracker across all batches
-├── PROGRESS.md             ← Session-by-session run log
-├── CHANGELOG.md            ← Pipeline and parameter version history
+├── README.md                    ← This file
+├── BATCHES.md                   ← Isolate-level status tracker
+├── PROGRESS.md                  ← Session-by-session run log
+├── CHANGELOG.md                 ← Pipeline and parameter version history
 │
 ├── config/
-│   ├── params.env          ← Tool parameters (edit per batch as needed)
-│   ├── slurm_profiles.env  ← SLURM resource presets for Ceres/Atlas
-│   └── README_config.md    ← Notes on what each parameter controls
+│   └── paths.sh                 ← All directory and DB path definitions
 │
 ├── scripts/
 │   ├── 01_concat.sh
@@ -119,30 +117,59 @@ Sequencing_WI_Fusarium_Genomes/
 │   ├── 05_nanoplot.sh
 │   ├── 06_flye_assemble.sh
 │   ├── 07_busco_eval.sh
-|   ├── 08_sort_earlgrey_mask.sh
-|   ├── 09_Funannotate
-│   |   ├── 09a_FUN_predict.sh
-|   |   ├── 09b_IPScan.sh
-|   |   └── 09c_FUN_annotate.sh
-|   ├── 10_Telomere_search.sh
-|   └── 11_CAZymes.sh
+│   ├── 08_sort_earlgrey_mask.sh
+│   └── 09_Funannotate/
+│       ├── 09a_FUN_predict.sh
+│       ├── 09b_IPScan.sh
+│       └── 09c_FUN_annotate.sh
 │
 ├── batches/
-│   ├── batch_2025-02/
-│   │   ├── barlist.txt     ← Barcodes in this batch
+│   ├── batch_2025-Feb/
+│   │   ├── barlist.txt
 │   │   └── sample_sheet.csv
-│   ├── batch_2025-06/
+│   ├── batch_2025-Dec/
 │   │   ├── barlist.txt
 │   │   └── sample_sheet.csv
 │   └── [batch_YYYY-MM]/
 │
-├── Atlas Scripts in sequencing pipeline/   ← Legacy — see CHANGELOG.md
+├── Atlas Scripts in sequencing pipeline/   ← Legacy scripts
 │
-└── logs/                   ← Auto-populated by sbatch (gitignored)
+└── logs/                        ← Auto-populated by sbatch (gitignored)
 ```
 
 > **Data never lives in this repo.** All `.fastq`, `.fasta`, and assembly files stay on
-> Ceres/Atlas under `/90daydata/` or `/project/`. Only manifests and scripts are committed.
+> Ceres/Atlas. Only manifests, scripts, and documentation are committed.
+
+### On-disk layout (Ceres scratch — per batch)
+
+```
+/90daydata/silage_microbiome/max_seq/{BATCH_ID}/
+├── 00_Raw_Data/
+├── 01_QC/
+├── 02_Trimming/
+├── 03_Trimmed_Data/
+├── 04_Summary_Plots/
+├── 05_Genome_Assembly/
+├── 06_Alignment_Polishing/
+├── 07_Polished_Genome/
+├── 08_Busco_Evaluation/
+├── 09_EarlGrey/
+├── 10_Mask/
+├── 11a_FUN_Predict_Result/
+│   └── FunAnnotate_{sampleID}/
+│       ├── predict_misc/
+│       ├── predict_results/      ← .proteins.fa input for IPRScan
+│       ├── annotate_misc/        ← funannotate annotate output
+│       └── annotate_results/     ← funannotate annotate output
+├── 11b_InterProScan/             ← per-sample .xml files
+├── 12a_AntiSMASH_gbk/            ← per-sample antiSMASH .gbk files
+├── batch{N}_manifest.tsv         ← sample manifest for stages 07–09c
+└── logs/
+```
+
+> Note: `funannotate annotate` outputs land inside `FunAnnotate_{sampleID}/` alongside
+> the predict outputs — this is funannotate's expected behavior. There is no separate
+> `11c_FUN_Annotate_Result/` directory. See CHANGELOG.md v1.4.
 
 ---
 
@@ -151,7 +178,7 @@ Sequencing_WI_Fusarium_Genomes/
 ### Environment setup (Ceres)
 
 ```bash
-# Create the conda environment (one-time setup)
+# Create conda environment (one-time)
 module load miniconda
 conda create --prefix /project/silage_microbiome/max.chi/seqenv
 conda activate /project/silage_microbiome/max.chi/seqenv
@@ -160,30 +187,29 @@ conda install -c bioconda seqkit NanoFilt NanoPlot
 
 ### Module load reference
 
-Load order matters — see [Known issues](#11-known-issues-and-workarounds) for the
-Porechop/miniconda conflict before loading anything.
-
-| Tool | Load command | Used in stage |
-|------|-------------|---------------|
-| seqkit, NanoFilt, NanoPlot | `module load miniconda` → `source activate seqenv` | 1 |
-| Porechop | `module unload miniconda` → `module load porechop` | 1 |
+| Tool | Load command | Stage |
+|------|-------------|-------|
+| seqkit, NanoFilt, NanoPlot | `module load miniconda && source activate seqenv` | 1 |
+| Porechop | `module unload miniconda && module load porechop` | 1 |
 | Flye | `module load flye` | 2 |
-| minimap2 + samtools | `module load minimap2 samtools` | 2 (wtdbg2 polish) |
-| BUSCO | `module load miniconda` → `source activate seqenv` | 3 |
-| EarlGrey | Apptainer image: `earlgrey_dfam3.7_latest.sif` | 4 |
-| Funannotate | `module load funannotate augustus blast+ hmmer3` | 4 |
+| BUSCO | `module load busco5` | 3, 4.1 |
+| EarlGrey | Apptainer: `${EARLGREY_SIF}` | 4.2 |
+| Funannotate | `module load funannotate` | 4.2–4.5 |
+| InterProScan | `module load interproscan` | 4.4 |
 
-### Required databases and paths
+### Permanent DB and path locations
 
-Set these once in `config/params.env` — do not hardcode them in scripts:
+All paths defined in `config/paths.sh`. The key permanent locations:
 
-| Variable | What it points to |
-|----------|------------------|
-| `FUNANNOTATE_DB` | Path to Funannotate database |
-| `AUGUSTUS_CONFIG_PATH` | Path to writable Augustus config directory |
-| `BUSCO_LINEAGE_HYPOCREALES` | Path to hypocreales BUSCO lineage dataset |
-| `BUSCO_LINEAGE_SORDARIO` | Path to sordariomycetes BUSCO lineage dataset |
-| `EARLGREY_SIF` | Path to EarlGrey Apptainer `.sif` image |
+| Variable | Path |
+|----------|------|
+| `PROJECT_ROOT` | `/project/silage_microbiome/max.chi/fusarium_sequencing` |
+| `DB_ROOT` | `${PROJECT_ROOT}/DB_Databases` |
+| `FUNANNOTATE_DB` | `${DB_ROOT}/funannotate_db` |
+| `AUGUSTUS_CONFIG_PATH` | `${DB_ROOT}/augustus_config/config` |
+| `BUSCO_DOWNLOADS` | `${DB_ROOT}/busco_downloads` |
+| `EARLGREY_SIF` | `${PROJECT_ROOT}/Containers/earlgrey_dfam3.7_latest.sif` |
+| `PROTEIN_EVIDENCE_DIR` | `${DB_ROOT}/protein_evidence` |
 
 ### Clone the repo on Ceres
 
@@ -199,28 +225,23 @@ cd Sequencing_WI_Fusarium_Genomes
 
 ```bash
 # 1. Start an interactive session (never run jobs on the login node)
-srun -A account_name -N 1 -n 40 -p ceres -t 1-0 --pty bash
+srun -A silage_microbiome -N 1 -n 32 -p ceres -t 1-0 --pty bash
 
-# 2. Load environment
-module load miniconda
-source activate seqenv
+# 2. Source paths for your batch
+export PROJECT_ROOT=/project/silage_microbiome/max.chi/fusarium_sequencing
+source ${PROJECT_ROOT}/config/paths.sh
 
-# 3. Set your working data directory
-export WORKDIR=/90daydata/silage_microbiome/[your_batch_path]
-cd $WORKDIR
+# 3. Confirm manifest is present
+cat ${BATCH_DIR}/batch1_manifest.tsv | head -3
 
-# 4. Confirm your barlist.txt is present and clean
-cat batches/batch_YYYY-MM/barlist.txt
-# Expected: one barcode name per line, no extension, no blank lines, Unix line endings
+# 4. Test task 1 before submitting full array
+sbatch --array=1 scripts/08_sort_earlgrey_mask.sh
 
-# 5. Test on a single barcode before submitting the full batch
-TEST=1 bash scripts/04_nanofilt.sh
+# 5. Check output, then submit full array
+sbatch --array=2-9 scripts/08_sort_earlgrey_mask.sh
 
-# 6. Submit full batch
-bash scripts/04_nanofilt.sh
-
-# 7. Monitor jobs
-squeue -all --me
+# 6. Monitor
+squeue --me
 ```
 
 ---
@@ -229,317 +250,241 @@ squeue -all --me
 
 ### Stage 1 — Data preprocessing
 
-#### 1.1 Concatenate barcode files
-
-Merges all `.fastq.gz` files within each barcode directory into one file per barcode.
+#### 1.1 Concatenate
 
 ```bash
-sbatch -N 1 -n 4 --mem=300000 -p short -q msn -t 1-0 \
+sbatch -A silage_microbiome -N 1 -n 4 --mem=300G -p ceres -t 1-0 \
   --wrap='cat *.fastq.gz > barcodeXX.fastq.gz'
 ```
-
-> Repeat per barcode, or use `scripts/01_concat.sh` with a barlist.
 
 #### 1.2 Deduplication
 
 ```bash
-bash scripts/02_seqkit_dedup.sh
-# Equivalent sbatch:
-sbatch -N 1 -n 70 --mem=900000 -p short-mem -q msn-mem \
+sbatch -A silage_microbiome -N 1 -n 70 --mem=900G -p ceres -t 1-0 \
   --wrap='while read in; do seqkit rmdup ${in}.fastq.gz -n \
   -o ${in}_D.fastq -D ${in}_derep_list.txt; done < barlist.txt'
 ```
 
-**Output:** `barcodeXX_D.fastq`, `barcodeXX_derep_list.txt`
-
 #### 1.3 Adapter trimming (Porechop)
 
-> ⚠️ Unload miniconda before loading Porechop. See [Known issues](#11-known-issues-and-workarounds).
+> ⚠️ Unload miniconda before loading Porechop — see [Known issues](#12-known-issues-and-workarounds).
 
 ```bash
-module unload miniconda
-module load porechop
-bash scripts/03_porechop.sh
-# Equivalent sbatch:
-sbatch -N 1 -n 70 --mem=900000 -p short-mem -q msn-mem \
+module unload miniconda && module load porechop
+sbatch -A silage_microbiome -N 1 -n 70 --mem=900G -p ceres -t 1-0 \
   --wrap='while read in; do porechop-runner.py -i ${in}.fastq.gz \
   -o PC_${in}.fastq -t 70; done < barlist.txt'
 ```
 
-**Output:** `PC_barcodeXX.fastq`
-
 #### 1.4 Length filtering (NanoFilt)
 
-Removes reads below `MIN_LEN` (default 500 bp, set in `config/params.env`).
-
 ```bash
-module unload porechop
-module load miniconda && source activate seqenv
-bash scripts/04_nanofilt.sh
+sbatch -A silage_microbiome -N 1 -n 70 --mem=150G -p ceres -t 1-0 \
+  --wrap='while read in; do NanoFilt -l 500 PC_${in}.fastq \
+  > ${in}.fastq; done < barlist.txt'
 ```
 
-**Output:** `barcodeXX.fastq` (filtered)
-
-#### 1.5 Quality assessment (NanoPlot)
+#### 1.5 QC (NanoPlot)
 
 ```bash
-bash scripts/05_nanoplot.sh
-# Equivalent sbatch:
-sbatch -N 1 -n 70 --mem=900000 -p short-mem -q msn-mem \
+sbatch -A silage_microbiome -N 1 -n 70 --mem=150G -p ceres -t 1-0 \
   --wrap='while read in; do NanoPlot --fastq ${in}.fastq \
   --raw --tsv_stats --N50 -o ${in}; done < barlist.txt'
 ```
 
-**Output:** Per-barcode directory containing `NanoPlot-report.html` and TSV stats
-
 ---
 
-### Stage 2 — Genome assembly
-
-#### Option A: Flye (recommended)
-
-Flye is preferred for *Fusarium* ONT data. Runtime ~58 min per isolate at 40 threads.
+### Stage 2 — Genome assembly (Flye)
 
 ```bash
-module load flye
-bash scripts/06_flye_assemble.sh
-# Equivalent sbatch:
-sbatch -N 1 -n 40 --mem=300000 -p short -q msn -t 1-0 \
+sbatch -A silage_microbiome -N 1 -n 40 --mem=50G -p ceres -t 1-0 \
   --wrap='flye --nano-corr barcodeXX.fastq --threads 40 \
   --genome-size 50m --asm-coverage 100 --iterations 1 \
   --out-dir barcodeXX_flye_assembly'
-```
-
-#### Option B: wtdbg2
-
-```bash
-# Step 1 — Assemble
-./wtdbg2 -x ont -g 55m -i barcodeXX.fastq -t 16 -fo prefix
-
-# Step 2 — Consensus
-sbatch -N 1 -n 6 --mem=70000 -p short -q msn -t 30 \
-  --wrap='wtpoa-cns -t 16 -i prefix.ctg.lay.gz -fo prefix.ctg.fa'
-
-# Step 3 — Polish with minimap2 + samtools
-module load minimap2 samtools
-minimap2 -t 16 -x map-pb -a prefix.ctg.fa barcodeXX.fastq | \
-  samtools view -Sb - > prefix.ctg.map.bam
-samtools sort prefix.ctg.map.bam -o prefix.ctg.map.srt.bam
-samtools view prefix.ctg.map.srt.bam | \
-  wtpoa-cns -t 16 -d prefix.ctg.fa -i - -fo prefix.ctg.2nd.fa
-```
-
-**Installation (one-time):**
-
-```bash
-git clone https://github.com/ruanjue/wtdbg2
-cd wtdbg2 && make
-cp wtdbg2 wtpoa-cns /path/to/conda/env/bin/
 ```
 
 ---
 
 ### Stage 3 — Assembly evaluation
 
+#### BUSCO (script — manifest-driven)
+
 ```bash
-# Run BUSCO on the polished assembly.
-bash scripts/07_busco_eval.sh
-# Equivalent sbatch:
-sbatch -A silage_microbiome -N 1 -n 20 --mem=40000 -p ceres -t 1:00:00 \
-  --wrap='busco -i polishedXX_assembly.fasta \
-  -o polishedXX_assembly_output_eval/busco \
-  -l hypocreales \
-  --mode genome -c 20 \
-  --offline'
-
-# -i: Input FASTA file.
-# -o: Output directory name.
-# -l: Lineage dataset to use (e.g., hypocreales for Fusarium).
-# --mode: Type of analysis (genome, transcriptome, proteins).
-# -c: Number of cores/threads.
-# --offline: would make it possible to run busco offline - avoiding redownloads of databases
+# Test task 1
+sbatch --array=1 scripts/07_busco_eval.sh
+# Full array
+sbatch --array=2-9 scripts/07_busco_eval.sh
 ```
-
-**Output:** The key output is the `short_summary.*.busco.txt`, which gives percentages for Complete, Fragmented, and Missing BUSCO genes.
 
 ---
 
 ### Stage 4 — Genome annotation
 
-#### 4.1 Sort and filter assembly
+All annotation stages (4.2–4.5) are manifest-driven array jobs.
+Always test task 1 before submitting the full array.
+
+#### 4.2 Sort + EarlGrey + Mask
 
 ```bash
-funannotate sort -i polishedXX_assembly.fasta --minlen 1000 \
-  -o barXX_assem_sort.fa
+sbatch --array=1 scripts/08_sort_earlgrey_mask.sh     # test
+sbatch --array=2-9 scripts/08_sort_earlgrey_mask.sh   # full
 ```
 
-#### 4.2 Repeat element detection (EarlGrey)
-This step identifies transposable elements (TEs) to create a custom repeat library for soft masking. Soft masking changes the nucleotides of transposable elements and repeats to lower case so they are skipped by the annotation. Hard masking on the other hand deletes the repeated elements.
+Three steps in one job per isolate:
+- `funannotate sort` — filters contigs < 1000 bp, standardizes headers
+- EarlGrey (Apptainer) — repeat element detection
+- `funannotate mask` — soft-masks assembly using EarlGrey repeat library
+
+#### 4.3 Gene prediction (Funannotate predict)
 
 ```bash
-# Earl Grey is run via an apptainer (formerly singularity) container.
-# Pull the container image first.
-apptainer pull --disable-cache docker://tobybaril/earlgrey_dfam3.7:latest
-# Run Earl Grey
-export EARLGREY_SIF=earlgrey_dfam3.7_latest.sif
-apptainer run $EARLGREY_SIF
-earlGrey -g barXX_assem_sort.fa -s fcXX -t 20 -o TE_EarlGrey/
-
-# -g: Input genome FASTA.
-# -s: Species name.
-# -t: Number of threads.
-# -o: Output directory.
+sbatch --array=1 scripts/09_Funannotate/09a_FUN_predict.sh
+sbatch --array=2-9 scripts/09_Funannotate/09a_FUN_predict.sh
 ```
 
-#### 4.3 Soft-mask assembly
+Species-aware: `fusarium_graminearum` seed used for *F. graminearum* and
+*F. cerealis*; `fusarium` seed used for all others. Controlled via `case`
+statement on `funannotate_species` field in manifest.
+
+#### 4.4 InterProScan
 
 ```bash
-export AUGUSTUS_CONFIG_PATH   # set in config/params.env
-funannotate mask -i barXX_assem_sort.fa -m repeatmodeler \
-  -l fcXX-families.fa -o SM_Mask/assem_XX_masked.fa
+sbatch --array=1 scripts/09_Funannotate/09b_IPScan.sh
+sbatch --array=2-9 scripts/09_Funannotate/09b_IPScan.sh
 ```
 
-#### 4.4 BUSCO-based Augustus training
+Input: `predict_results/*.proteins.fa` per isolate
+Output: `11b_InterProScan/{sample_id}.xml`
 
-Runtime ~varies. Uses sordariomycetes lineage.
+#### 4.5 Funannotate annotate
 
 ```bash
-sbatch -N 1 -n 40 --mem=50000 -p short-mem -q msn-mem -t 2-0 \
-  --wrap='./funannotate-BUSCO2.py \
-  --local_augustus $AUGUSTUS_CONFIG_PATH \
-  --long --tarzip \
-  -i SM_Mask/assem_XX_masked.fa \
-  -o barXXFus_prelim \
-  -sp fusarium --tmp scratch \
-  -l sordariomycetes_odb10 -m genome -c 40'
+sbatch --array=1 scripts/09_Funannotate/09c_FUN_annotate.sh
+sbatch --array=2-9 scripts/09_Funannotate/09c_FUN_annotate.sh
 ```
 
-#### 4.5 Gene prediction (Funannotate predict)
+Input: predict directory + IPRScan XML + antiSMASH GBK
+Output: `annotate_misc/` and `annotate_results/` inside the predict directory
+(co-located by funannotate design — see CHANGELOG.md v1.4)
 
-Runtime ~7 hours per isolate.
+---
 
-```bash
-sbatch -N 1 -n 20 --mem=50000 -p short -q msn -t 2-0 \
-  --wrap="funannotate predict \
-  -i SM_Mask/assem_XX_masked.fa \
-  -s BarXXFusCer \
-  --protein_evidence sordariomycetes_odb10/refseq_db.faa \
-  -o FunAnotXXSor --cpu 20 \
-  --busco_seed_species BUSCO_barXXFcer_prelim_XXXXXXXXX \
-  --busco_db sordariomycetes \
-  --optimize_augustus"
-```
-#### 4.6 Functional Annotation (InterPro Scan and Funannotate annotate)
+### Stage 5 — Genome-wide analyses
 
-a. Runtime 2 hours per isolate.
-```bash
-sbatch -A silage_microbiome -N 1 -n 32 --mem=50GB -p ceres -t 1-00 \
-  --wrap="interproscan.sh \
-  -i barXX_predict_results/FusBarXX_new.proteins.fa \
-  -f xml \
-  -dp -goterms -iprlookup -pa \
-  --cpu 32"
-```
+*(In development — update when scripts are finalized)*
 
-b. Runtime 1 hour per isolate (input is directory from funannotate predict)
-```bash
-sbatch -A silage_microbiome -N 1 -n 32 --mem=150GB -p ceres -t 5:00:00 \
-  --wrap="funannotate annotate \
-  -i BarXX_Predict_Results/ \
-  --iprscan FusBarXX_IP.proteins.fa.xml \
-  --antismash FusBarXX.scaffolds_antiSMASH.gbk \
-  --cpus 32"
-```
+| Sub-stage | Tool | Script |
+|-----------|------|--------|
+| 5.1 Telomere search | TelomereSearch.py | `10_Telomere_search.sh` |
+| 5.2 Secondary metabolites | antiSMASH | TBD |
+| 5.3 CAZymes | Funannotate / dbCAN | `11_CAZymes.sh` |
+| 5.4 BGC networking | BiG-SCAPE | TBD |
+| 5.5 Secretome | TBD | TBD |
+| 5.6 Effectorome | SignalP + Effector3.0 | TBD |
 
 ---
 
 ## 6. Configuration
 
-All tunable values live in `config/params.env`. Edit this file — not the scripts —
-when adjusting parameters between batches.
+All paths and database locations are defined in `config/paths.sh`.
+Set `PROJECT_ROOT` before sourcing:
 
 ```bash
-# config/params.env (key variables)
-
-# ── Read filtering ───────────────────────────────────────
-export MIN_LEN=500              # Minimum read length bp (NanoFilt -l)
-
-# ── Assembly ─────────────────────────────────────────────
-export GENOME_SIZE="50m"        # Expected genome size for Flye
-export COVERAGE=100             # Target assembly coverage
-
-# ── SLURM resources ──────────────────────────────────────
-export THREADS=70
-export MEM_HIGH=900000          # MB — dedup, porechop, BUSCO
-export MEM_MED=300000           # MB — concat, Flye
-export MEM_LOW=50000            # MB — annotation steps
-
-# ── Paths (set once per system) ──────────────────────────
-export FUNANNOTATE_DB=/project/silage_microbiome/max.chi/funannotate_db
-export AUGUSTUS_CONFIG_PATH=/project/silage_microbiome/max.chi/augustus_config
-export EARLGREY_SIF=/project/silage_microbiome/max.chi/earlgrey_dfam3.7_latest.sif
-export GENEMARK_PATH=XX../gmes_linux_64_4/
+export PROJECT_ROOT=/project/silage_microbiome/max.chi/fusarium_sequencing
+source ${PROJECT_ROOT}/config/paths.sh
 ```
 
-After editing, reload in your current session:
+To switch batches, change `BATCH_ID` in `paths.sh`:
 
 ```bash
-source config/params.env
+BATCH_ID="batch1_all_barcodes"    # batch_2025-Feb
+BATCH_ID="jan_batch2_all_barcodes" # batch_2025-Dec
 ```
 
 ---
 
-## 7. Running on a new batch
+## 7. The batch manifest
+
+Stages 07–09c are driven by a tab-separated manifest file
+(`batch{N}_manifest.tsv`) located in `${BATCH_DIR}/`.
+Each row is one isolate; the header row is skipped by the scripts.
+
+### Column order
+
+```
+barcode  sample_id  assembly_file  busco_name  earlgrey_species  funannotate_name  funannotate_species  protein_evidence_file  antismash_file
+```
+
+### Example row
+
+```
+barcode49  Bar49FusArl  Bar49_polished.fasta  Bar49_busco  FusBar49  FunAnnotate_Bar49  Fusarium proliferatum  Fproliferatum_refseq.faa  FusBar49.scaffolds_antiSMASH.gbk
+```
+
+### Notes
+- `earlgrey_species` is the species prefix used for EarlGrey output paths
+- `funannotate_name` is the output directory name under `11a_FUN_Predict_Result/`
+- `protein_evidence_file` must exist in `${PROTEIN_EVIDENCE_DIR}`
+- `antismash_file` must exist in `${ANTISMASH_DIR}`
+- Array task ID maps to manifest line: `LINE_NUM = SLURM_ARRAY_TASK_ID + 1` (skips header)
+
+---
+
+## 8. Running on a new batch
 
 ```bash
-# 1. Create a batch folder named by year-month
+# 1. Create batch folder in repo
 mkdir -p batches/batch_YYYY-MM
 
-# 2. Add barlist.txt (one barcode name per line, no extension)
+# 2. Add barlist.txt and sample_sheet.csv
 nano batches/batch_YYYY-MM/barlist.txt
-
-# 3. Add sample_sheet.csv (barcode, isolate ID, collection info)
 nano batches/batch_YYYY-MM/sample_sheet.csv
 
-# 4. Copy barlist to your Ceres working directory
-cp batches/batch_YYYY-MM/barlist.txt /90daydata/[path]/sequence_cleanup/
+# 3. Update BATCH_ID in config/paths.sh
 
-# 5. Update BATCHES.md — add new isolates with status "not started"
+# 4. Create batch manifest on Ceres
+nano ${BATCH_DIR}/batch{N}_manifest.tsv
+
+# 5. Add new isolates to BATCHES.md with status ⚪
 
 # 6. Commit
-git add batches/batch_YYYY-MM/ BATCHES.md
+git add batches/batch_YYYY-MM/ BATCHES.md CHANGELOG.md
 git commit -m "batch: add YYYY-MM — N isolates (barcodeXX–YY)"
 
-# 7. Run pipeline stages in order, updating PROGRESS.md each session
+# 7. Run stages in order, updating PROGRESS.md each session
 ```
 
 ---
 
-## 8. Testing a single barcode
+## 9. Testing a single array task
 
-All scripts support `TEST=1` mode, which processes only the first barcode in `barlist.txt`.
-Always test before submitting a full batch.
+Always test task 1 before submitting the full array:
 
 ```bash
-TEST=1 bash scripts/04_nanofilt.sh
-# Inspect output, then:
-bash scripts/04_nanofilt.sh
+# Submit task 1 only
+sbatch --array=1 scripts/08_sort_earlgrey_mask.sh
+
+# Check log
+cat ${BATCH_DIR}/logs/sort_earlgrey_mask/[sample_id].log
+
+# If successful, submit the rest
+sbatch --array=2-9 scripts/08_sort_earlgrey_mask.sh
 ```
 
 ---
 
-## 9. Output files
+## 10. Output files
 
 ### Stage 1 — Preprocessing
 
 | File | Description |
 |------|-------------|
 | `*_D.fastq` | Deduplicated reads |
-| `*_derep_list.txt` | Log of removed duplicates |
+| `*_derep_list.txt` | Removed duplicates log |
 | `PC_*.fastq` | Adapter-trimmed reads |
 | `*.fastq` | Length-filtered reads |
 | `*/NanoPlot-report.html` | Per-barcode QC report |
-| `*/NanoStats.tsv` | Per-barcode QC stats (TSV) |
+| `*/NanoStats.tsv` | Per-barcode QC stats |
 
 ### Stage 2 — Assembly
 
@@ -557,29 +502,35 @@ bash scripts/04_nanofilt.sh
 
 ### Stage 4 — Annotation
 
-| File | Description |
-|------|-------------|
-| `*_assem_sort.fa` | Sorted, minimum-length-filtered assembly |
-| `*-families.fa` | Repeat library (EarlGrey) |
-| `*_masked.fa` | Soft-masked assembly |
-| `*.gff3` | Gene predictions |
-| `*.gbk` | GenBank format annotations |
-| `*.tbl` | NCBI-format annotation table |
+| File | Location | Description |
+|------|----------|-------------|
+| `{sample_id}_sort.fa` | `07_Polished_Genome/` | Sorted, filtered assembly |
+| `*-families.fa` | `09_EarlGrey/` | EarlGrey repeat library |
+| `{sample_id}_masked.fa` | `10_Mask/` | Soft-masked assembly |
+| `*.proteins.fa` | `11a_.../predict_results/` | Predicted proteins (IPRScan input) |
+| `*.gff3` | `11a_.../predict_results/` | Gene predictions |
+| `{sample_id}.xml` | `11b_InterProScan/` | IPRScan output |
+| `*.gff3` | `11a_.../annotate_results/` | Functionally annotated predictions |
+| `*.gbk` | `11a_.../annotate_results/` | GenBank format |
+| `*.tbl` | `11a_.../annotate_results/` | NCBI annotation table |
 
 ---
 
-## 10. SLURM resource reference
+## 11. SLURM resource reference
 
-| Stage | Script | Nodes | CPUs | Memory | Time | Partition |
-|-------|--------|-------|------|--------|------|-----------|
-| Deduplication | 02 | 1 | 70 | 300 GB | 1 day | ceres |
-| Porechop | 03 | 1 | 70 | 150 GB | 1 day | ceres |
-| NanoFilt/NanoPlot | 04–05 | 1 | 70 | 150 GB | 1 day | ceres |
-| Flye assembly | 06 | 1 | 40 | 50 GB | 1 day | ceres |
-| BUSCO evaluation | 07 | 1 | 70 | 50 GB | 1 day | ceres |
-| Gene prediction | 08 | 1 | 20 | 50 GB | 2 days | ceres |
+| Stage | Script | CPUs | Memory | Time | Partition |
+|-------|--------|------|--------|------|-----------|
+| Deduplication | 02 | 70 | 300 GB | 1 day | ceres |
+| Porechop | 03 | 70 | 150 GB | 1 day | ceres |
+| NanoFilt/NanoPlot | 04–05 | 70 | 150 GB | 1 day | ceres |
+| Flye assembly | 06 | 40 | 50 GB | 1 day | ceres |
+| BUSCO evaluation | 07 | 8 | 40 GB | 1 hr | ceres |
+| Sort+EarlGrey+Mask | 08 | 20 | 40 GB | 6 hrs | ceres |
+| Funannotate predict | 09a | 20 | 80 GB | 1 day | ceres |
+| InterProScan | 09b | 32 | 64 GB | 6 hrs | ceres |
+| Funannotate annotate | 09c | 32 | 150 GB | 6 hrs | ceres |
 
-**Interactive session (always start here):**
+**Interactive session:**
 
 ```bash
 srun -A silage_microbiome -N 1 -n 32 -p ceres -t 1-0 --pty bash
@@ -588,49 +539,36 @@ srun -A silage_microbiome -N 1 -n 32 -p ceres -t 1-0 --pty bash
 **Job monitoring:**
 
 ```bash
-squeue -all --me         # your running/queued jobs
-scancel JOBID            # cancel a job
-cat slurm-JOBID.out      # view stdout
-cat logs/step-JOBID.out  # view stdout
-cat logs/step-JOBID.err  # view stderr
+squeue --me                       # running/queued jobs
+scancel JOBID                     # cancel a job
+cat ${BATCH_DIR}/logs/[step]/[sample].log  # per-sample log
 ```
 
 ---
 
-## 11. Known issues and workarounds
+## 12. Known issues and workarounds
 
 ### Porechop vs. miniconda module conflict
-
-Porechop uses a system Python that conflicts with the miniconda-managed environment.
-Always follow this exact load order:
 
 ```bash
 # Before Porechop:
 module unload miniconda
 module load porechop
 
-# After Porechop, to return to conda tools:
+# After Porechop:
 module unload porechop
 module load miniconda
 source activate seqenv
 ```
 
-Skipping this causes cryptic Python import errors.
-
 ### Augustus write permissions
 
-Augustus requires a writable config directory. Set this up once:
-
 ```bash
-mkdir -p /project/silage_microbiome/max.chi/augustus_config
-export AUGUSTUS_CONFIG_PATH=/project/silage_microbiome/max.chi/augustus_config
-chmod -R 770 $AUGUSTUS_CONFIG_PATH
+mkdir -p ${DB_ROOT}/augustus_config/config
+chmod -R 770 ${DB_ROOT}/augustus_config/config
 ```
 
 ### barlist.txt format
-
-The barlist must contain bare barcode names — no file extensions, no trailing whitespace,
-Unix line endings. Validate with:
 
 ```bash
 cat -A barlist.txt       # each line should end with $ not ^M$
@@ -640,27 +578,45 @@ wc -l barlist.txt        # confirm expected number of barcodes
 
 ### /90daydata purge policy
 
-Files on `/90daydata/` are auto-deleted after 90 days of no access. Before a batch goes
-idle, copy final outputs to `/project/` and log the destination in `BATCHES.md`.
+Files on `/90daydata/` are purged after 90 days of no access. Before a batch
+goes idle, copy final outputs to `/project/` and log the path in `BATCHES.md`.
+
+### Funannotate annotate output location
+
+`funannotate annotate` writes `annotate_misc/` and `annotate_results/` inside
+the same directory as `predict_misc/` and `predict_results/`, regardless of
+any `-o` flag. This is expected behavior. All annotate outputs are in
+`11a_FUN_Predict_Result/FunAnnotate_{sampleID}/`. See CHANGELOG.md v1.4.
+
+### SLURM #SBATCH header flags ignored
+
+If `sbatch` ignores `#SBATCH` directives in a script, pass flags directly
+on the command line:
+
+```bash
+sbatch -N 1 -n 32 --mem=64G -p ceres -t 6:00:00 --array=1-9 scripts/09b_IPScan.sh
+```
 
 ---
 
-## 12. Troubleshooting
+## 13. Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|-------------|-----|
 | `conda: command not found` | miniconda not loaded | `module load miniconda` |
 | `porechop: ImportError` | miniconda still loaded | `module unload miniconda` first |
-| Job disappears from queue immediately | Script syntax error | Check `logs/[step]-JOBID.err` |
-| Empty output `.fastq` | Wrong barlist path or CWD | Check `BARLIST` in `params.env` |
-| `srun` hangs at prompt | Cluster at capacity | Add `-t 4:00:00` or try `short` partition |
+| Job disappears from queue immediately | Script syntax error | Check `logs/[step]/[sample].log` |
+| Empty output `.fastq` | Wrong barlist path | Check `BARLIST` in `paths.sh` |
+| `srun` hangs at prompt | Cluster at capacity | Reduce time or try off-peak |
 | Augustus permission denied | Config dir not writable | `chmod -R 770 $AUGUSTUS_CONFIG_PATH` |
-| Funannotate predict fails | `FUNANNOTATE_DB` not set | `source config/params.env` first |
-| Batch processing fails mid-loop | Memory or time limit hit | Check `.err` log; rerun failed barcodes individually |
+| Funannotate predict fails | `FUNANNOTATE_DB` not set | `source config/paths.sh` first |
+| EarlGrey families.fa missing | Wrong `earlgrey_species` in manifest | Check manifest column 5 matches EarlGrey output naming |
+| Manifest row read incorrectly | Tab vs space delimiter | Confirm TSV with `cat -A batch1_manifest.tsv` |
+| Array task fails, others succeed | Per-sample input missing | Check per-sample log in `logs/[step]/[sample_id].log` |
 
 ---
 
-## 13. Citation
+## 14. Citation
 
 If you use this pipeline, please cite the relevant tools:
 
@@ -671,6 +627,8 @@ If you use this pipeline, please cite the relevant tools:
 - **NanoPlot / NanoFilt:** De Coster et al. (2018) *Bioinformatics*
 - **Porechop:** Wick et al. — https://github.com/rrwick/Porechop
 - **seqkit:** Shen et al. (2016) *PLOS ONE*
+- **InterProScan:** Jones et al. (2014) *Bioinformatics*
+- **antiSMASH:** Blin et al. (2023) *Nucleic Acids Research*
 - **wtdbg2:** Ruan & Li (2020) *Nature Methods*
 
 ---
