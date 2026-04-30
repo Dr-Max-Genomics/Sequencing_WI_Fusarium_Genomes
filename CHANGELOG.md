@@ -22,10 +22,6 @@
 ### Pending decisions
 - [ ] S5 analyses (telomere search, CAZymes, BigScape) not yet run — document
       parameters and scripts when initiated
-- [ ] antiSMASH version and exact flags not yet documented — fill in when confirmed
-- [ ] wtdbg2 trial barcode and BUSCO score still unrecovered (see v1.1)
-- [ ] Confirm whether `funannotate setup -u -w -d $DB` is required before annotate
-
 ---
 
 ## v1.4 — 2026-04-29 — Pipeline refactor: manifest-driven arrays, script rename, DB migration, paths.sh restructure
