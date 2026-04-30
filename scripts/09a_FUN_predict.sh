@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #SBATCH -A silage_microbiome
 #SBATCH -N 1
-#SBATCH -n 40
-#SBATCH --mem=150G
+#SBATCH -n 20
+#SBATCH --mem=80G
 #SBATCH -p ceres
-#SBATCH -t 2-0
+#SBATCH -t 1-0
 #SBATCH --job-name=fun_predict
 #SBATCH --array=1-9
 #SBATCH --output=/dev/null
@@ -83,6 +83,7 @@ if [[ ! -s "${OUTPUT_DIR}/predict_results/${funannotate_species// /_}_${sample_i
         --busco_db hypocreales \
         --protein_evidence "${PROTEIN_EVIDENCE}" \
         --optimize_augustus \
+        --tbl2asn "-l paired-ends" \
         --cpus "${SLURM_NTASKS}"
 else
     echo "  Skipping — output exists: ${OUTPUT_DIR}/predict_results/"

@@ -6,8 +6,7 @@
 #SBATCH -p ceres
 #SBATCH -t 6:00:00
 #SBATCH --job-name=iprscan
-#SBATCH --array=1-10
-#SBATCH --output=/dev/null
+#SBATCH --array=1-9
 
 set -euo pipefail
 
@@ -20,13 +19,11 @@ source "${PROJECT_ROOT}/config/paths.sh"
 
 mkdir -p "${INTERPROSCAN_DIR}" "${LOG_DIR}/interproscan"
 
-SAMPLE_LIST="${BATCH_DIR}/sample_list.txt"
-
 # Pick the task's sample from manifest
 
 MANIFEST="${BATCH_DIR}/batch1_manifest.tsv"
 LINE_NUM=$((SLURM_ARRAY_TASK_ID + 1))
-IFS=$'\t' read -r barcode sample_id assembly_file busco_name earlgrey_species funannotate_name \
+IFS=$'\t' read -r barcode sample_id assembly_file busco_name earlgrey_species \
     funannotate_name funannotate_species protein_evidence_file antismash_file \
     < <(sed -n "${LINE_NUM}p" "$MANIFEST")
 
@@ -34,7 +31,7 @@ IFS=$'\t' read -r barcode sample_id assembly_file busco_name earlgrey_species fu
 log_file="${LOG_DIR}/interproscan/${sample_id}.log"
 exec >"${log_file}" 2>&1
 
-echo "[$(date)] Starting InterProScan for sample: ${sample_ID}"
+echo "[$(date)] Starting InterProScan for sample: ${sample_id}"
 
 #Locate input proteins from predict output
 protein_dir="${FUN_PREDICT_DIR}/${funannotate_name}/predict_results"
@@ -46,7 +43,7 @@ if [[ ! -f "${protein_fa[0]}" ]]; then
 fi
 
 input_fa="${protein_fa[0]}"
-output_xml="${INTERPROSCAN_DIR}/${sample}.xml"
+output_xml="${INTERPROSCAN_DIR}/${sample_id}.xml"
 
 # Skip if already done
 if [[ -s "${output_xml}" ]]; then
@@ -68,4 +65,4 @@ interproscan.sh \
   -dp -pa \
   -goterms -iprlookup
 
-echo "[$(date)] Finished InterProScan for sample: ${sample}"
+echo "[$(date)] Finished InterProScan for sample: ${sample_id}"

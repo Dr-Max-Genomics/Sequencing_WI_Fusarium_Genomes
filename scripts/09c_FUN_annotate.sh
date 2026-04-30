@@ -6,7 +6,7 @@
 #SBATCH -p ceres
 #SBATCH -t 6:00:00
 #SBATCH --job-name=FUN_annotate
-#SBATCH --array=1-10
+#SBATCH --array=1-9
 #SBATCH --output=/dev/null
 
 set -euo pipefail
@@ -49,7 +49,7 @@ if [[ ! -s "${anti_gbk}" ]]; then
 fi
 
 # Output directory for this sample
-outdir="${FUN_ANNOTATE_DIR}/${funannotate_name}"
+outdir="${FUN_PREDICT_DIR}/${funannotate_name}"
 # Skip if annotate already produced GFF3
 if [[ -d "${outdir}" ]] && compgen -G "${outdir}/annotate_results/*.gff3" > /dev/null; then
   echo "Annotate output appears complete (GFF3 present) in ${outdir} — skipping."
@@ -61,6 +61,7 @@ mkdir -p "${outdir}"
 # Funannotate DB + Augustus env
 export APPTAINERENV_FUNANNOTATE_DB="${DB_ROOT}/funannotate_db"
 export AUGUSTUS_CONFIG_PATH="${DB_ROOT}/augustus_config/config"
+export APPTAINER_TMPDIR="$TMPDIR"
 
 module load funannotate
 
@@ -82,4 +83,4 @@ funannotate annotate \
   --antismash "${anti_gbk}" \
   --cpus 32
 
-echo "[$(date)] Finished funannotate annotate for sample: ${sample}"
+echo "[$(date)] Finished funannotate annotate for sample: ${sample_id}"
