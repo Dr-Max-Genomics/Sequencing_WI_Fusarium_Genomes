@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+#SBATCH -A silage_microbiome
+#SBATCH -N 1
+#SBATCH -n 8
+#SBATCH --mem=40G
+#SBATCH -p ceres
+#SBATCH -t 1:00:00
+#SBATCH --job-name=comp_gff
+
 # compare_runs.sh
 # Compares old vs new funannotate annotation outputs for one sample.
 # Requires only: *.gbk, *.gff3, *.proteins.fa
@@ -14,9 +22,9 @@ set -euo pipefail
 SAMPLE="${1:-Bar49}"
 
 # ── Edit these paths ──────────────────────────────────────────────────
-OLD_DIR="/path/to/comparison/old_run/${SAMPLE}"
-NEW_DIR="/path/to/comparison/new_run/${SAMPLE}"
-COMPARE_OUT="/project/silage_microbiome/max.chi/fusarium_sequencing/comparison/results"
+OLD_DIR="/project/silage_microbiome/max.chi/test_gff_diffs/new_dir/${SAMPLE}"
+NEW_DIR="/project/silage_microbiome/max.chi/test_gff_diffs/old_dir${SAMPLE}"
+COMPARE_OUT="/project/silage_microbiome/max.chi/test_gff_diffs/results"
 BUSCO_DOWNLOADS="/project/silage_microbiome/max.chi/fusarium_sequencing/DB_Databases/busco_downloads"
 # ──────────────────────────────────────────────────────────────────────
 
