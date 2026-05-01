@@ -252,6 +252,63 @@ else
     log "    busco --in <proteins.fa> --lineage_dataset hypocreales_odb10 --mode proteins --offline --download_path ${BUSCO_DOWNLOADS} --cpus 8"
 fi
 
+# ══════════════════════════════════════════════════════════════════════
+# SECTION 5: funannotate compare
+# ══════════════════════════════════════════════════════════════════════
+log "══════════════════════════════════════════════════════════"
+log "  5. FUNANNOTATE COMPARE (ortholog clustering + HTML report)"
+log "══════════════════════════════════════════════════════════"
+
+module load funannotate
+export FUNANNOTATE_DB="/project/silage_microbiome/max.chi/fusarium_sequencing/DB_Databases/funannotate_db"
+
+FUN_COMPARE_OUT="${COMPARE_OUT}/funannotate_compare_${SAMPLE}"
+mkdir -p "${FUN_COMPARE_OUT}"
+
+log ""
+log "  Input GBKs:"
+log "    Old: $(basename $OLD_GBK)"
+log "    New: $(basename $NEW_GBK)"
+log ""
+log "  Running funannotate compare..."
+
+funannotate compare \
+    --input "${OLD_GBK}" "${NEW_GBK}" \
+    --out "${FUN_COMPARE_OUT}" \
+    --cpus 8
+
+log "  funannotate compare complete"
+log "  Open in browser: ${FUN_COMPARE_OUT}/index.html"
+log ""
+
+# Pull key stats from the compare output CSVs
+if [[ -f "${FUN_COMPARE_OUT}/stats/genome_stats.csv" ]]; then
+    log "  Genome stats table:"
+    column -t -s',' "${FUN_COMPARE_OUT}/stats/genome_stats.csv" | \
+        sed 's/^/    /' | tee -a "${REPORT}"
+fi
+
+if [[ -f "${FUN_COMPARE_OUT}/stats/busco_summary.csv" ]]; then
+    log ""
+    log "  BUSCO summary table:"
+    column -t -s',' "${FUN_COMPARE_OUT}/stats/busco_summary.csv" | \
+        sed 's/^/    /' | tee -a "${REPORT}"
+fi
+
+if [[ -f "${FUN_COMPARE_OUT}/orthology/ortholog_groups.txt" ]]; then
+    log ""
+    log "  Ortholog summary:"
+    # Genes shared between runs
+    shared=$(awk 'NF==2' "${FUN_COMPARE_OUT}/orthology/ortholog_groups.txt" | wc -l)
+    # Unique to old run
+    old_only=$(awk 'NF==1 && NR>1' "${FUN_COMPARE_OUT}/orthology/ortholog_groups.txt" | wc -l)
+    # Unique to new run  
+    new_only=$(awk 'NF==1 && NR>1' "${FUN_COMPARE_OUT}/orthology/ortholog_groups.txt" | wc -l)
+    log "    Shared orthologs:     ${shared}"
+    log "    Unique to old run:    ${old_only}"
+    log "    Unique to new run:    ${new_only}"
+fi
+
 log ""
 log "=========================================================="
 log "  Report written to: ${REPORT}"
