@@ -259,8 +259,8 @@ log "═════════════════════════
 log "  5. FUNANNOTATE COMPARE (ortholog clustering + HTML report)"
 log "══════════════════════════════════════════════════════════"
 
-export APPTAINERENV_FUNANNOTATE_DB="${DB_ROOT}/funannotate_db"
-export AUGUSTUS_CONFIG_PATH="${DB_ROOT}/augustus_config/config"
+export APPTAINERENV_FUNANNOTATE_DB="/project/silage_microbiome/max.chi/fusarium_sequencing/DB_Databases/funannotate_db"
+export AUGUSTUS_CONFIG_PATH="/project/silage_microbiome/max.chi/fusarium_sequencing/DB_Databases/augustus_config/config"
 export APPTAINER_TMPDIR="$TMPDIR"
 module load funannotate
 
