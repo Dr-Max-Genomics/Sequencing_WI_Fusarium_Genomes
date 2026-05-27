@@ -1,0 +1,5 @@
+#in orthofinder env
+
+grep '^>' polished52_assembly.fasta | sed 's/^>//' > contig_list.txt
+
+while read c; do ./telomere_density.py -i polished52_assembly.fasta -w 10000 -s 1000 -o telomere_density.tsv --plot-contig "$c" --plot-png "bar52_${c}.png"; done < contig_list.txt

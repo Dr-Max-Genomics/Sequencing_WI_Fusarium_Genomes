@@ -7,7 +7,7 @@
 PROJECT_ROOT="${PROJECT_ROOT:-/project/silage_microbiome/max.chi/fusarium_sequencing}"
 
 # Set this once per batch
-BATCH_ID="batch1_all_barcodes"
+BATCH_ID="batch3_all_barcodes"
 
 SCRATCH_ROOT="/90daydata/silage_microbiome/max_seq"
 
