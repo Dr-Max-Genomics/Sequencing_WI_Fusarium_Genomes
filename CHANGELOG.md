@@ -2,262 +2,229 @@
 
 <!-- ================================================================
   HOW TO USE THIS FILE
-  - Record every meaningful change to the pipeline here: parameter
-    tweaks, tool swaps, script edits, workflow changes, or lessons
-    learned that affect how future batches should be run
-  - Add new entries at the TOP under the current version heading
-  - Follow semantic versioning:
-      v1.x = parameter or workflow tweaks (no structural change)
-      v2.0 = major structural change (new tool, new stage, new format)
-  - Commit alongside the script or config file that changed:
-      git add CHANGELOG.md config/paths.sh scripts/
-      git commit -m "refactor: manifest-driven arrays — see CHANGELOG v1.4"
-  - Cross-reference PROGRESS.md session entries where relevant
+  - Record every meaningful change to the pipeline here
+  - Add new entries at the TOP
+  - Semantic versioning: v1.x = param/workflow tweaks; v2.0 = major change
+  - Commit alongside changed scripts/configs
 ================================================================ -->
 
 ---
 
 ## Unreleased — in progress
 
-### Pending decisions
-- [ ] S5 analyses (telomere search, CAZymes, BigScape) not yet run — document
-      parameters and scripts when initiated
----
-
-## v1.4 — 2026-04-29 — Pipeline refactor: manifest-driven arrays, script rename, DB migration, paths.sh restructure
-
-### What changed
-- Scripts 07–09c renamed and refactored — see table below
-- All annotation stages (07–09c) now driven by `batch{N}_manifest.tsv`
-  instead of barlist.txt — enables per-sample metadata (species, assembly
-  file, EarlGrey species name, funannotate name, protein evidence, antiSMASH file)
-- DB paths migrated from `/90daydata/` (temporary) to `/project/` (permanent)
-- `paths.sh` restructured: `PROJECT_ROOT` now set via environment variable
-  with hardcoded fallback; `11c_FUN_Annotate_Result/` removed entirely
-- `08_sort_earlgrey_mask.sh` combines three previously separate steps
-  (funannotate sort, EarlGrey, funannotate mask) into one array job
-- BUSCO now runs offline with local lineage dataset
-- Confirmed and documented funannotate annotate output co-location behavior
-  (see known behavior note below)
-- Established test-then-full-array pattern: task 1 submitted alone first,
-  then tasks 2–N submitted as a separate array after confirming success
-
-### Script rename table
-
-| Old name | New name | Type | Notes |
-|----------|----------|------|-------|
-| `busco_eval.sh` (various) | `07_busco_eval.sh` | New | Manifest-driven; offline mode |
-| *(separate scripts)* | `08_sort_earlgrey_mask.sh` | New | Combines sort + EarlGrey + mask |
-| `funannotate_predict*.sh` | `09a_FUN_predict.sh` | Renamed + refactored | Manifest-driven; species-aware BUSCO seed |
-| `IPscan.sh` / `09_IPscan_annotate.sh` | `09b_IPScan.sh` | Renamed + fixed | CPUs via `${SLURM_NTASKS}`; #SBATCH header now respected |
-| `10_FUN_annotate.sh` | `09c_FUN_annotate.sh` | Renamed + refactored | Manifest-driven; GFF3 skip-if-exists check |
-
-### Manifest structure — batch1_manifest.tsv
-
-Tab-separated, one row per sample, header row skipped (LINE_NUM = TASK_ID + 1):
-
-```
-barcode  sample_id  assembly_file  busco_name  earlgrey_species  funannotate_name  funannotate_species  protein_evidence_file  antismash_file
-```
-
-Location: `${BATCH_DIR}/batch1_manifest.tsv`
-(i.e., `/90daydata/silage_microbiome/max_seq/batch1_all_barcodes/batch1_manifest.tsv`)
-
-### DB path migration
-
-| Variable | Old path | New path |
-|----------|----------|----------|
-| `FUNANNOTATE_DB` | `/90daydata/.../funannotate_db` | `${DB_ROOT}/funannotate_db` |
-| `AUGUSTUS_CONFIG_PATH` | `/90daydata/.../augustus/config` | `${DB_ROOT}/augustus_config/config` |
-| `EARLGREY_SIF` | *(various)* | `${PROJECT_ROOT}/Containers/earlgrey_dfam3.7_latest.sif` |
-| `BUSCO_DOWNLOADS` | *(not tracked)* | `${DB_ROOT}/busco_downloads` |
-
-Where:
-- `PROJECT_ROOT=/project/silage_microbiome/max.chi/fusarium_sequencing`
-- `DB_ROOT=${PROJECT_ROOT}/DB_Databases`
-
-### paths.sh changes
-
-| | Before | After |
-|--|--------|-------|
-| PROJECT_ROOT | Hardcoded string | `${PROJECT_ROOT:-/project/...}` (env var with fallback) |
-| `11c_FUN_Annotate_Result/` | In directory list | **Removed** |
-| `EARLGREY_DIR` | Not in paths.sh | Added: `${BATCH_DIR}/09_EarlGrey` |
-| `MASK_DIR` | Not in paths.sh | Added: `${BATCH_DIR}/10_Mask` |
-| `ANTISMASH_DIR` | Not tracked | Added: `${BATCH_DIR}/12a_AntiSMASH_gbk` |
-| `PROTEIN_EVIDENCE_DIR` | Not tracked | Added: `${DB_ROOT}/protein_evidence` |
-
-### SLURM parameters — new scripts
-
-| Script | CPUs | Memory | Time | Array |
-|--------|------|--------|------|-------|
-| `07_busco_eval.sh` | 8 | 40 GB | 1 hr | 1–9 |
-| `08_sort_earlgrey_mask.sh` | 20 | 40 GB | 6 hrs | 1–9 |
-| `09a_FUN_predict.sh` | 20 | 80 GB | 1 day | 1–9 |
-| `09b_IPScan.sh` | 32 | 64 GB | 6 hrs | 1–9 |
-| `09c_FUN_annotate.sh` | 32 | 150 GB | 6 hrs | 1–9 |
-
-### ✅ Confirmed — funannotate annotate output co-location (resolved from v1.3)
-
-Decision made: **accept funannotate's default behavior**. Annotate outputs
-(`annotate_misc/`, `annotate_results/`) are written alongside `predict_misc/`
-and `predict_results/` inside `11a_FUN_Predict_Result/FunAnnotate_{sampleID}/`.
-
-`11c_FUN_Annotate_Result/` has been removed from `paths.sh` and will no longer
-be created. All downstream references should use `FUN_PREDICT_DIR`.
-
-This is consistent with funannotate's design and avoids unnecessary file movement.
-
-### Batch 1 run — 2026-04-29
-
-| Stage | Script | Job array | Tasks | Outcome |
-|-------|--------|-----------|-------|---------|
-| BUSCO eval | 07 | 20579367 | 1–9 | ✅ All complete |
-| Sort+EarlGrey+Mask | 08 | 20589974 | 1–9 | ✅ All complete |
-| Funannotate predict | 09a | 20613158 (task 1), 20613258 (2–9) | 9 | ✅ All complete |
-| InterProScan | 09b | 20618475 (task 1), 20619448 (2–9) | 9 | ✅ All complete |
-| Funannotate annotate | 09c | 20619524 (task 1), 20620393 (2–9) | 9 | ✅ All complete |
+### Pending
+- [ ] S5 CAZymes, antiSMASH docs not yet finalized
+- [ ] batch_2026-May: S1 starting — update when concat complete
+- [ ] Telomere search for batch_2025-Dec pending (array script ready)
+- [ ] antiSMASH version and exact flags not yet documented
+- [ ] wtdbg2 trial barcode and BUSCO score still unrecovered (see v1.1)
+- [ ] Verify barcode52 BUSCO score (inferred 99.3%)
+- [ ] Confirm _F. annulatum_ protein evidence file exists in PROTEIN_EVIDENCE_DIR
 
 ---
 
-## v1.3 — 2026-04-21 — IPRScan + funannotate annotate first run (batch_2025-Dec); paths.sh bug fix
+## v1.5 — 2026-05-27 — Telomere search added; 01_concat.sh written; batch_2026-May initiated; barlist.txt deprecated; sample_id format standardized
 
 ### What changed
-- InterProScan (`09b_IPScan.sh`) added as a formal stage between predict and annotate
-- Funannotate annotate run successfully for batch_2025-Dec after resolving
-  `APPTAINERENV_FUNANNOTATE_DB` path
-- Fixed critical `BASH_SOURCE[0]` bug in `paths.sh` — SLURM copies script to
-  `/var/spool/slurmd/` breaking dynamic PROJECT_ROOT resolution. Fixed by
-  hardcoding PROJECT_ROOT (later improved to env-var-with-fallback in v1.4)
+- `telomere_density.py` updated with graceful Bio/matplotlib import error
+  handling, `--min-contig` filter, `matplotlib.use("Agg")` for HPC
+  compatibility, and improved per-contig progress logging
+- `10_telomere_search.sh` written — SLURM array wrapper with correct
+  conda activation pattern that fixes the Bio import failure on batch nodes
+- `01_concat.sh` written — manifest-driven array job for MinKNOW-basecalled
+  barcode concatenation; replaces manual `cat *.fastq.gz > barcode.fastq.gz`
+- batch_2026-May initiated: 7 isolates, barcode01/02/04–08
+- `batch3_manifest.tsv` created
+- **Standardized `sample_id` format to `Fus_BarXX`** (with underscore) across
+  all batches and downstream artifacts — matches naming used during batch 1
+- **Deprecated `barlist.txt`** in favor of manifest as single source of truth
 
-### IPRScan parameters (batch_2025-Dec)
+### sample_id naming standard
+
+| Component | Format | Example |
+|-----------|--------|---------|
+| `sample_id` | `Fus_Bar{NN}` | `Fus_Bar49`, `Fus_Bar01` |
+| `assembly_file` | `{sample_id}_polished.fasta` | `Fus_Bar49_polished.fasta` |
+| `busco_name` | `{sample_id}_busco` | `Fus_Bar49_busco` |
+| `earlgrey_species` | `{sample_id}` | `Fus_Bar49` |
+| `funannotate_name` | `FunAnnotate_{sample_id}` | `FunAnnotate_Fus_Bar49` |
+| `antismash_file` | `{sample_id}.scaffolds_antiSMASH.gbk` | `Fus_Bar49.scaffolds_antiSMASH.gbk` |
+
+Going forward, all new manifests use this convention. Existing batch 1 and 2
+files on disk may have legacy variants (e.g., `FusBar36_new.proteins.fa`) —
+these are not retroactively renamed but new artifacts follow the standard.
+
+### `barlist.txt` deprecation
+
+`barlist.txt` (one barcode per line, no metadata) was used by the original
+preprocessing scripts (`02–05`) in `while read in; do ...; done < barlist.txt`
+loops. With the v1.4 manifest architecture for stages 07–09c and the new
+`01_concat.sh` (v1.5), the manifest's `barcode` column replaces all uses of
+`barlist.txt`.
+
+**Decision:** New batches use only `batch{N}_manifest.tsv`. Single source of
+truth per batch. No separate barlist.
+
+Existing batch 1 and 2 directories retain their `barlist.txt` files for the
+legacy 02–05 scripts; future refactor of those scripts will fully retire it.
+
+### Root cause — Bio import failure on batch nodes
+
+Running `module load miniconda` in a batch script does NOT activate the
+conda environment. `python` resolves to the system Python which has no
+Biopython. Fix applied in `10_telomere_search.sh`:
+
+```bash
+# WRONG — module load alone is insufficient
+module load miniconda
+
+# CORRECT — must also init conda and activate env
+module load miniconda
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate seqenv
+```
+
+This pattern should be used in any script that calls Python tools
+installed in the conda environment.
+
+### New scripts
+
+| Script | Purpose | Stage |
+|--------|---------|-------|
+| `scripts/telomere_density.py` | Compute telomeric motif density per contig | S5.1 |
+| `scripts/10_telomere_search.sh` | SLURM array wrapper for telomere_density.py | S5.1 |
+| `scripts/01_concat.sh` | Concatenate MinKNOW barcode fastq.gz files | S1.1 |
+
+### 01_concat.sh details
 
 | Parameter | Value |
 |-----------|-------|
-| Format | xml |
-| CPU | 32 |
-| Time | 6 hrs |
-| Flags | -dp -pa -goterms -iprlookup |
-| Cluster | Ceres |
+| Input | `${RAW_DIR}/{barcode}/*.fastq.gz` |
+| Output | `${RAW_DIR}/{barcode}/{barcode}.fastq.gz` |
+| CPUs | 4 |
+| Memory | 20 GB |
+| Time | 2 hrs |
+| Array | 1–7 (batch_2026-May); adjust `--array` flag per batch |
+| Skip logic | Skips if output already exists and is non-empty |
+| Manifest | `batch3_manifest.tsv` |
 
-### Fix — APPTAINERENV_FUNANNOTATE_DB path
+### 10_telomere_search.sh details
 
-Root cause of 04-20 funannotate annotate failure on barcode37:
+| Parameter | Value |
+|-----------|-------|
+| Window | 10,000 bp |
+| Step | 1,000 bp |
+| Min contig | 5,000 bp (skips tiny contigs) |
+| Output TSV | `13_Telomere/{sample_id}/{sample_id}_telomere_density.tsv` |
+| Output plots | `13_Telomere/{sample_id}/plots/{contig}.png` |
+| CPUs | 4 |
+| Memory | 16 GB |
+| Time | 2 hrs |
 
-| | Path | Status |
-|--|------|--------|
-| Path A ✅ | `.../11_FunAnnotate/DB_FunannotateDatabase/funannotate_db` | Correct |
-| Path B ❌ | `.../11_FunAnnotate/BD_BuscoDatabase/DB_FunannotateDatabase/funannotate_db` | Both dirs exist; wrong one |
+### batch_2026-May isolates
 
-### ⚠️ Known behavior — funannotate annotate output location (resolved in v1.4)
+| Barcode | Isolate ID | Species |
+|---------|------------|---------|
+| barcode01 | F-22-214.2 | _F. verticillioides_ |
+| barcode02 | F-Arl-23.9 | _F. proliferatum_ |
+| barcode04 | Fg-23-5.5 | _F. graminearum_ |
+| barcode05 | F-23-1.1 | _F. annulatum_ ⚠️ new species — verify protein evidence |
+| barcode06 | Fg-23-4.7 | _F. graminearum_ |
+| barcode07 | Fg-23-1.5 | _F. graminearum_ |
+| barcode08 | F-23-3 | _F. sporotrichioides_ |
 
-Annotate outputs written to predict directory rather than `11c_FUN_Annotate_Result/`.
-Decision to accept this behavior and remove `11c` documented in v1.4.
+> ⚠️ _F. annulatum_ (barcode05) is a new species not seen in previous batches.
+> Confirm `Fannulatum_refseq.faa` exists in `${PROTEIN_EVIDENCE_DIR}` before
+> running `09a_FUN_predict.sh`. Also confirm BUSCO seed species in the
+> `case` statement in `09a_FUN_predict.sh` — add a new case if needed.
 
-### Batch 2 runs — 2026-04-21
+### Telomere search — batch_2025-Feb (2026-05-27)
 
-| Stage | Job array | Tasks | Outcome |
-|-------|-----------|-------|---------|
-| IPRScan | 20526945_1–10 | 10 | ✅ All complete |
-| Funannotate annotate | 20535822_1–10 | 10 | ✅ All complete |
+Ran interactively (Bio import failure prevented batch submission — now fixed):
 
----
-
-## v1.2 — Fall 2025 — batch_2025-Dec (barcodes 36–45)
-
-### What changed
-- Batch 2 run entirely with Flye; wtdbg2 not used
-- antiSMASH added as a stage after Funannotate predict
-- Both Ceres and Atlas used
-
-### Parameters
-
-| Parameter | Value | Notes |
-|-----------|-------|-------|
-| MIN_LEN (NanoFilt) | 500 bp | Same as batch 1 |
-| Assembler | Flye | wtdbg2 dropped |
-| Flye --genome-size | 50m | |
-| Flye --asm-coverage | 100 | |
-| BUSCO lineage | hypocreales | |
-| antiSMASH | Added | ⚠️ version + flags not yet documented |
-
-### Results
-- BUSCO range: 99.3–99.4% (hypocreales) — highest scores to date
-- All 10 isolates through predict + antiSMASH
-- IPRScan + annotate completed 2026-04-21 (v1.3)
-
-### Clusters used
-- Ceres: preprocessing, assembly, BUSCO, annotation
-- Atlas: ⚠️ fill in which stages
+| Sample | Status | Output |
+|--------|--------|--------|
+| All 9 (barcode49–53, 55–58) | ✅ Complete | `13_Telomere/{sample_id}/` |
 
 ---
 
-## v1.1 — Spring 2025 — batch_2025-Feb (barcodes 49–53, 55–58)
+## v1.4 — 2026-04-29 — Manifest-driven arrays; script rename; DB migration; paths.sh restructure
 
-### What changed
-- Pipeline standardized 2025-02-14 after late 2024 troubleshooting
+### Script renames
+
+| Old | New | Notes |
+|-----|-----|-------|
+| Various | `07_busco_eval.sh` | New; manifest-driven; offline mode |
+| Separate scripts | `08_sort_earlgrey_mask.sh` | New; combines sort + EarlGrey + mask |
+| `funannotate_predict*.sh` | `09a_FUN_predict.sh` | Renamed + species-aware BUSCO seed |
+| `IPscan.sh` | `09b_IPScan.sh` | Renamed; CPUs via `${SLURM_NTASKS}` |
+| `10_FUN_annotate.sh` | `09c_FUN_annotate.sh` | Renamed + manifest-driven |
+
+### DB path migration
+
+| Variable | Old | New |
+|----------|-----|-----|
+| `FUNANNOTATE_DB` | `/90daydata/...` | `${DB_ROOT}/funannotate_db` |
+| `AUGUSTUS_CONFIG_PATH` | `/90daydata/...` | `${DB_ROOT}/augustus_config/config` |
+| `EARLGREY_SIF` | Various | `${PROJECT_ROOT}/Containers/earlgrey_dfam3.7_latest.sif` |
+| `BUSCO_DOWNLOADS` | Not tracked | `${DB_ROOT}/busco_downloads` |
+
+### ✅ Resolved — funannotate annotate output co-location
+
+`11c_FUN_Annotate_Result/` removed from paths.sh. Annotate outputs land in
+`11a_FUN_Predict_Result/FunAnnotate_{sampleID}/` alongside predict outputs.
+This is funannotate's expected behavior.
+
+### Batch 1 run — 2026-04-29
+
+| Stage | Job array | Outcome |
+|-------|-----------|---------|
+| BUSCO eval | 20579367_1–9 | ✅ |
+| Sort+EarlGrey+Mask | 20589974_1–9 | ✅ |
+| Funannotate predict | 20613158_1, 20613258_2–9 | ✅ |
+| InterProScan | 20618475_1, 20619448_2–9 | ✅ |
+| Funannotate annotate | 20619524_1, 20620393_2–9 | ✅ |
+
+---
+
+## v1.3 — 2026-04-21 — IPRScan + funannotate annotate (batch_2025-Dec); paths.sh bug fix
+
+- Fixed `BASH_SOURCE[0]` PROJECT_ROOT resolution failure under sbatch
+- `APPTAINERENV_FUNANNOTATE_DB` path confirmed (Path A)
+- batch_2025-Dec IPRScan: job 20526945_1–10 ✅
+- batch_2025-Dec annotate: job 20535822_1–10 ✅
+
+---
+
+## v1.2 — Fall 2025 — batch_2025-Dec (barcode36–45)
+
+- Flye only (wtdbg2 dropped)
+- antiSMASH added as post-predict stage
+- BUSCO range: 99.3–99.4% (hypocreales)
+
+---
+
+## v1.1 — Spring 2025 — batch_2025-Feb (barcode49–53, 55–58)
+
+- Pipeline standardized 2025-02-14
 - wtdbg2 trialed on one barcode; Flye selected as standard
-- All final assemblies produced with Flye
-
-### Assembler evaluation — wtdbg2 vs Flye
-
-| Criterion | wtdbg2 | Flye | Decision |
-|-----------|--------|------|----------|
-| Assembly quality | Lower contiguity | Higher contiguity | Flye preferred |
-| BUSCO completeness | ⚠️ score not recorded | >99.1% | Flye preferred |
-| Runtime | ⚠️ fill in | ~58 min @ 40 threads | — |
-| Ease of use | Manual polish steps | Single sbatch | Flye preferred |
-
-> ⚠️ Specific barcode trialed with wtdbg2 not recorded. Check Ceres for
-> `prefix.ctg.fa` or wtdbg2 logs to recover barcode ID and BUSCO score.
-
-### Parameters
-
-| Parameter | Value | Notes |
-|-----------|-------|-------|
-| MIN_LEN (NanoFilt) | 500 bp | Initial baseline |
-| Assembler | Flye (final) | wtdbg2 trialed only |
-| Flye --genome-size | 50m | |
-| Flye --asm-coverage | 100 | |
-| Flye --iterations | 1 | ⚠️ Confirm if intentional |
-| BUSCO lineage (eval) | hypocreales | |
-| BUSCO lineage (training) | sordariomycetes_odb10 | For Funannotate |
-| Threads | 70 (S1) / 40 (Flye) / 20 (Funannotate) | |
-| MEM_HIGH | 900,000 MB | |
-| MEM_MED | 300,000 MB | |
-
-### Results
-- 9 isolates (barcode54 absent — not sequenced)
 - BUSCO range: 99.1–99.3% (hypocreales)
-- All through predict + antiSMASH; IPRScan + annotate completed 2026-04-29 (v1.4)
-
-### Known issues
-- Porechop / miniconda module conflict — see README.md §11
+- Known issue: Porechop/miniconda conflict — see README §12
 
 ---
 
-## v1.0 — Late 2024 — Initial pipeline development
+## v1.0 — Late 2024 — Initial development
 
-### What this version represents
-- Exploratory / troubleshooting phase
-- Scripts tested on individual barcodes before batch processing
-- Workflow originally in Rmd bash chunks — migrated to `.sh` scripts early 2025
-- Legacy scripts preserved in `Atlas Scripts in sequencing pipeline/`
-
-### Tools set up during this period
-- Conda env `seqenv` created on Ceres
-- Porechop, NanoFilt, NanoPlot, seqkit confirmed working
-- Flye and wtdbg2 installed and tested
-- Funannotate DB, Augustus config, BUSCO lineages, EarlGrey SIF obtained
+- Scripts migrated from Rmd bash chunks to `.sh` files
+- Conda env `seqenv` set up; tools confirmed working
+- Legacy scripts in `Atlas Scripts in sequencing pipeline/`
 
 ---
 
 ## Parameter quick-reference — current defaults
 
-> Always check `config/paths.sh` as the authoritative source.
-
-| Parameter | Current value | Set in version |
-|-----------|--------------|----------------|
+| Parameter | Value | Set in |
+|-----------|-------|--------|
 | MIN_LEN | 500 bp | v1.0 |
 | Assembler | Flye | v1.1 |
 | Flye --genome-size | 50m | v1.1 |
@@ -265,13 +232,11 @@ Decision to accept this behavior and remove `11c` documented in v1.4.
 | BUSCO lineage (eval) | hypocreales_odb10 | v1.1 |
 | BUSCO lineage (training) | sordariomycetes_odb10 | v1.1 |
 | BUSCO mode | offline | v1.4 |
-| THREADS (S1) | 70 | v1.0 |
-| MEM_HIGH | 900,000 MB | v1.0 |
 | IPRScan CPU | 32 via `${SLURM_NTASKS}` | v1.4 |
 | FUNANNOTATE_DB | `${DB_ROOT}/funannotate_db` | v1.4 |
-| AUGUSTUS_CONFIG_PATH | `${DB_ROOT}/augustus_config/config` | v1.4 |
-| EARLGREY_SIF | `${PROJECT_ROOT}/Containers/earlgrey_dfam3.7_latest.sif` | v1.4 |
-| Annotate output location | Co-located in `11a_FUN_Predict_Result/` | v1.4 |
+| Telomere window | 10,000 bp | v1.5 |
+| Telomere step | 1,000 bp | v1.5 |
+| Telomere min-contig | 5,000 bp | v1.5 |
 
 ---
 
