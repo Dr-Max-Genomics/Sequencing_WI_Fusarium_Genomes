@@ -13,15 +13,19 @@ set -euo pipefail
 
 # -----------------------------------------------------------------------
 # 05_nanoplot.sh
-# Purpose : Generate per-sample QC plots and read statistics (NanoPlot).
-#           Final S1 step: concat -> porechop -> dedup -> nanofilt -> nanoplot
+# Purpose : Generate per-sample QC plots and read statistics (NanoPlot)
+#           on the FILTERED reads. Final Ceres S1 step.
+#           S1 order: concat -> porechop -> dedup -> nanofilt -> nanoplot
 # Usage   : sbatch --array=1 scripts/05_nanoplot.sh     # test one
 #           sbatch --array=2-7 scripts/05_nanoplot.sh   # rest of batch
 # Input   : 03_Trimmed_Data/{sample_id}.fastq   (from 04_nanofilt)
 # Output  : 04_Summary_Plots/{sample_id}/       (HTML report + TSV stats)
 # Env     : NanoPlot is in the seqenv conda environment.
-# Note    : Run NanoPlot on the final filtered reads. To QC at multiple
-#           stages, duplicate this script and point INPUT elsewhere.
+# Note    : QC is run on FILTERED reads only. dorado correct outputs FASTA
+#           (no quality scores), so post-correction NanoPlot would yield
+#           only length metrics — not worth a separate stage. To check how
+#           many reads HERRO retained, count records in the corrected FASTA:
+#             grep -c "^>" corrected_reads/corrected_{sample_id}.fasta
 # -----------------------------------------------------------------------
 
 PROJECT_ROOT="${PROJECT_ROOT:-/project/silage_microbiome/max.chi/fusarium_sequencing}"
@@ -31,9 +35,7 @@ source "${PROJECT_ROOT}/config/paths.sh"
 # Conda activation (NanoPlot lives in seqenv)
 # -----------------------------------------------------------------------
 module load miniconda
-# shellcheck disable=SC1091
-source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate seqenv
+source activate seqenv
 
 # -----------------------------------------------------------------------
 # Standard manifest read — all 9 columns. See README §7.
