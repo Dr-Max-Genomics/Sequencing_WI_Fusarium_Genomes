@@ -14,13 +14,139 @@
 
 ### Pending
 - [ ] S5 CAZymes, antiSMASH docs not yet finalized
-- [ ] batch_2026-May: run S1 (01→05) then S2 onward
+- [ ] batch_2026-May: run S1 (01→05) → S2 (06) → onward
 - [ ] Telomere search for batch_2025-Dec pending (array script ready)
 - [ ] antiSMASH version and exact flags not yet documented
 - [ ] wtdbg2 trial barcode and BUSCO score still unrecovered (see v1.1)
 - [ ] Verify barcode52 BUSCO score (inferred 99.3%)
 - [ ] Confirm _F. annulatum_ protein evidence file exists in PROTEIN_EVIDENCE_DIR
-- [ ] Write 06_flye_assemble.sh as manifest-driven array (currently inline sbatch)
+
+---
+
+## v1.8 — 2026-05-28 — Flye assembly script (--nano-corr); A04 dorado correct (Atlas); dual-path workflow; telomere env → mycotools
+
+### What changed
+- Wrote `06_flye_assemble.sh` as a manifest-driven array job
+- Wrote `A04_dorado_corr.sh` — Atlas GPU array job for HERRO read correction
+- Documented the **dual-path workflow** (MinKNOW vs self-basecalled entry points)
+- **Corrected telomere environment to `mycotools`** (has Biopython + matplotlib)
+- Confirmed `dorado correct` is a genuine correction step → `--nano-corr` is
+  correct for all batches (corrects an earlier mischaracterization)
+
+### ✅ Flye read-type — `--nano-corr` confirmed correct (correction of prior note)
+
+An earlier draft of this entry incorrectly stated that batch 1/2 should have
+used `--nano-hq`. That was wrong. All batches run reads through `dorado correct`
+(HERRO algorithm) before assembly, which is a genuine dedicated correction
+step. Per Dorado docs, HERRO uses all-vs-all alignment + haplotype-aware deep
+learning correction, and the corrected reads are intended for de novo assembly.
+
+Therefore `--nano-corr` is the correct Flye flag for all batches:
+
+| Batch | Reads | Flye flag |
+|-------|-------|-----------|
+| batch_2025-Feb (Atlas basecalled) | dorado correct → assembly | `--nano-corr` ✅ |
+| batch_2025-Dec (Atlas basecalled) | dorado correct → assembly | `--nano-corr` ✅ |
+| batch_2026-May (MinKNOW basecalled) | filtered → dorado correct → assembly | `--nano-corr` ✅ |
+
+`--nano-hq` would only apply if assembling uncorrected SUP reads (no dorado
+correct step). The 06_flye_assemble.sh header documents both options.
+
+### Dual-path workflow
+
+The pipeline has two entry points depending on how basecalling was done:
+
+**Path 1 — MinKNOW basecalled (batch_2026-May):**
+```
+MinKNOW (basecall + demux done on instrument)
+  → Ceres: 01_concat → 02_porechop → 03_seqkit_dedup → 04_nanofilt → 05a_nanoplot
+  → [transfer filtered reads to Atlas]
+  → Atlas: A04_dorado_corr  (HERRO correction, GPU)
+  → [transfer corrected reads back to Ceres]
+  → Ceres: 05b_nanoplot → 06_flye_assemble (--nano-corr) → ...
+```
+
+**Path 2 — Self-basecalled on Atlas (future batches):**
+```
+Atlas: A01_basecall → A02_demux → A03_bam2fastq → A04_dorado_corr
+  → [transfer to Ceres]
+  → Ceres: (skip 01_concat — demux already split per barcode)
+           02_porechop → 03_seqkit_dedup → 04_nanofilt → 05_nanoplot
+           → 06_flye_assemble (--nano-corr) → ...
+```
+
+The `A`-series scripts are Atlas GPU steps; numbered scripts are Ceres steps.
+Only `A04_dorado_corr.sh` is written so far (A01–A03 to be scaffolded later).
+
+### A04_dorado_corr.sh details
+
+| Parameter | Value |
+|-----------|-------|
+| Cluster | **Atlas** (GPU) — NOT Ceres |
+| Partition | `gpu-a100` |
+| GPU | `--gres=gpu:a100:1` (one A100 per array task) |
+| CPUs | 16 |
+| Time | 150 hrs |
+| Array | 1–7 (batch_2026-May) |
+| Input | `${ATLAS_BATCH_DIR}/03_Trimmed_Data/{sample_id}.fastq` |
+| Output | `.../03_Trimmed_Data/corrected_reads/corrected_{sample_id}.fasta` |
+| Tool | `module load dorado` → `dorado correct` (HERRO) |
+
+> ⚠️ **Atlas and Ceres filesystems are NOT synced.** There is no shared repo
+> or symlink between them. `A04_dorado_corr.sh` therefore HARDCODES all paths
+> and uses an inline `SAMPLES` array instead of reading the repo manifest.
+> Edit the `SAMPLES` array, `ATLAS_BATCH_DIR`, and `--array` range per batch.
+> Atlas batch dir for batch 3: `/90daydata/silage_microbiome/Max_Batch3/`
+
+> dorado correct takes FASTQ in, outputs **FASTA**. The corrected FASTA is the
+> input to Flye (`--nano-corr`), stored on Ceres at
+> `03_Trimmed_Data/corrected_reads/`.
+
+### 06_flye_assemble.sh details
+
+| Parameter | Value |
+|-----------|-------|
+| Read type | `--nano-corr` (HERRO-corrected input) |
+| Input | `03_Trimmed_Data/corrected_reads/corrected_{sample_id}.fasta` |
+| Output | `05_Genome_Assembly/{sample_id}_flye/assembly.fasta` |
+| Genome size | `50m` (overridable) |
+| Coverage | `100` (overridable) |
+| CPUs | 40 | Memory | 50 GB | Time | 1 day |
+| Note | Dropped redundant `--iterations 1` (Flye default is already 1) |
+
+### NanoPlot stays as single 05_nanoplot.sh (on filtered reads)
+
+NanoPlot runs once, on the filtered reads (`05_nanoplot.sh`). A post-correction
+NanoPlot was considered but dropped: `dorado correct` outputs FASTA (no quality
+scores), so post-correction NanoPlot would yield only length metrics — not the
+accuracy improvement you'd actually want to see, and not worth a separate stage
+plus an Atlas→Ceres transfer. To check how many reads HERRO retained:
+
+```bash
+grep -c "^>" 03_Trimmed_Data/corrected_reads/corrected_{sample_id}.fasta
+```
+
+### HERRO model download (A04)
+
+On first run, `dorado correct` curls the herro model until successful before
+correcting. The test-task-1-first pattern handles this naturally: task 1
+downloads/caches the model, then tasks 2–7 reuse it. Launching all 7 at once
+risks a race on the model cache. Manual pre-download:
+`dorado download --model herro-v1`.
+
+### Parallelism reference (HPC concepts)
+
+- **Batch processing** = submitting work to SLURM to run unattended (any sbatch)
+- **Within-job parallelism** = one job, many cores on one task (`--threads 40`)
+- **Across-job parallelism** = array jobs, many isolates at once (`--array=1-7`)
+- The pipeline combines both: array tasks (across) each multi-thread (within).
+  For GPU steps (A04), each array task grabs one A100; GPU scarcity may cause
+  SLURM to stagger tasks — queued tasks start automatically as GPUs free up.
+
+### Telomere environment fix
+- `10_telomere_search.sh`: `conda activate seqenv` → `conda activate mycotools`
+- mycotools env contains Biopython + matplotlib required by telomere_density.py
+- README §3 updated to reflect mycotools for the telomere stage
 
 ---
 
