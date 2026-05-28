@@ -32,9 +32,7 @@ MIN_LEN="${MIN_LEN:-500}"
 # Conda activation (NanoFilt lives in seqenv)
 # -----------------------------------------------------------------------
 module load miniconda
-# shellcheck disable=SC1091
-source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate seqenv
+source activate seqenv
 
 # -----------------------------------------------------------------------
 # Standard manifest read — all 9 columns. See README §7.
