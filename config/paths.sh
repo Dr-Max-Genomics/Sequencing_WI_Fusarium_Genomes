@@ -43,7 +43,7 @@ ANTISMASH_DIR="${BATCH_DIR}/12a_AntiSMASH_gbk"           # antismash gbk output 
 # Annotate outputs live inside FUN_PREDICT_DIR per isolate (see CHANGELOG v1.4)
 
 # S5 — Genome-wide analyses
-TELOMERE_DIR="${BATCH_DIR}/13_Telomere"
+TELOMERE_DIR="${BATCH_DIR}/12b_Telomere"
 
 # Funannotate DB + Augustus config
 AUGUSTUS_CONFIG_PATH="${DB_ROOT}/augustus_config/config"
