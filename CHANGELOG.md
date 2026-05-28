@@ -14,12 +14,213 @@
 
 ### Pending
 - [ ] S5 CAZymes, antiSMASH docs not yet finalized
-- [ ] batch_2026-May: S1 starting — update when concat complete
+- [ ] batch_2026-May: run S1 (01→05) → S2 (06) → onward
 - [ ] Telomere search for batch_2025-Dec pending (array script ready)
 - [ ] antiSMASH version and exact flags not yet documented
 - [ ] wtdbg2 trial barcode and BUSCO score still unrecovered (see v1.1)
 - [ ] Verify barcode52 BUSCO score (inferred 99.3%)
 - [ ] Confirm _F. annulatum_ protein evidence file exists in PROTEIN_EVIDENCE_DIR
+
+---
+
+## v1.8 — 2026-05-28 — Flye assembly script (--nano-corr); A04 dorado correct (Atlas); dual-path workflow; telomere env → mycotools
+
+### What changed
+- Wrote `06_flye_assemble.sh` as a manifest-driven array job
+- Wrote `A04_dorado_corr.sh` — Atlas GPU array job for HERRO read correction
+- Documented the **dual-path workflow** (MinKNOW vs self-basecalled entry points)
+- **Corrected telomere environment to `mycotools`** (has Biopython + matplotlib)
+- Confirmed `dorado correct` is a genuine correction step → `--nano-corr` is
+  correct for all batches (corrects an earlier mischaracterization)
+
+### ✅ Flye read-type — `--nano-corr` confirmed correct (correction of prior note)
+
+An earlier draft of this entry incorrectly stated that batch 1/2 should have
+used `--nano-hq`. That was wrong. All batches run reads through `dorado correct`
+(HERRO algorithm) before assembly, which is a genuine dedicated correction
+step. Per Dorado docs, HERRO uses all-vs-all alignment + haplotype-aware deep
+learning correction, and the corrected reads are intended for de novo assembly.
+
+Therefore `--nano-corr` is the correct Flye flag for all batches:
+
+| Batch | Reads | Flye flag |
+|-------|-------|-----------|
+| batch_2025-Feb (Atlas basecalled) | dorado correct → assembly | `--nano-corr` ✅ |
+| batch_2025-Dec (Atlas basecalled) | dorado correct → assembly | `--nano-corr` ✅ |
+| batch_2026-May (MinKNOW basecalled) | filtered → dorado correct → assembly | `--nano-corr` ✅ |
+
+`--nano-hq` would only apply if assembling uncorrected SUP reads (no dorado
+correct step). The 06_flye_assemble.sh header documents both options.
+
+### Dual-path workflow
+
+The pipeline has two entry points depending on how basecalling was done:
+
+**Path 1 — MinKNOW basecalled (batch_2026-May):**
+```
+MinKNOW (basecall + demux done on instrument)
+  → Ceres: 01_concat → 02_porechop → 03_seqkit_dedup → 04_nanofilt → 05a_nanoplot
+  → [transfer filtered reads to Atlas]
+  → Atlas: A04_dorado_corr  (HERRO correction, GPU)
+  → [transfer corrected reads back to Ceres]
+  → Ceres: 05b_nanoplot → 06_flye_assemble (--nano-corr) → ...
+```
+
+**Path 2 — Self-basecalled on Atlas (future batches):**
+```
+Atlas: A01_basecall → A02_demux → A03_bam2fastq → A04_dorado_corr
+  → [transfer to Ceres]
+  → Ceres: (skip 01_concat — demux already split per barcode)
+           02_porechop → 03_seqkit_dedup → 04_nanofilt → 05_nanoplot
+           → 06_flye_assemble (--nano-corr) → ...
+```
+
+The `A`-series scripts are Atlas GPU steps; numbered scripts are Ceres steps.
+Only `A04_dorado_corr.sh` is written so far (A01–A03 to be scaffolded later).
+
+### A04_dorado_corr.sh details
+
+| Parameter | Value |
+|-----------|-------|
+| Cluster | **Atlas** (GPU) — NOT Ceres |
+| Partition | `gpu-a100` |
+| GPU | `--gres=gpu:a100:1` (one A100 per array task) |
+| CPUs | 16 |
+| Time | 150 hrs |
+| Array | 1–7 (batch_2026-May) |
+| Input | `${ATLAS_BATCH_DIR}/03_Trimmed_Data/{sample_id}.fastq` |
+| Output | `.../03_Trimmed_Data/corrected_reads/corrected_{sample_id}.fasta` |
+| Tool | `module load dorado` → `dorado correct` (HERRO) |
+
+> ⚠️ **Atlas and Ceres filesystems are NOT synced.** There is no shared repo
+> or symlink between them. `A04_dorado_corr.sh` therefore HARDCODES all paths
+> and uses an inline `SAMPLES` array instead of reading the repo manifest.
+> Edit the `SAMPLES` array, `ATLAS_BATCH_DIR`, and `--array` range per batch.
+> Atlas batch dir for batch 3: `/90daydata/silage_microbiome/Max_Batch3/`
+
+> dorado correct takes FASTQ in, outputs **FASTA**. The corrected FASTA is the
+> input to Flye (`--nano-corr`), stored on Ceres at
+> `03_Trimmed_Data/corrected_reads/`.
+
+### 06_flye_assemble.sh details
+
+| Parameter | Value |
+|-----------|-------|
+| Read type | `--nano-corr` (HERRO-corrected input) |
+| Input | `03_Trimmed_Data/corrected_reads/corrected_{sample_id}.fasta` |
+| Output | `05_Genome_Assembly/{sample_id}_flye/assembly.fasta` |
+| Genome size | `50m` (overridable) |
+| Coverage | `100` (overridable) |
+| CPUs | 40 | Memory | 50 GB | Time | 1 day |
+| Note | Dropped redundant `--iterations 1` (Flye default is already 1) |
+
+### NanoPlot stays as single 05_nanoplot.sh (on filtered reads)
+
+NanoPlot runs once, on the filtered reads (`05_nanoplot.sh`). A post-correction
+NanoPlot was considered but dropped: `dorado correct` outputs FASTA (no quality
+scores), so post-correction NanoPlot would yield only length metrics — not the
+accuracy improvement you'd actually want to see, and not worth a separate stage
+plus an Atlas→Ceres transfer. To check how many reads HERRO retained:
+
+```bash
+grep -c "^>" 03_Trimmed_Data/corrected_reads/corrected_{sample_id}.fasta
+```
+
+### HERRO model download (A04)
+
+On first run, `dorado correct` curls the herro model until successful before
+correcting. The test-task-1-first pattern handles this naturally: task 1
+downloads/caches the model, then tasks 2–7 reuse it. Launching all 7 at once
+risks a race on the model cache. Manual pre-download:
+`dorado download --model herro-v1`.
+
+### Parallelism reference (HPC concepts)
+
+- **Batch processing** = submitting work to SLURM to run unattended (any sbatch)
+- **Within-job parallelism** = one job, many cores on one task (`--threads 40`)
+- **Across-job parallelism** = array jobs, many isolates at once (`--array=1-7`)
+- The pipeline combines both: array tasks (across) each multi-thread (within).
+  For GPU steps (A04), each array task grabs one A100; GPU scarcity may cause
+  SLURM to stagger tasks — queued tasks start automatically as GPUs free up.
+
+### Telomere environment fix
+- `10_telomere_search.sh`: `conda activate seqenv` → `conda activate mycotools`
+- mycotools env contains Biopython + matplotlib required by telomere_density.py
+- README §3 updated to reflect mycotools for the telomere stage
+
+---
+
+## v1.7 — 2026-05-27 — S1 preprocessing scripts written; canonical S1 order corrected; PROJECT_ROOT pattern standardized
+
+### What changed
+- Wrote the four S1 preprocessing scripts as manifest-driven array jobs,
+  replacing the old `while read in; do ...; done < barlist.txt` one-liners:
+  `02_porechop.sh`, `03_seqkit_dedup.sh`, `04_nanofilt.sh`, `05_nanoplot.sh`
+- **Corrected the canonical S1 order** to reflect actual practice:
+  concat → **porechop → dedup** → nanofilt → nanoplot
+  (porechop now runs *before* dedup; this swaps the original Rmd numbering
+  where dedup was 02 and porechop was 03)
+- Standardized `PROJECT_ROOT` to env-var-with-fallback (`${PROJECT_ROOT:-...}`)
+  across all scripts — fixes the inconsistency where scripts hardcoded the
+  value unconditionally and silently overrode an exported PROJECT_ROOT
+
+### ⚠️ S1 order change — porechop before dedup
+
+The original Rmd order was dedup (02) → porechop (03). Actual practice is
+porechop (02) → dedup (03). Scripts are now numbered to match execution
+order, so the numbers and the data flow agree.
+
+| Old number | New number | Stage |
+|-----------|-----------|-------|
+| 03 | **02** | Porechop (adapter trimming) |
+| 02 | **03** | seqkit dedup |
+
+Rationale: trimming adapters first, then deduplicating the trimmed reads,
+gives cleaner dedup results (adapter-bearing duplicates are normalized
+before the dedup comparison).
+
+### S1 data flow and directory layout
+
+| Stage | Script | Input | Output |
+|-------|--------|-------|--------|
+| Concat | `01_concat.sh` | `00_Raw_Data/{barcode}/*.fastq.gz` | `00_Raw_Data/{barcode}/{barcode}.fastq.gz` |
+| Porechop | `02_porechop.sh` | concat output | `02_Trimming/PC_{sample_id}.fastq` |
+| Dedup | `03_seqkit_dedup.sh` | porechop output | `02_Trimming/PC_{sample_id}_D.fastq` + `{sample_id}_derep_list.txt` |
+| NanoFilt | `04_nanofilt.sh` | dedup output | `03_Trimmed_Data/{sample_id}.fastq` |
+| NanoPlot | `05_nanoplot.sh` | filtered output | `04_Summary_Plots/{sample_id}/` |
+
+`02_Trimming/` holds both cleanup intermediates (porechop + dedup).
+`03_Trimmed_Data/` holds the final analysis-ready reads.
+`04_Summary_Plots/` holds QC reports.
+
+### Module / environment handling per S1 script
+
+| Script | Tool | Loading method | Notes |
+|--------|------|---------------|-------|
+| `02_porechop.sh` | Porechop | `module load porechop` | Standalone module; NO conda (conflicts with miniconda) |
+| `03_seqkit_dedup.sh` | seqkit | `module load seqkit` | Also available in seqenv; module is lighter |
+| `04_nanofilt.sh` | NanoFilt | conda `seqenv` | Uses full conda activation pattern |
+| `05_nanoplot.sh` | NanoPlot | conda `seqenv` | Uses full conda activation pattern |
+
+### S1 SLURM parameters
+
+| Script | CPUs | Memory | Time | Array |
+|--------|------|--------|------|-------|
+| `01_concat.sh` | 4 | 20 GB | 2 hrs | 1–7 |
+| `02_porechop.sh` | 70 | 300 GB | 1 day | 1–7 |
+| `03_seqkit_dedup.sh` | 70 | 300 GB | 1 day | 1–7 |
+| `04_nanofilt.sh` | 70 | 150 GB | 1 day | 1–7 |
+| `05_nanoplot.sh` | 70 | 150 GB | 1 day | 1–7 |
+
+### Parameters
+- `MIN_LEN` (NanoFilt) defaults to 500 bp; overridable via
+  `export MIN_LEN=800` before submitting `04_nanofilt.sh`
+- All S1 scripts default to `--array=1-7` (batch_2026-May); adjust per batch
+
+### Ordering safety
+Each script validates that the previous stage's output exists before running,
+so out-of-order submission fails with a clear error rather than producing
+garbage.
 
 ---
 
