@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #SBATCH -A silage_microbiome
 #SBATCH -N 1
-#SBATCH -n 70
-#SBATCH --mem=300G
+#SBATCH -n 16
 #SBATCH -p ceres
+#SBATCH --mem=300GB
 #SBATCH -t 1-0
 #SBATCH --job-name=porechop
 #SBATCH --array=1-7
@@ -78,6 +78,7 @@ fi
 # -----------------------------------------------------------------------
 # Load Porechop (standalone module — do NOT load miniconda here)
 # -----------------------------------------------------------------------
+module purge
 module load porechop
 
 echo "[$(date)] Running Porechop..."
