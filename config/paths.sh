@@ -8,7 +8,7 @@ PROJECT_ROOT="${PROJECT_ROOT:-/project/silage_microbiome/max.chi/fusarium_sequen
 
 # Set this once per batch — must match the manifest filename:
 #   ${PROJECT_ROOT}/config/manifests/${BATCH_ID}_manifest.tsv
-BATCH_ID="batch_2026-May"
+BATCH_ID="batch3_2026-May"
 
 SCRATCH_ROOT="/90daydata/silage_microbiome/max_seq"
 
