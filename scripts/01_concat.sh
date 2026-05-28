@@ -19,7 +19,7 @@ set -euo pipefail
 #           sbatch --array=2-7 scripts/01_concat.sh   # rest of batch
 # -----------------------------------------------------------------------
 
-PROJECT_ROOT="/project/silage_microbiome/max.chi/fusarium_sequencing"
+PROJECT_ROOT="${PROJECT_ROOT:-/project/silage_microbiome/max.chi/fusarium_sequencing}"
 source "${PROJECT_ROOT}/config/paths.sh"
 
 # -----------------------------------------------------------------------
