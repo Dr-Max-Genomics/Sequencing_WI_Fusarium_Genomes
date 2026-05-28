@@ -11,27 +11,28 @@
 
 set -euo pipefail
 
-# Resolve project root
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="/project/silage_microbiome/max.chi/fusarium_sequencing"
-
-# Load paths and tools
 source "${PROJECT_ROOT}/config/paths.sh"
+
 module load funannotate
 export AUGUSTUS_CONFIG_PATH="${DB_ROOT}/augustus_config/config"
 export APPTAINERENV_FUNANNOTATE_DB="${DB_ROOT}/funannotate_db"
 
-
-# Pick this task's sample from manifest
-MANIFEST="${BATCH_DIR}/batch1_manifest.tsv"
+# -----------------------------------------------------------------------
+# Standard manifest read — all 9 columns. See README §7.
+# -----------------------------------------------------------------------
 LINE_NUM=$((SLURM_ARRAY_TASK_ID + 1))
-
 IFS=$'\t' read -r \
     barcode sample_id assembly_file busco_name earlgrey_species \
     funannotate_name funannotate_species protein_evidence_file antismash_file \
-    < <(sed -n "${LINE_NUM}p" "$MANIFEST")
+    < <(sed -n "${LINE_NUM}p" "${MANIFEST}")
 
-#Pick busco _seed species based on actual species
+if [[ -z "${sample_id:-}" ]]; then
+    echo "ERROR: no sample at manifest line ${LINE_NUM} of ${MANIFEST}" >&2
+    exit 1
+fi
+
+# Pick BUSCO seed species based on actual species
 case "$funannotate_species" in
     "Fusarium graminearum"|"Fusarium cerealis")
         BUSCO_SEED="fusarium_graminearum"
@@ -40,10 +41,9 @@ case "$funannotate_species" in
         BUSCO_SEED="fusarium"
         ;;
     *)
-        BUSCO_SEED="fusarium"  #fallback
+        BUSCO_SEED="fusarium"  # fallback
         ;;
 esac
-
 
 # Per-sample log
 mkdir -p "${LOG_DIR}/fun_predict"
@@ -51,9 +51,11 @@ log_file="${LOG_DIR}/fun_predict/${sample_id}.log"
 exec >"${log_file}" 2>&1
 
 echo "[$(date)] Starting predict: ${sample_id} (task ${SLURM_ARRAY_TASK_ID})"
+echo "  Manifest:          ${MANIFEST}"
 echo "  Species:           ${funannotate_species}"
 echo "  Strain:            ${sample_id}"
 echo "  Protein evidence:  ${protein_evidence_file}"
+echo "  BUSCO seed:        ${BUSCO_SEED}"
 
 # Derive paths
 MASKED="${MASK_DIR}/${sample_id}_masked.fa"
@@ -62,8 +64,8 @@ PROTEIN_EVIDENCE="${PROTEIN_EVIDENCE_DIR}/${protein_evidence_file}"
 AUGUSTUS_NAME="${sample_id}"
 
 # Validate inputs
-[[ -s "${MASKED}" ]]            || { echo "ERROR: masked genome missing: ${MASKED}" >&2; exit 1; }
-[[ -s "${PROTEIN_EVIDENCE}" ]]  || { echo "ERROR: protein evidence missing: ${PROTEIN_EVIDENCE}" >&2; exit 1; }
+[[ -s "${MASKED}" ]]           || { echo "ERROR: masked genome missing: ${MASKED}" >&2; exit 1; }
+[[ -s "${PROTEIN_EVIDENCE}" ]] || { echo "ERROR: protein evidence missing: ${PROTEIN_EVIDENCE}" >&2; exit 1; }
 
 mkdir -p "${FUN_PREDICT_DIR}"
 
