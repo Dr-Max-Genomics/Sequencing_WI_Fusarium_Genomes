@@ -11,21 +11,25 @@
 
 set -euo pipefail
 
-# Resolve project root
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="/project/silage_microbiome/max.chi/fusarium_sequencing"
-
-# Load paths and tools
 source "${PROJECT_ROOT}/config/paths.sh"
+
 module load funannotate
 export AUGUSTUS_CONFIG_PATH="${DB_ROOT}/augustus_config/config"
 
-
-# Pick this task's sample from manifest
-MANIFEST="${BATCH_DIR}/batch1_manifest.tsv"
+# -----------------------------------------------------------------------
+# Standard manifest read — all 9 columns. See README §7.
+# -----------------------------------------------------------------------
 LINE_NUM=$((SLURM_ARRAY_TASK_ID + 1))
-IFS=$'\t' read -r barcode sample_id assembly_file busco_name earlgrey_species funannotate_name \
-    < <(sed -n "${LINE_NUM}p" "$MANIFEST")
+IFS=$'\t' read -r \
+    barcode sample_id assembly_file busco_name earlgrey_species \
+    funannotate_name funannotate_species protein_evidence_file antismash_file \
+    < <(sed -n "${LINE_NUM}p" "${MANIFEST}")
+
+if [[ -z "${sample_id:-}" ]]; then
+    echo "ERROR: no sample at manifest line ${LINE_NUM} of ${MANIFEST}" >&2
+    exit 1
+fi
 
 # Per-sample log
 mkdir -p "${LOG_DIR}/sort_earlgrey_mask"
@@ -33,6 +37,7 @@ log_file="${LOG_DIR}/sort_earlgrey_mask/${sample_id}.log"
 exec >"${log_file}" 2>&1
 
 echo "[$(date)] Starting: ${sample_id} (task ${SLURM_ARRAY_TASK_ID})"
+echo "Manifest: ${MANIFEST}"
 
 # Derive paths
 ASSEMBLY="${POLISHED_DIR}/${assembly_file}"
@@ -83,8 +88,7 @@ fi
 
 ##############################
 # 3) funannotate mask
-# -m repeatmasker + -l because EarlGrey already ran
-# RepeatModeler internally — no need to run it again.
+# -m repeatmasker + -l because EarlGrey already ran RepeatModeler internally
 ##############################
 echo "[$(date)] STEP 3: funannotate mask"
 cd "${MASK_DIR}"
