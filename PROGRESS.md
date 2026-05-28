@@ -49,8 +49,9 @@
 
 | Batch | Barcodes | Current stage | Cluster | Next action |
 |-------|----------|--------------|---------|-------------|
-| batch_2025-Feb | 49–53, 55–58 | 🟢 S4 complete | Ceres | Move to /project/; begin S5 |
-| batch_2025-Dec | 36–45 | 🟢 S4 complete | Ceres | Move to /project/; begin S5 |
+| batch_2025-Feb | 49–53, 55–58 | 🟡 S5 in progress (telomere done) | Ceres | Run telomere on batch 2; CAZymes; antiSMASH |
+| batch_2025-Dec | 36–45 | 🟢 S4 complete | Ceres | Run telomere search (array); begin S5 |
+| batch_2026-May | 01,02,04–08 | ⚪ S1 starting | Ceres | Concatenation |
 
 > Status key: 🟢 Complete · 🟡 In progress · 🔴 Blocked · ⚪ Not started
 
@@ -61,190 +62,130 @@
 
 ---
 
+## 2026-05-27 — Ceres — batch_2025-Feb — Telomere density search (interactive)
+
+**Working directory:** `/90daydata/silage_microbiome/max_seq/batch1_all_barcodes/`
+**Barcodes in scope:** barcode49–53, 55–58 (all 9)
+
+### What I ran
+- Script: `scripts/telomere_density.py` (custom Python script)
+- Execution: **Interactive node** — not submitted as sbatch
+- Command per isolate:
+```bash
+srun -A silage_microbiome -N 1 -n 4 -p ceres -t 2:00:00 --pty bash
+module load miniconda
+source activate seqenv
+python scripts/telomere_density.py \
+    -i ${POLISHED_DIR}/${assembly_file} \
+    -o ${TELOMERE_DIR}/${sample_id}_telomere_density.tsv \
+    --outdir ${TELOMERE_DIR}/${sample_id}/plots \
+    --window 10000 --step 1000
+```
+
+### Outcome
+- [x] Completed successfully — all 9 isolates processed
+- Outputs: TSV density files + PNG plots per contig per isolate
+
+### Notes / observations
+- ⚠️ Could not run as SLURM batch/array job — `from Bio import SeqIO`
+  failed on batch nodes due to conda environment not being activated
+  in the non-interactive shell
+- Ran manually on an interactive node as a workaround
+- Root cause: `module load miniconda` alone is insufficient for batch
+  nodes — conda env must be explicitly activated via
+  `source $(conda info --base)/etc/profile.d/conda.sh && conda activate seqenv`
+- **Fixed in `10_telomere_search.sh`** — new array wrapper handles
+  conda activation correctly; ready to use for batch_2025-Dec
+- Plots and TSVs written to `13_Telomere/{sample_id}/`
+
+### Parameter changes from last session
+| Parameter | Previous | This session | Reason |
+|-----------|----------|--------------|--------|
+| Telomere search | Not run | Added as S5 stage | New analysis |
+| Window size | — | 10,000 bp | Default; captures telomeric regions |
+| Step size | — | 1,000 bp | 1 kb resolution |
+
+### Next step
+- Run `10_telomere_search.sh` array for batch_2025-Dec (barcode36–45)
+- Begin batch_2026-May: concatenation with `01_concat.sh`
+- Prep: confirm `batch3_manifest.tsv` is in place on Ceres at
+  `/90daydata/silage_microbiome/max_seq/batch_2026-May/`
+- Note: `barlist.txt` no longer needed for new batches — manifest is the
+  single source of truth (see CHANGELOG v1.5)
+
+---
+
 ## 2026-04-29 — Ceres — batch_2025-Feb — Full S4 rerun (sort → EarlGrey → mask → predict → annotate)
 
 **Working directory:** `/90daydata/silage_microbiome/max_seq/batch1_all_barcodes/`
 **Barcodes in scope:** barcode49–53, 55–58 (all 9)
 
 ### Context
-Full reanalysis of batch_2025-Feb starting from sort → EarlGrey → mask, using
-pre-existing Flye assemblies in `07_Polished_Genome/`. BUSCO evaluation was
-submitted separately and ran in parallel on those same pre-existing assemblies —
-this was intentional, not an error. All array jobs used task 1 as a test run
-before submitting tasks 2–9 as a separate submission. This session also introduced
-the manifest-driven array architecture (`batch1_manifest.tsv`) and the
-refactored/renamed scripts (07–09c). DB paths moved from /90daydata/ to
-permanent /project/ storage.
+Full reanalysis of batch_2025-Feb using pre-existing Flye assemblies. BUSCO
+evaluation ran in parallel on existing assemblies. All array jobs used task 1
+as a test before submitting tasks 2–9. First use of manifest-driven
+architecture and refactored scripts (07–09c). DB paths migrated to /project/.
 
 ### What I ran
 
-**BUSCO evaluation — pre-existing assemblies (parallel):**
-- Script: `scripts/07_busco_eval.sh` *(new script)*
-- Job IDs: 20579367_1–9
-- Note: Submitted independently; ran in parallel with sort/mask pipeline
-
-**Sort + EarlGrey + Mask:**
-- Script: `scripts/08_sort_earlgrey_mask.sh` *(new script — combines 3 steps)*
-- Job IDs: 20589974_1–9
-- Steps: `funannotate sort` → EarlGrey (Apptainer) → `funannotate mask`
-
-**Funannotate predict:**
-- Script: `scripts/09a_FUN_predict.sh` *(renamed)*
-- Job IDs: 20613158_1 (test), 20613258_2–9 (full array)
-
-**InterProScan:**
-- Script: `scripts/09b_IPScan.sh` *(renamed from IPscan.sh)*
-- Job IDs: 20618475_1 (test), 20619448_2–9 (full array)
-
-**Funannotate annotate:**
-- Script: `scripts/09c_FUN_annotate.sh` *(renamed from 10_FUN_annotate.sh)*
-- Job IDs: 20619524_1 (test), 20620393_2–9 (full array)
+| Stage | Script | Job IDs | Notes |
+|-------|--------|---------|-------|
+| BUSCO eval | `07_busco_eval.sh` | 20579367_1–9 | Parallel to sort/mask; pre-existing assemblies |
+| Sort+EarlGrey+Mask | `08_sort_earlgrey_mask.sh` | 20589974_1–9 | New combined script |
+| Funannotate predict | `09a_FUN_predict.sh` | 20613158_1, 20613258_2–9 | Task 1 test then 2–9 |
+| InterProScan | `09b_IPScan.sh` | 20618475_1, 20619448_2–9 | Task 1 test then 2–9 |
+| Funannotate annotate | `09c_FUN_annotate.sh` | 20619524_1, 20620393_2–9 | Task 1 test then 2–9 |
 
 ### Outcome
-- [x] Completed successfully — all 9 isolates through all stages
+- [x] All 9 isolates through all stages successfully
 
 ### Notes / observations
-- All stages used task 1 as test before submitting tasks 2–9 separately —
-  confirmed as the standard testing pattern going forward
-- BUSCO ran on pre-existing assemblies in parallel with sort/EarlGrey/mask —
-  deliberate; assemblies already existed from original batch 1 run
-- New manifest-driven architecture: `batch1_manifest.tsv` at
-  `${BATCH_DIR}/batch1_manifest.tsv` drives all stages 07–09c
-  (replaces barlist.txt for annotation stages)
-- DB paths all moved to permanent storage — see parameter changes below
-- Annotate outputs landed inside predict directory per isolate
-  (confirmed expected funannotate behavior — decision to accept this
-  documented in CHANGELOG.md v1.4):
-  `11a_FUN_Predict_Result/FunAnnotate_{sampleID}/annotate_misc/`
-  `11a_FUN_Predict_Result/FunAnnotate_{sampleID}/annotate_results/`
-- `11c_FUN_Annotate_Result/` removed from paths.sh (see CHANGELOG v1.4)
-- busco_eval now uses `--offline` flag with local lineage at
-  `${BUSCO_DOWNLOADS}/lineages/hypocreales_odb10`
-
-### Parameter changes from last session
-| Parameter | Previous | This session | Reason |
-|-----------|----------|--------------|--------|
-| BATCH_ID | `jan_batch2_all_barcodes` | `batch1_all_barcodes` | Switching to batch 1 |
-| DB location | `/90daydata/` (temporary) | `/project/silage_microbiome/max.chi/fusarium_sequencing/DB_Databases/` | Moved to permanent storage |
-| Sample manifest | barlist.txt | `batch1_manifest.tsv` | New manifest-driven architecture for stages 07–09c |
-| BUSCO CPUs | 70 | 8 | Right-sized for evaluation |
-| BUSCO memory | 900 GB | 40 GB | Right-sized |
-| Sort+EarlGrey+Mask | Separate scripts | Combined `08_sort_earlgrey_mask.sh` | Streamlined |
-| IPRScan CPUs | Passed via terminal | `${SLURM_NTASKS}` from #SBATCH header | Fixed in renamed script |
-| `11c_FUN_Annotate_Result/` | In paths.sh mkdir block | Removed | Accepted funannotate's co-location behavior |
+- DB paths migrated to permanent storage (see CHANGELOG v1.4)
+- Annotate outputs co-located in predict directory (expected — see CHANGELOG v1.4)
+- `11c_FUN_Annotate_Result/` removed from paths.sh
 
 ### Next step
-- Verify annotate_results present for all 9 isolates in `11a_FUN_Predict_Result/`
-- Move batch_2025-Feb outputs to `/project/` permanent storage
-- Update BATCHES.md permanent storage index for barcode49–53, 55–58
-- Begin S5 genome-wide analyses (telomere search, CAZymes) for both batches
+- Resolved: telomere search run 2026-05-27
 
 ---
 
-## 2026-04-21 — Ceres — batch_2025-Dec — Funannotate annotate
+## 2026-04-21 — Ceres — batch_2025-Dec — IPRScan + funannotate annotate
 
 **Working directory:** `/90daydata/silage_microbiome/max_seq/jan_batch2_all_barcodes/`
 **Barcodes in scope:** barcode36–45 (all 10)
 
-### What I ran
-- Script: `scripts/10_FUN_annotate.sh` *(now renamed 09c_FUN_annotate.sh)*
-- Job IDs: 20535822_1 (test), 20535822_2–10
-
-### Outcome
-- [x] Completed successfully — all 10 array tasks finished
-
-### Notes / observations
-- Resolving `APPTAINERENV_FUNANNOTATE_DB` path was key fix from 04-20 failure
-- Ran without eggnog (intentional)
-- Annotate outputs in predict directory (see CHANGELOG v1.3, v1.4)
-- This completes S4 for all batch_2025-Dec isolates
-
-### Next step
-- Move outputs to /project/; begin S5 analyses
+| Stage | Script | Job IDs | Outcome |
+|-------|--------|---------|---------|
+| IPRScan | `09b_IPScan.sh` | 20526945_1–10 | ✅ All complete |
+| Funannotate annotate | `09c_FUN_annotate.sh` | 20535822_1–10 | ✅ All complete |
 
 ---
 
-## 2026-04-21 — Ceres — batch_2025-Dec — IPRScan array
+## 2026-04-20 — Ceres — batch_2025-Dec — Troubleshooting
 
-**Working directory:** `/90daydata/silage_microbiome/max_seq/jan_batch2_all_barcodes/`
-**Barcodes in scope:** barcode36–45 (all 10)
-
-### What I ran
-- Script: `scripts/09b_IPScan.sh` *(renamed from IPscan.sh)*
-- Job IDs: 20526945_1–10
-
-### Outcome
-- [x] All 10 completed successfully
-
-### Notes / observations
-- SLURM #SBATCH header flags ignored on this run — flags passed via terminal
-  Fixed in renamed `09b_IPScan.sh` using `${SLURM_NTASKS}`
-- PROJECT_ROOT BASH_SOURCE bug fixed (see CHANGELOG v1.3)
-- Output XMLs written to `11b_InterProScan/`
-
-### Next step
-- Confirmed all 10 XMLs non-empty → submitted funannotate annotate
+- IPRScan manual test on barcode36 — ✅
+- funannotate annotate on barcode37 — ❌ (APPTAINERENV_FUNANNOTATE_DB unresolved)
+- Resolved 2026-04-21
 
 ---
 
-## 2026-04-20 — Ceres — batch_2025-Dec — Troubleshooting session
+## 2025-02-14 — Pipeline formalized — Both batches retrospective
 
-**Working directory:** `/90daydata/silage_microbiome/max_seq/jan_batch2_all_barcodes/`
-**Barcodes in scope:** barcode36, barcode37 (test)
-
-### What I ran
-- IPRScan manual test on barcode36 — ✅ completed (80 CPUs; informed array design)
-- funannotate annotate on barcode37 — ❌ failed (APPTAINERENV_FUNANNOTATE_DB unresolved)
-
-### Next step
-- Resolved 2026-04-21: DB path confirmed, array jobs completed
-
----
-
-## 2025-02-14 — Pipeline formalized — Both batches context
-
-**Note:** Reconstructed entry covering work completed prior to formal tracking.
-
-### Batch 1 retrospective (batch_2025-Feb) — barcodes 49–53, 55–58
-
-**Cluster:** Ceres
-**Working directory:** `/90daydata/silage_microbiome/max_seq/Max_pod_5s/isolate_fastq/`
-
-| Stage | Status |
-|-------|--------|
-| S1 — Preprocessing | ✅ Done |
-| S2 — Assembly (Flye) | ✅ Done |
-| S3 — BUSCO (hypocreales) | ✅ Done |
-| S4 — EarlGrey / Mask / Predict / antiSMASH | ✅ Done (original run) |
-| S4 — IPRScan + Funannotate annotate | ✅ Done (2026-04-29 rerun) |
-
-#### BUSCO scores — hypocreales lineage
+### batch_2025-Feb (barcode49–53, 55–58) — BUSCO scores
 
 | Barcode | Isolate | Species | BUSCO % |
 |---------|---------|---------|---------|
 | barcode49 | F-Arl-23.2 | _F. proliferatum_ | 99.2% |
 | barcode50 | F-22-6 | _F. fujikuroi_ | 99.2% |
 | barcode51 | F-22-24 | _F. fujikuroi_ | 99.3% |
-| barcode52 | F-22-6 | _F. fujikuroi_ | 99.3% ⚠️ *verify* |
+| barcode52 | F-22-6 | _F. fujikuroi_ | 99.3% ⚠️ verify |
 | barcode53 | F-23-5.2 | _F. proliferatum_ | 99.2% |
 | barcode55 | F-23-2.3 | Put. _F. subglutinans_ | 99.2% |
 | barcode56 | F-23-4.4 | _F. cerealis_ | 99.2% |
 | barcode57 | Fg-23-1.3 | _F. graminearum_ | 99.2% |
 | barcode58 | F-Arl-23.2b | _F. proliferatum_ | 99.1% |
 
-### Batch 2 retrospective (batch_2025-Dec) — barcodes 36–45
-
-**Cluster:** Ceres & Atlas
-**Working directory:** `/90daydata/silage_microbiome/max_seq/jan_batch2_all_barcodes/`
-
-| Stage | Status |
-|-------|--------|
-| S1–S3 | ✅ Done |
-| S4 — EarlGrey / Mask / Predict / antiSMASH | ✅ Done |
-| S4 — IPRScan | ✅ Done (job 20526945_1–10, 2026-04-21) |
-| S4 — Funannotate annotate | ✅ Done (job 20535822_1–10, 2026-04-21) |
-
-#### BUSCO scores — hypocreales lineage
+### batch_2025-Dec (barcode36–45) — BUSCO scores
 
 | Barcode | Isolate | Species | BUSCO % |
 |---------|---------|---------|---------|
@@ -264,13 +205,16 @@ permanent /project/ storage.
 ## Backlog / known issues
 
 - [ ] Verify barcode52 BUSCO score — currently inferred as 99.3%
-- [ ] Locate wtdbg2 trial barcode and BUSCO score — add to CHANGELOG.md v1.1
+- [ ] Locate wtdbg2 trial barcode and BUSCO score — add to CHANGELOG v1.1
+- [ ] Run `10_telomere_search.sh` array on batch_2025-Dec (fixed script ready)
 - [ ] Move batch_2025-Feb outputs to `/project/` permanent storage
 - [ ] Move batch_2025-Dec outputs to `/project/` permanent storage
 - [ ] Update BATCHES.md permanent storage index for both batches once moved
 - [ ] Confirm which stages ran on Atlas vs Ceres for batch_2025-Dec
-- [ ] Begin S5 analyses (telomere search, antiSMASH, CAZymes) for both batches
-- [ ] Confirm whether `funannotate setup -u -w -d $DB` is needed before annotate
+- [ ] Begin S5 CAZymes + antiSMASH for both batches
+- [ ] Add protein evidence file for _F. annulatum_ to PROTEIN_EVIDENCE_DIR
+      (not seen in previous batches — verify file exists before batch 3 predict)
+- [ ] Confirm whether `funannotate setup -u -w -d $DB` needed before annotate
 
 ---
 
@@ -279,7 +223,8 @@ permanent /project/ storage.
 | Item | Value |
 |------|-------|
 | Conda env | `seqenv` |
-| Activate | `module load miniconda && source activate seqenv` |
+| Activate (interactive) | `module load miniconda && source activate seqenv` |
+| Activate (batch scripts) | `source $(conda info --base)/etc/profile.d/conda.sh && conda activate seqenv` |
 | Porechop | `module unload miniconda && module load porechop` |
 | Primary cluster | Ceres |
 | Secondary cluster | Atlas |
