@@ -23,6 +23,98 @@
 
 ---
 
+## v1.6 — 2026-05-27 — Manifests moved to repo; scripts read MANIFEST from paths.sh; symlinks on scratch
+
+### What changed
+- **Manifests moved from scratch (`${BATCH_DIR}/`) to the Git repo
+  (`config/manifests/`)** — they are now version-controlled, GitHub-visible,
+  collaborator-accessible, and survive /90daydata purges
+- `paths.sh` exports a `MANIFEST` variable that resolves to the correct
+  manifest file based on `BATCH_ID`
+- All 7 manifest-driven scripts updated to use `${MANIFEST}` from `paths.sh`
+  instead of hardcoding `${BATCH_DIR}/batchN_manifest.tsv`
+- Symlinks created on scratch (`${BATCH_DIR}/manifest.tsv` →
+  `config/manifests/{BATCH_ID}_manifest.tsv`) for convenience when browsing
+  data — scripts do not depend on the symlinks
+- **All scripts now read all 9 manifest columns** consistently, even if
+  they only use a subset — column order is now a contract (see README §7)
+- Manifests renamed: `batch1_manifest.tsv` → `batch_2025-Feb_manifest.tsv`,
+  `batch2_manifest.tsv` → `batch_2025-Dec_manifest.tsv`, etc. — names now
+  match `BATCH_ID` values
+
+### Rationale — repo is canonical, scratch gets a symlink
+
+| | Scratch (old) | Repo (new) |
+|---|---|---|
+| Version controlled | ❌ | ✅ |
+| Survives /90daydata purge | ❌ | ✅ |
+| GitHub-visible | ❌ | ✅ |
+| Edit history (diffs) | ❌ | ✅ |
+| Co-located with data | ✅ | ✅ via symlink |
+
+Symlinks on scratch are for *humans* poking around the data directory.
+Scripts always read from the canonical repo location via `${MANIFEST}`
+defined in `paths.sh`. If the symlink breaks, scripts still work.
+
+### Scripts updated
+
+| Script | Change |
+|--------|--------|
+| `paths.sh` | Added `MANIFEST` variable |
+| `01_concat.sh` | Reads `${MANIFEST}`; 9-column read |
+| `07_busco_eval.sh` | Reads `${MANIFEST}`; 9-column read |
+| `08_sort_earlgrey_mask.sh` | Reads `${MANIFEST}`; 9-column read |
+| `09a_FUN_predict.sh` | Reads `${MANIFEST}` |
+| `09b_IPScan.sh` | Reads `${MANIFEST}` |
+| `09c_FUN_annotate.sh` | Reads `${MANIFEST}` |
+| `10_telomere_search.sh` | Reads `${MANIFEST}` |
+
+### Standard manifest read pattern (now consistent across all scripts)
+
+```bash
+LINE_NUM=$((SLURM_ARRAY_TASK_ID + 1))
+IFS=$'\t' read -r \
+    barcode sample_id assembly_file busco_name earlgrey_species \
+    funannotate_name funannotate_species protein_evidence_file antismash_file \
+    < <(sed -n "${LINE_NUM}p" "${MANIFEST}")
+```
+
+All scripts read all 9 columns even if they only use a subset. Earlier-stage
+scripts (e.g., 07_busco_eval) ignore the later columns. This makes column
+order a contract: reordering would only break things if downstream scripts
+were also updated, which is now centralized.
+
+### Migration
+
+One-time migration script provided as `migrate_manifests_to_repo.sh`. Run
+once on Ceres from the repo root. It:
+1. Creates `config/manifests/` in the repo
+2. Copies existing manifests from scratch and renames them
+3. Creates symlinks on scratch pointing back to the repo
+4. Prints follow-up steps (commit, optional cleanup)
+
+### New batch workflow
+
+For any future batch (e.g., batch_2026-Aug):
+
+```bash
+# 1. Update paths.sh
+sed -i 's/BATCH_ID=".*"/BATCH_ID="batch_2026-Aug"/' config/paths.sh
+
+# 2. Create the manifest
+nano config/manifests/batch_2026-Aug_manifest.tsv
+
+# 3. Commit
+git add config/paths.sh config/manifests/batch_2026-Aug_manifest.tsv
+git commit -m "batch: add batch_2026-Aug — N isolates"
+
+# 4. (Optional) Create scratch symlink
+ln -sfn ${PROJECT_ROOT}/config/manifests/batch_2026-Aug_manifest.tsv \
+        ${BATCH_DIR}/manifest.tsv
+```
+
+---
+
 ## v1.5 — 2026-05-27 — Telomere search added; 01_concat.sh written; batch_2026-May initiated; barlist.txt deprecated; sample_id format standardized
 
 ### What changed
