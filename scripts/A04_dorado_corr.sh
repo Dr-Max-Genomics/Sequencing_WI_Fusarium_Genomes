@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash
 #SBATCH --job-name=Dor_Correction
 #SBATCH -A silage_microbiome
 #SBATCH -p gpu-a100
