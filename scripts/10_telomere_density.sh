@@ -30,7 +30,7 @@ source "${PROJECT_ROOT}/config/paths.sh"
 module load miniconda
 # shellcheck disable=SC1091
 source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate mycotools
+source activate mycotools
 
 # -----------------------------------------------------------------------
 # Standard manifest read — all 9 columns. See README §7.
