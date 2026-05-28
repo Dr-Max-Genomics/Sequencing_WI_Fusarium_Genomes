@@ -89,7 +89,6 @@ cat <<EOF
 
 2. Old manifest files on scratch can stay (harmless) or be removed:
      rm /90daydata/silage_microbiome/max_seq/batch1_all_barcodes/batch1_manifest.tsv
-     rm /90daydata/silage_microbiome/max_seq/jan_batch2_all_barcodes/batch2_manifest.tsv
 
 3. For any new batch going forward:
      a) Set BATCH_ID in config/paths.sh
