@@ -11,16 +11,16 @@
 
 set -euo pipefail
 
-# -------- resolve paths --------
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="/project/silage_microbiome/max.chi/fusarium_sequencing"
 source "${PROJECT_ROOT}/config/paths.sh"
 
-# -------- pick this task's sample from the manifest --------
-MANIFEST="${BATCH_DIR}/batch1_manifest.tsv"
-LINE_NUM=$((SLURM_ARRAY_TASK_ID + 1))   # +1 skips header
-
-IFS=$'\t' read -r barcode sample_id assembly_file busco_name funannotate_name \
+# -----------------------------------------------------------------------
+# Standard manifest read — all 9 columns. See README §7.
+# -----------------------------------------------------------------------
+LINE_NUM=$((SLURM_ARRAY_TASK_ID + 1))
+IFS=$'\t' read -r \
+    barcode sample_id assembly_file busco_name earlgrey_species \
+    funannotate_name funannotate_species protein_evidence_file antismash_file \
     < <(sed -n "${LINE_NUM}p" "${MANIFEST}")
 
 if [[ -z "${sample_id:-}" ]]; then
@@ -28,7 +28,7 @@ if [[ -z "${sample_id:-}" ]]; then
     exit 1
 fi
 
-# -------- redirect everything to per-sample log --------
+# Per-sample log
 mkdir -p "${LOG_DIR}/Busco_eval"
 log_file="${LOG_DIR}/Busco_eval/${sample_id}.log"
 exec >"${log_file}" 2>&1
@@ -39,22 +39,20 @@ echo "Barcode:      ${barcode}"
 echo "Sample ID:    ${sample_id}"
 echo "Assembly:     ${assembly_file}"
 echo "Output name:  ${busco_name}"
+echo "Manifest:     ${MANIFEST}"
 echo "Job ID:       ${SLURM_JOB_ID}"
 echo "Array task:   ${SLURM_ARRAY_TASK_ID}"
 echo "Host:         $(hostname)"
 echo "=========================================="
 
-# -------- load modules --------
 module load busco5
 
-# -------- locate input assembly --------
 ASSEMBLY="${POLISHED_DIR}/${assembly_file}"
 if [[ ! -s "${ASSEMBLY}" ]]; then
     echo "ERROR: assembly not found or empty: ${ASSEMBLY}" >&2
     exit 1
 fi
 
-# -------- confirm lineage is present --------
 LINEAGE="hypocreales_odb10"
 LINEAGE_PATH="${BUSCO_DOWNLOADS}/lineages/${LINEAGE}"
 if [[ ! -d "${LINEAGE_PATH}" ]]; then
@@ -63,7 +61,6 @@ if [[ ! -d "${LINEAGE_PATH}" ]]; then
     exit 1
 fi
 
-# -------- run BUSCO --------
 mkdir -p "${BUSCO_DIR}"
 
 busco \
@@ -74,6 +71,6 @@ busco \
     --mode genome \
     --cpu 8 \
     --offline \
-    --download_path "${BUSCO_DOWNLOADS}" 
+    --download_path "${BUSCO_DOWNLOADS}"
 
 echo "[$(date)] Finished ${sample_id}"
