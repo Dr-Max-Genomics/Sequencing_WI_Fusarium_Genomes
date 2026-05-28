@@ -14,12 +14,87 @@
 
 ### Pending
 - [ ] S5 CAZymes, antiSMASH docs not yet finalized
-- [ ] batch_2026-May: S1 starting — update when concat complete
+- [ ] batch_2026-May: run S1 (01→05) then S2 onward
 - [ ] Telomere search for batch_2025-Dec pending (array script ready)
 - [ ] antiSMASH version and exact flags not yet documented
 - [ ] wtdbg2 trial barcode and BUSCO score still unrecovered (see v1.1)
 - [ ] Verify barcode52 BUSCO score (inferred 99.3%)
 - [ ] Confirm _F. annulatum_ protein evidence file exists in PROTEIN_EVIDENCE_DIR
+- [ ] Write 06_flye_assemble.sh as manifest-driven array (currently inline sbatch)
+
+---
+
+## v1.7 — 2026-05-27 — S1 preprocessing scripts written; canonical S1 order corrected; PROJECT_ROOT pattern standardized
+
+### What changed
+- Wrote the four S1 preprocessing scripts as manifest-driven array jobs,
+  replacing the old `while read in; do ...; done < barlist.txt` one-liners:
+  `02_porechop.sh`, `03_seqkit_dedup.sh`, `04_nanofilt.sh`, `05_nanoplot.sh`
+- **Corrected the canonical S1 order** to reflect actual practice:
+  concat → **porechop → dedup** → nanofilt → nanoplot
+  (porechop now runs *before* dedup; this swaps the original Rmd numbering
+  where dedup was 02 and porechop was 03)
+- Standardized `PROJECT_ROOT` to env-var-with-fallback (`${PROJECT_ROOT:-...}`)
+  across all scripts — fixes the inconsistency where scripts hardcoded the
+  value unconditionally and silently overrode an exported PROJECT_ROOT
+
+### ⚠️ S1 order change — porechop before dedup
+
+The original Rmd order was dedup (02) → porechop (03). Actual practice is
+porechop (02) → dedup (03). Scripts are now numbered to match execution
+order, so the numbers and the data flow agree.
+
+| Old number | New number | Stage |
+|-----------|-----------|-------|
+| 03 | **02** | Porechop (adapter trimming) |
+| 02 | **03** | seqkit dedup |
+
+Rationale: trimming adapters first, then deduplicating the trimmed reads,
+gives cleaner dedup results (adapter-bearing duplicates are normalized
+before the dedup comparison).
+
+### S1 data flow and directory layout
+
+| Stage | Script | Input | Output |
+|-------|--------|-------|--------|
+| Concat | `01_concat.sh` | `00_Raw_Data/{barcode}/*.fastq.gz` | `00_Raw_Data/{barcode}/{barcode}.fastq.gz` |
+| Porechop | `02_porechop.sh` | concat output | `02_Trimming/PC_{sample_id}.fastq` |
+| Dedup | `03_seqkit_dedup.sh` | porechop output | `02_Trimming/PC_{sample_id}_D.fastq` + `{sample_id}_derep_list.txt` |
+| NanoFilt | `04_nanofilt.sh` | dedup output | `03_Trimmed_Data/{sample_id}.fastq` |
+| NanoPlot | `05_nanoplot.sh` | filtered output | `04_Summary_Plots/{sample_id}/` |
+
+`02_Trimming/` holds both cleanup intermediates (porechop + dedup).
+`03_Trimmed_Data/` holds the final analysis-ready reads.
+`04_Summary_Plots/` holds QC reports.
+
+### Module / environment handling per S1 script
+
+| Script | Tool | Loading method | Notes |
+|--------|------|---------------|-------|
+| `02_porechop.sh` | Porechop | `module load porechop` | Standalone module; NO conda (conflicts with miniconda) |
+| `03_seqkit_dedup.sh` | seqkit | `module load seqkit` | Also available in seqenv; module is lighter |
+| `04_nanofilt.sh` | NanoFilt | conda `seqenv` | Uses full conda activation pattern |
+| `05_nanoplot.sh` | NanoPlot | conda `seqenv` | Uses full conda activation pattern |
+
+### S1 SLURM parameters
+
+| Script | CPUs | Memory | Time | Array |
+|--------|------|--------|------|-------|
+| `01_concat.sh` | 4 | 20 GB | 2 hrs | 1–7 |
+| `02_porechop.sh` | 70 | 300 GB | 1 day | 1–7 |
+| `03_seqkit_dedup.sh` | 70 | 300 GB | 1 day | 1–7 |
+| `04_nanofilt.sh` | 70 | 150 GB | 1 day | 1–7 |
+| `05_nanoplot.sh` | 70 | 150 GB | 1 day | 1–7 |
+
+### Parameters
+- `MIN_LEN` (NanoFilt) defaults to 500 bp; overridable via
+  `export MIN_LEN=800` before submitting `04_nanofilt.sh`
+- All S1 scripts default to `--array=1-7` (batch_2026-May); adjust per batch
+
+### Ordering safety
+Each script validates that the previous stage's output exists before running,
+so out-of-order submission fails with a clear error rather than producing
+garbage.
 
 ---
 
