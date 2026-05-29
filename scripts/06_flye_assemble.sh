@@ -2,7 +2,7 @@
 #SBATCH -A silage_microbiome
 #SBATCH -N 1
 #SBATCH -n 40
-#SBATCH --mem=50G
+#SBATCH --mem=1280G
 #SBATCH -p ceres
 #SBATCH -t 1-0
 #SBATCH --job-name=flye

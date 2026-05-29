@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #SBATCH -A silage_microbiome
 #SBATCH -N 1
-#SBATCH -n 70
-#SBATCH --mem=300G
+#SBATCH -n 4
+#SBATCH --mem=150G
 #SBATCH -p ceres
-#SBATCH -t 1-0
+#SBATCH -t 02:00:00
 #SBATCH --job-name=seqkit_dedup
 #SBATCH --array=1-7
 #SBATCH --output=/dev/null

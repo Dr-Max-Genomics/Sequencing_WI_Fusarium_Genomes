@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #SBATCH -A silage_microbiome
 #SBATCH -N 1
-#SBATCH -n 70
+#SBATCH -n 8
 #SBATCH --mem=150G
 #SBATCH -p ceres
-#SBATCH -t 1-0
+#SBATCH -t 05:00:00
 #SBATCH --job-name=nanofilt
 #SBATCH --array=1-7
 #SBATCH --output=/dev/null
@@ -13,7 +13,7 @@ set -euo pipefail
 
 # -----------------------------------------------------------------------
 # 04_nanofilt.sh
-# Purpose : Filter out reads shorter than MIN_LEN (default 500 bp).
+# Purpose : Filter out reads shorter than MIN_LEN (default 1000 bp) > Q20
 #           Canonical S1 order: concat -> porechop -> dedup -> nanofilt -> nanoplot
 # Usage   : sbatch --array=1 scripts/04_nanofilt.sh     # test one
 #           sbatch --array=2-7 scripts/04_nanofilt.sh   # rest of batch
@@ -26,13 +26,13 @@ PROJECT_ROOT="${PROJECT_ROOT:-/project/silage_microbiome/max.chi/fusarium_sequen
 source "${PROJECT_ROOT}/config/paths.sh"
 
 # Minimum read length — override by exporting MIN_LEN before submission
-MIN_LEN="${MIN_LEN:-500}"
+MIN_LEN="${MIN_LEN:-1000}"
 
 # -----------------------------------------------------------------------
 # Conda activation (NanoFilt lives in seqenv)
 # -----------------------------------------------------------------------
 module load miniconda
-source activate seqenv
+source activate seq_env
 
 # -----------------------------------------------------------------------
 # Standard manifest read — all 9 columns. See README §7.
@@ -87,7 +87,7 @@ fi
 # Run NanoFilt
 # -----------------------------------------------------------------------
 echo "[$(date)] Running NanoFilt (-l ${MIN_LEN})..."
-NanoFilt -l "${MIN_LEN}" "${INPUT}" > "${OUTPUT}"
+NanoFilt -q 20 -l "${MIN_LEN}" "${INPUT}" > "${OUTPUT}"
 
 if [[ ! -s "${OUTPUT}" ]]; then
     echo "ERROR: output empty after NanoFilt: ${OUTPUT}" >&2

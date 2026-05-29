@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #SBATCH -A silage_microbiome
 #SBATCH -N 1
-#SBATCH -n 70
-#SBATCH --mem=150G
+#SBATCH -n 16
+#SBATCH --mem=32G
 #SBATCH -p ceres
-#SBATCH -t 1-0
+#SBATCH -t 01:00:00
 #SBATCH --job-name=nanoplot
 #SBATCH --array=1-7
 #SBATCH --output=/dev/null
@@ -35,7 +35,7 @@ source "${PROJECT_ROOT}/config/paths.sh"
 # Conda activation (NanoPlot lives in seqenv)
 # -----------------------------------------------------------------------
 module load miniconda
-source activate seqenv
+source activate seq_env
 
 # -----------------------------------------------------------------------
 # Standard manifest read — all 9 columns. See README §7.

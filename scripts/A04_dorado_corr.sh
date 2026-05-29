@@ -50,7 +50,7 @@ set -euo pipefail
 # -----------------------------------------------------------------------
 # HARDCODED Atlas paths  (EDIT PER BATCH)
 # -----------------------------------------------------------------------
-ATLAS_BATCH_DIR="/90daydata/silage_microbiome/Max_Batch3"
+ATLAS_BATCH_DIR="/90daydata/silage_microbiome/Max_Fus_Batch3"
 INPUT_DIR="${ATLAS_BATCH_DIR}/03_Trimmed_Data"               # filtered reads from Ceres
 OUTPUT_DIR="${ATLAS_BATCH_DIR}/03_Trimmed_Data/corrected_reads"
 LOG_DIR="${ATLAS_BATCH_DIR}/logs/dorado_correct"
