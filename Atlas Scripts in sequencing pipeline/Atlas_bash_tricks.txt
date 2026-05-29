@@ -14,6 +14,7 @@ squeue -all --me
 sstat jobID --all
 
 # Check Job Efficiency
+sacct -j <jobID> --format=JobID,JobName,AllocCPUS,State,Elapsed,CPUTime,MaxRSS,ReqMem,Partition
 seff jobID
 
 # Check accounts
