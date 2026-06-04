@@ -1,0 +1,11 @@
+barcode	sample_id	assembly_file	busco_name	earlgrey_species	funannotate_name	funannotate_species	protein_evidence_file	antismash_file
+36	Fus_Bar36	polished36_assembly.fasta	Bar36_Busco	Fus36	FunAnnotate_Bar36	F.sporotrichioides	F_verticillioides_7600_proteins.faa	FusBar36.scaffolds.gbk
+37	Fus_Bar37	polished37_assembly.fasta	Bar37_Busco	Fus37	FunAnnotate_Bar37	F.sporotrichioides	F_verticillioides_7600_proteins.faa	FusBar37.scaffolds.gbk
+38	Fus_Bar38	polished38_assembly.fasta	Bar38_Busco	Fus38	FunAnnotate_Bar38	F.graminearum	F_graminearum_PH1_proteins.faa	FusBar38.scaffolds.gbk
+39	Fus_Bar39	polished39_assembly.fasta	Bar39_Busco	Fus39	FunAnnotate_Bar39	F.graminearum	F_graminearum_PH1_proteins.faa	FusBar39.scaffolds.gbk
+40	Fus_Bar40	polished40_assembly.fasta	Bar40_Busco	Fus40	FunAnnotate_Bar40	F.proliferatum	F_verticillioides_7600_proteins.faa	FusBar40.scaffolds.gbk
+41	Fus_Bar41	polished41_assembly.fasta	Bar41_Busco	Fus41	FunAnnotate_Bar41	F.graminearum	F_graminearum_PH1_proteins.faa	FusBar41.scaffolds.gbk
+42	Fus_Bar42	polished42_assembly.fasta	Bar42_Busco	Fus42	FunAnnotate_Bar42	F.proliferatum	F_verticillioides_7600_proteins.faa	FusBar42.scaffolds.gbk
+43	Fus_Bar43	polished43_assembly.fasta	Bar43_Busco	Fus43	FunAnnotate_Bar43	F.graminearum	F_graminearum_PH1_proteins.faa	FusBar43.scaffolds.gbk
+44	Fus_Bar44	polished44_assembly.fasta	Bar44_Busco	Fus44	FunAnnotate_Bar44	F.ipomoea_(putative)	F_verticillioides_7600_proteins.faa	FusBar44.scaffolds.gbk
+45	Fus_Bar45	polished45_assembly.fasta	Bar45_Busco	Fus45	FunAnnotate_Bar45	F.proliferatum	F_verticillioides_7600_proteins.faa	FusBar45.scaffolds.gbk

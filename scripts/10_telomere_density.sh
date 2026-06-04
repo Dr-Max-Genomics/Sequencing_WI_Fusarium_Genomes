@@ -6,8 +6,7 @@
 #SBATCH -p ceres
 #SBATCH -t 2:00:00
 #SBATCH --job-name=telomere
-#SBATCH --array=1-9
-#SBATCH --output=/dev/null
+#SBATCH --array=1-10
 
 set -euo pipefail
 
@@ -29,7 +28,7 @@ source "${PROJECT_ROOT}/config/paths.sh"
 # -----------------------------------------------------------------------
 module load miniconda
 # shellcheck disable=SC1091
-source "$(conda info --base)/etc/profile.d/conda.sh"
+# source "$(conda info --base)/etc/profile.d/conda.sh"
 source activate mycotools
 
 # -----------------------------------------------------------------------
