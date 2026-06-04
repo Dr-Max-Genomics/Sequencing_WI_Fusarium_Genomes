@@ -54,7 +54,7 @@ fi
 # -----------------------------------------------------------------------
 # Input: the _new.gbk from funannotate annotate
 ANNOTATE_DIR="${FUN_PREDICT_DIR}/${funannotate_name}/annotate_results"
-INPUT_GBK=$(find "${ANNOTATE_DIR}" -maxdepth 1 -name "*_new.gbk" | head -1)
+INPUT_GBK=$(find "${ANNOTATE_DIR}" -maxdepth 1 -name "*.gbk" | head -1)
 
 # Output directory per sample
 OUT_DIR="${ANTISMASH_DIR}/${sample_id}"
@@ -112,6 +112,8 @@ antismash \
     --clusterhmmer \
     --tigrfam \
     --pfam2go \
+    --no-abort-on-invalid-records \
+    --minlength 1000 \
     --rre \
     --cpus "${SLURM_NTASKS}" \
     --output-dir "${OUT_DIR}" \
