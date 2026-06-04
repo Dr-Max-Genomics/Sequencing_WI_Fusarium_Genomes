@@ -112,7 +112,7 @@ antismash \
     --clusterhmmer \
     --tigrfam \
     --pfam2go \
-    --no-abort-on-invalid-records \
+    --genefinding-tool none \
     --minlength 1000 \
     --rre \
     --cpus "${SLURM_NTASKS}" \
