@@ -55,7 +55,7 @@ set -euo pipefail
 # -----------------------------------------------------------------------
 # HARDCODED Atlas paths  (EDIT PER BATCH)
 # -----------------------------------------------------------------------
-ATLAS_BATCH_DIR="/90daydata/silage_microbiome/Max_Batch3"
+ATLAS_BATCH_DIR="/90daydata/silage_microbiome/Max_Fus_Batch3"
 POD5_DIR="${ATLAS_BATCH_DIR}/00_Raw_Data/pod5"        # input POD5 directory (recursive scan)
 OUT_DIR="${ATLAS_BATCH_DIR}/A01_basecall"             # output for calls.bam + summary.tsv
 

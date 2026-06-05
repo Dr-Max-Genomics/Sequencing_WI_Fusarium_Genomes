@@ -127,18 +127,6 @@ if [[ ! -f "${OUT_DIR}/index.html" ]]; then
     exit 1
 fi
 
-# -----------------------------------------------------------------------
-# Create GBK symlink for 09c_FUN_annotate.sh
-# The manifest antismash_file column points to this path
-# -----------------------------------------------------------------------
-gbk_out=$(find "${OUT_DIR}" -maxdepth 1 -name "*.gbk" | head -1)
-if [[ -n "${gbk_out}" ]]; then
-    ln -sfn "${gbk_out}" "${GBK_LINK}"
-    echo "GBK symlink created: ${GBK_LINK} → ${gbk_out}"
-else
-    echo "WARN: no .gbk found in ${OUT_DIR} — symlink not created" >&2
-fi
-
 echo
 echo "[$(date)] Done: ${sample_id}"
 echo "Results: ${OUT_DIR}"
