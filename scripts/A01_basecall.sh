@@ -6,7 +6,7 @@
 #SBATCH --qos=normal
 #SBATCH -N 1
 #SBATCH -n 40
-#SBATCH --mem=500G
+#SBATCH --mem=350G
 #SBATCH -t 48:00:00
 #SBATCH --mail-user=maxwell.chibuogwu@usda.gov
 #SBATCH --mail-type=BEGIN,END,FAIL
