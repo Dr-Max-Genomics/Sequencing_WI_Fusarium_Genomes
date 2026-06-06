@@ -4,9 +4,9 @@
 #SBATCH -n 32
 #SBATCH --mem=100G
 #SBATCH -p ceres
-#SBATCH -t 6:00:00
+#SBATCH -t 2:00:00
 #SBATCH --job-name=antiSMASH
-#SBATCH --array=1-9
+#SBATCH --array=1-7
 #SBATCH --output=/dev/null
 
 set -euo pipefail
@@ -75,7 +75,7 @@ fi
 # Input: the _new.gbk from funannotate annotate
 # Use -print -quit (not |head) — pipelines can SIGPIPE under set -o pipefail
 ANNOTATE_DIR="${FUN_PREDICT_DIR}/${funannotate_name}/annotate_results"
-INPUT_GBK=$(find "${ANNOTATE_DIR}" -maxdepth 1 -name "*_new.gbk" -print -quit)
+INPUT_GBK=$(find "${ANNOTATE_DIR}" -maxdepth 1 -name "*.gbk" -print -quit)
 
 # Output directory per sample
 OUT_DIR="${ANTISMASH_DIR}/${sample_id}"
@@ -99,7 +99,7 @@ echo "=========================================="
 
 # Validate input
 if [[ -z "${INPUT_GBK}" || ! -s "${INPUT_GBK}" ]]; then
-    echo "ERROR: no *_new.gbk found in ${ANNOTATE_DIR}" >&2
+    echo "ERROR: no *.gbk found in ${ANNOTATE_DIR}" >&2
     ls "${ANNOTATE_DIR}" >&2 || true
     echo "Did 09c_FUN_annotate.sh complete for ${sample_id}?" >&2
     exit 1
