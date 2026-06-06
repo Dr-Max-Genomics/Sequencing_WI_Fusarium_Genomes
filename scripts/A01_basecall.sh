@@ -2,7 +2,7 @@
 #SBATCH --job-name=Dor_Basecall
 #SBATCH -A silage_microbiome
 #SBATCH -p gpu-a100
-#SBATCH --gres=gpu:a100:5
+#SBATCH --gres=gpu:a100:6
 #SBATCH --qos=normal
 #SBATCH -N 1
 #SBATCH -n 40
@@ -193,8 +193,16 @@ echo "Size:      $(du -sh "${real_bam}" | cut -f1)"
 total_reads=$(samtools view -c "${OUT_BAM}")
 echo "Reads:     ${total_reads}"
 
-# Verify 'mv' tag presence by peeking at the first record's optional tags
-first_record_tags=$(samtools view "${OUT_BAM}" | head -1 | cut -f12-)
+# Verify 'mv' tag presence by peeking at the first record.
+# Use awk to read one line and exit — safer than 'head -1' because awk's
+# main loop consumes input cleanly before the 'exit' fires, avoiding the
+# SIGPIPE-to-samtools issue (which under set -o pipefail can cause exit
+# 141 or 142 even though basecalling itself succeeded).
+# The '|| true' is belt-and-suspenders against any residual signal.
+first_record_tags=$(samtools view "${OUT_BAM}" 2>/dev/null \
+    | awk 'NR==1 {print; exit}' || true)
+first_record_tags="${first_record_tags#$'\t'}"  # strip leading tab if any
+
 if [[ "${first_record_tags}" == *"mv:"* ]]; then
     echo "Move table 'mv' tag: PRESENT (move-aware polish will work in A05)"
 else
