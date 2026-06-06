@@ -2,7 +2,7 @@
 #SBATCH --job-name=Align_Polish
 #SBATCH -A silage_microbiome
 #SBATCH -p gpu-a100
-#SBATCH --gres=gpu:a100:1
+#SBATCH --gres=gpu:a100:5
 #SBATCH --qos=normal
 #SBATCH -N 1
 #SBATCH -n 16
