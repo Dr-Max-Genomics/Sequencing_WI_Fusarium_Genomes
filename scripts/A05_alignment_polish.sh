@@ -2,7 +2,7 @@
 #SBATCH --job-name=Align_Polish
 #SBATCH -A silage_microbiome
 #SBATCH -p gpu-a100
-#SBATCH --gres=gpu:a100:4
+#SBATCH --gres=gpu:a100:1
 #SBATCH --qos=normal
 #SBATCH -N 1
 #SBATCH -n 16
@@ -12,34 +12,65 @@
 #SBATCH --mail-type=BEGIN,END,FAIL
 
 set -euo pipefail
+shopt -s nullglob
 
 # =======================================================================
-# A05_alignment_polish.sh   —   ATLAS GPU step (A-series)
+# A05_alignment_polish.sh   —   ATLAS GPU step (A-series)   [v2]
 # -----------------------------------------------------------------------
-# Purpose : Align basecalled reads (calls.bam from A01) to the Flye
-#           assembly, then polish with dorado polish. One isolate per
-#           array task, one A100 GPU each.
+# Purpose : Align per-barcode reads (from A02 demux) to the matching
+#           Flye assembly, then polish with dorado polish. One isolate
+#           per array task, one A100 GPU each.
 # Cluster : ATLAS (GPU). Atlas and Ceres filesystems are NOT synced.
 #           All paths are HARDCODED. Edit per batch.
 # -----------------------------------------------------------------------
+# WHY THIS VERSION uses A02 per-barcode BAMs (not A01 calls.bam):
+#
+#   v1 of this script aligned the full calls.bam against each sample's
+#   assembly and used `dorado polish --RG <id>` to filter to the correct
+#   barcode's reads. That strategy requires barcode-specific @RG lines
+#   in calls.bam — which only exist when A01 was run with --kit-name.
+#
+#   For Batch 3 (and any batch following the documented A-series),
+#   A01 runs WITHOUT --kit-name. calls.bam therefore has a single
+#   generic @RG line, no barcode information, and --RG filtering is
+#   impossible. Polishing without a filter would pull cross-barcode
+#   reads (real risk for the three F. graminearum isolates that share
+#   the same species → high cross-mapping).
+#
+#   Solution: feed A05 the per-barcode BAM that A02 already produced.
+#   The filename IS the filter. mv tags are preserved through demux
+#   (verified at the tail of A02). This also cuts alignment work ~Nx
+#   for N barcodes since each task only aligns its own reads.
+#
+#   Tradeoff: A05 is now dependent on A02 having run successfully.
+#   For Batch 3 this is fine — A02's single-ended demux matches MinKNOW
+#   stringency, which is what the assemblies were built against.
+# -----------------------------------------------------------------------
 # A-series pipeline context:
-#   A01  →  calls.bam (with mv tag; used again here — don't delete it)
-#   A05  →  align + polish                          (THIS SCRIPT)
+#   A01  →  calls.bam (mv tags; canonical signal source)
+#   A02  →  per-barcode BAMs (mv tags preserved; barcode = filename)
+#   A05  →  align A02 BAM to assembly + polish     (THIS SCRIPT)
 #         ↓  transfer polished FASTA to Ceres
 #   Ceres: 07_Polished_Genome/{sample_id}_polished.fasta
-#          → 07_busco_eval → 08_sort_earlgrey_mask → ...
 # -----------------------------------------------------------------------
 # Prerequisites (must exist before this script runs):
-#   - ${A01_BAM}        : calls.bam from A01 (aligned BAM with mv tags)
+#   - ${A02_DEMUX_DIR}/*_barcodeXX.bam : per-barcode BAM from A02 demux
 #   - ${ASSEMBLY_DIR}/{sample_id}_assembly.fasta : Flye assembly copied
 #     from Ceres 07_Polished_Genome/ after 06_flye_assemble.sh ran.
-#     Note: Flye always outputs assembly.fasta; 06_flye_assemble.sh
-#     renames it to {sample_id}_assembly.fasta before transfer.
+# -----------------------------------------------------------------------
+# IMPORTANT — rerunning after a v1 failure:
+#   If you previously ran v1 of A05 and it produced aligned.bam files
+#   in 06_Alignment_Polishing/{sample_id}/, DELETE THEM before running
+#   this version. v1 aligned the full calls.bam (all barcodes); v2
+#   aligns only this barcode's reads. The skip-guard would otherwise
+#   reuse a stale, all-barcodes BAM.
+#
+#     rm -rf ${ATLAS_BATCH_DIR}/06_Alignment_Polishing/Fus_Bar*/
 # -----------------------------------------------------------------------
 # Sandbox pattern:
-#   06_Alignment_Polishing/{sample_id}/  ← per-sample working directory
-#     aligned.bam                        ← alignment output
-#     aligned.bam.bai                    ← BAM index
+#   06_Alignment_Polishing/{sample_id}/
+#     aligned.bam       ← alignment of this barcode's reads to assembly
+#     aligned.bam.bai
 #   07_Polished_Genome/{sample_id}_polished.fasta  ← final output
 # -----------------------------------------------------------------------
 # Usage :
@@ -51,35 +82,54 @@ set -euo pipefail
 # HARDCODED Atlas paths  (EDIT PER BATCH)
 # -----------------------------------------------------------------------
 ATLAS_BATCH_DIR="/90daydata/silage_microbiome/Max_Batch3"
-A01_BAM="${ATLAS_BATCH_DIR}/A01_basecall/calls.bam"   # move-table-aware BAM
-ASSEMBLY_DIR="${ATLAS_BATCH_DIR}/05_Genome_Assembly"  # named assemblies from Ceres
+A02_DEMUX_DIR="${ATLAS_BATCH_DIR}/A02_demux"
+ASSEMBLY_DIR="${ATLAS_BATCH_DIR}/05_Genome_Assembly"
 SANDBOX_DIR="${ATLAS_BATCH_DIR}/06_Alignment_Polishing"
 POLISHED_DIR="${ATLAS_BATCH_DIR}/07_Polished_Genome"
 
 # -----------------------------------------------------------------------
 # Inline barcode → sample_id mapping  (EDIT PER BATCH)
-# Matches batch_2026-May manifest. barcode03 absent.
+# Array indices are repacked contiguously when barcodes are absent.
+# Batch 3: barcode03 missing → task 3 = barcode04, +1 offset thereafter.
 # -----------------------------------------------------------------------
 declare -A SAMPLE_OF
-SAMPLE_OF[1]="Fus_Bar01"   # barcode01  F. verticillioides
-SAMPLE_OF[2]="Fus_Bar02"   # barcode02  F. proliferatum
-SAMPLE_OF[3]="Fus_Bar04"   # barcode04  F. graminearum
-SAMPLE_OF[4]="Fus_Bar05"   # barcode05  F. annulatum
-SAMPLE_OF[5]="Fus_Bar06"   # barcode06  F. graminearum
-SAMPLE_OF[6]="Fus_Bar07"   # barcode07  F. graminearum
-SAMPLE_OF[7]="Fus_Bar08"   # barcode08  F. sporotrichioides
+declare -A BARCODE_OF
+SAMPLE_OF[1]="Fus_Bar01"  ; BARCODE_OF[1]="barcode01"   # F. verticillioides
+SAMPLE_OF[2]="Fus_Bar02"  ; BARCODE_OF[2]="barcode02"   # F. proliferatum
+SAMPLE_OF[3]="Fus_Bar04"  ; BARCODE_OF[3]="barcode04"   # F. graminearum
+SAMPLE_OF[4]="Fus_Bar05"  ; BARCODE_OF[4]="barcode05"   # F. annulatum
+SAMPLE_OF[5]="Fus_Bar06"  ; BARCODE_OF[5]="barcode06"   # F. graminearum
+SAMPLE_OF[6]="Fus_Bar07"  ; BARCODE_OF[6]="barcode07"   # F. graminearum
+SAMPLE_OF[7]="Fus_Bar08"  ; BARCODE_OF[7]="barcode08"   # F. sporotrichioides
 
 # -----------------------------------------------------------------------
 # Resolve this task's sample
 # -----------------------------------------------------------------------
 TASK="${SLURM_ARRAY_TASK_ID}"
 sample_id="${SAMPLE_OF[${TASK}]:-}"
+barcode_label="${BARCODE_OF[${TASK}]:-}"
 
-if [[ -z "${sample_id}" ]]; then
+if [[ -z "${sample_id}" || -z "${barcode_label}" ]]; then
     echo "ERROR: no mapping for array task ${TASK}" >&2
-    echo "Edit SAMPLE_OF array and --array range." >&2
+    echo "Edit SAMPLE_OF / BARCODE_OF arrays and --array range." >&2
     exit 1
 fi
+
+# -----------------------------------------------------------------------
+# Resolve A02 BAM via glob (filename pattern: <RG-hash>_SQK-NBD114-96_barcodeXX.bam)
+# -----------------------------------------------------------------------
+candidates=( "${A02_DEMUX_DIR}/"*"_${barcode_label}.bam" )
+
+if [[ ${#candidates[@]} -eq 0 ]]; then
+    echo "ERROR: no A02 BAM found for ${barcode_label} in ${A02_DEMUX_DIR}/" >&2
+    echo "Expected a file matching: *_${barcode_label}.bam" >&2
+    exit 1
+elif [[ ${#candidates[@]} -gt 1 ]]; then
+    echo "ERROR: multiple A02 BAMs match ${barcode_label}:" >&2
+    printf '  %s\n' "${candidates[@]}" >&2
+    exit 1
+fi
+READS_BAM="${candidates[0]}"
 
 # -----------------------------------------------------------------------
 # Paths
@@ -90,20 +140,20 @@ ALIGNED_BAM="${SAMPLE_SANDBOX}/aligned.bam"
 POLISHED_FASTA="${POLISHED_DIR}/${sample_id}_polished.fasta"
 
 # -----------------------------------------------------------------------
-# Set up logging — match A01/A04 pattern: ${ATLAS_BATCH_DIR}/logs/<step>/
+# Set up logging — match A01/A02/A04 pattern
 # -----------------------------------------------------------------------
-LOG_DIR_BASE="${ATLAS_BATCH_DIR}/logs"
-LOG_DIR="${LOG_DIR_BASE}/polish"
+LOG_DIR="${ATLAS_BATCH_DIR}/logs/polish"
 mkdir -p "${SAMPLE_SANDBOX}" "${POLISHED_DIR}" "${LOG_DIR}"
 
-sample_log="${LOG_DIR}/${sample_id}.log"
+sample_log="${LOG_DIR}/${sample_id}_${SLURM_JOB_ID}.log"
 exec >"${sample_log}" 2>&1
 
 echo "=========================================="
-echo "[$(date)] Alignment + polishing — ATLAS GPU"
+echo "[$(date)] Alignment + polishing — ATLAS GPU (v2: A02 input)"
 echo "Sample:        ${sample_id}"
+echo "Barcode:       ${barcode_label}"
+echo "Reads BAM:     ${READS_BAM}"
 echo "Assembly:      ${ASSEMBLY}"
-echo "Reads BAM:     ${A01_BAM}"
 echo "Aligned BAM:   ${ALIGNED_BAM}"
 echo "Polished out:  ${POLISHED_FASTA}"
 echo "Job:           ${SLURM_JOB_ID} / array ${SLURM_ARRAY_JOB_ID} task ${TASK}"
@@ -115,9 +165,9 @@ echo "=========================================="
 # -----------------------------------------------------------------------
 # Validate inputs
 # -----------------------------------------------------------------------
-if [[ ! -s "${A01_BAM}" ]]; then
-    echo "ERROR: reads BAM not found or empty: ${A01_BAM}" >&2
-    echo "Did A01_basecall.sh complete successfully?" >&2
+if [[ ! -s "${READS_BAM}" ]]; then
+    echo "ERROR: A02 reads BAM is empty: ${READS_BAM}" >&2
+    echo "Did this barcode actually have reads in the run?" >&2
     exit 1
 fi
 
@@ -134,25 +184,31 @@ if [[ -s "${POLISHED_FASTA}" ]]; then
     exit 0
 fi
 
-# -----------------------------------------------------------------------
-# Load modules
-# -----------------------------------------------------------------------
+# Quick mv-tag spot check — confirms A02 preserved the move table.
 module purge
-module load dorado
 module load samtools
+
+mv_count=$(samtools view --keep-tag "mv" -c "${READS_BAM}" 2>/dev/null || echo "0")
+total=$(samtools view -c "${READS_BAM}" 2>/dev/null || echo "0")
+echo "Read population: ${total} reads, ${mv_count} with 'mv' tag"
+if [[ "${mv_count}" == "0" && "${total}" != "0" ]]; then
+    echo "ERROR: no reads carry 'mv' tag — dorado polish cannot run move-aware model" >&2
+    echo "Was A02 output produced from a non-move-table BAM?" >&2
+    exit 1
+fi
+
+module load dorado
 
 # -----------------------------------------------------------------------
 # STEP 1 — Align reads to assembly
-# -----------------------------------------------------------------------
-# dorado aligner accepts a BAM of reads + a FASTA reference.
-# Pipe directly into samtools sort to avoid a large unsorted intermediate.
+# Only this barcode's reads go in; no cross-barcode alignments to filter.
 # -----------------------------------------------------------------------
 if [[ ! -s "${ALIGNED_BAM}" ]]; then
-    echo "[$(date)] STEP 1: Aligning reads to assembly..."
+    echo "[$(date)] STEP 1: Aligning ${barcode_label} reads to ${sample_id} assembly..."
     dorado aligner \
         --threads "${SLURM_NTASKS:-1}" \
         "${ASSEMBLY}" \
-        "${A01_BAM}" \
+        "${READS_BAM}" \
     | samtools sort \
         --threads "${SLURM_NTASKS:-1}" \
         -o "${ALIGNED_BAM}"
@@ -164,6 +220,7 @@ if [[ ! -s "${ALIGNED_BAM}" ]]; then
     echo "[$(date)] Alignment done. BAM size: $(du -sh "${ALIGNED_BAM}" | cut -f1)"
 else
     echo "Aligned BAM already exists — skipping alignment: ${ALIGNED_BAM}"
+    echo "(If this was produced by v1 of A05, DELETE IT and rerun — it contains all-barcode alignments.)"
 fi
 
 # -----------------------------------------------------------------------
@@ -178,47 +235,12 @@ else
 fi
 
 # -----------------------------------------------------------------------
-# STEP 3 — Detect RG tag for this barcode
-# The aligned BAM may contain reads from multiple barcodes (all reads
-# from calls.bam were aligned). The RG (read group) tag identifies which
-# reads belong to this specific barcode/sample. Passing --RG ensures
-# dorado polish only uses reads from the correct barcode.
+# STEP 3 — Polish assembly with dorado polish
+# No --RG filtering needed: input BAM is already barcode-specific.
 # -----------------------------------------------------------------------
-echo "[$(date)] STEP 3: Detecting read group (RG) for ${sample_id}..."
+echo "[$(date)] STEP 3: Polishing assembly..."
 
-# Extract the barcode number from sample_id (Fus_Bar01 → barcode01)
-# The RG tag in the BAM header encodes the barcode from demuxing.
-barcode_num=$(echo "${sample_id}" | sed 's/Fus_Bar//' | awk '{printf "%02d", $1}')
-barcode_label="barcode${barcode_num}"
-
-RG=$(samtools view -H "${ALIGNED_BAM}" \
-    | grep "^@RG" \
-    | grep -i "${barcode_label}" \
-    | awk '{for(i=1;i<=NF;i++) if($i ~ /^ID:/) print substr($i,4)}' \
-    | head -1)
-
-if [[ -z "${RG}" ]]; then
-    echo "WARN: could not auto-detect RG for ${barcode_label}" >&2
-    echo "Available @RG lines in BAM header:" >&2
-    samtools view -H "${ALIGNED_BAM}" | grep "^@RG" >&2
-    echo "Proceeding WITHOUT --RG flag (will use all reads in BAM)" >&2
-    echo "This is acceptable if only this barcode's reads are in the BAM." >&2
-    USE_RG=""
-else
-    echo "Detected RG: ${RG}"
-    USE_RG="--RG ${RG}"
-fi
-
-# -----------------------------------------------------------------------
-# STEP 4 — Polish assembly with dorado polish
-# Uses the move-table-aware BAM from A01 (mv tags) to enable the
-# more accurate polishing model.
-# -----------------------------------------------------------------------
-echo "[$(date)] STEP 4: Polishing assembly..."
-
-# shellcheck disable=SC2086
 dorado polish \
-    ${USE_RG} \
     "${ALIGNED_BAM}" \
     "${ASSEMBLY}" \
     > "${POLISHED_FASTA}"
