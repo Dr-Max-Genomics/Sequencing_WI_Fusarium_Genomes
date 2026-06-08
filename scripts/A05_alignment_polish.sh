@@ -2,7 +2,7 @@
 #SBATCH --job-name=Align_Polish
 #SBATCH -A silage_microbiome
 #SBATCH -p gpu-a100
-#SBATCH --gres=gpu:a100:1
+#SBATCH --gres=gpu:a100:4
 #SBATCH --qos=normal
 #SBATCH -N 1
 #SBATCH -n 16
@@ -23,29 +23,6 @@ shopt -s nullglob
 # Cluster : ATLAS (GPU). Atlas and Ceres filesystems are NOT synced.
 #           All paths are HARDCODED. Edit per batch.
 # -----------------------------------------------------------------------
-# WHY THIS VERSION uses A02 per-barcode BAMs (not A01 calls.bam):
-#
-#   v1 of this script aligned the full calls.bam against each sample's
-#   assembly and used `dorado polish --RG <id>` to filter to the correct
-#   barcode's reads. That strategy requires barcode-specific @RG lines
-#   in calls.bam — which only exist when A01 was run with --kit-name.
-#
-#   For Batch 3 (and any batch following the documented A-series),
-#   A01 runs WITHOUT --kit-name. calls.bam therefore has a single
-#   generic @RG line, no barcode information, and --RG filtering is
-#   impossible. Polishing without a filter would pull cross-barcode
-#   reads (real risk for the three F. graminearum isolates that share
-#   the same species → high cross-mapping).
-#
-#   Solution: feed A05 the per-barcode BAM that A02 already produced.
-#   The filename IS the filter. mv tags are preserved through demux
-#   (verified at the tail of A02). This also cuts alignment work ~Nx
-#   for N barcodes since each task only aligns its own reads.
-#
-#   Tradeoff: A05 is now dependent on A02 having run successfully.
-#   For Batch 3 this is fine — A02's single-ended demux matches MinKNOW
-#   stringency, which is what the assemblies were built against.
-# -----------------------------------------------------------------------
 # A-series pipeline context:
 #   A01  →  calls.bam (mv tags; canonical signal source)
 #   A02  →  per-barcode BAMs (mv tags preserved; barcode = filename)
@@ -57,15 +34,6 @@ shopt -s nullglob
 #   - ${A02_DEMUX_DIR}/*_barcodeXX.bam : per-barcode BAM from A02 demux
 #   - ${ASSEMBLY_DIR}/{sample_id}_assembly.fasta : Flye assembly copied
 #     from Ceres 07_Polished_Genome/ after 06_flye_assemble.sh ran.
-# -----------------------------------------------------------------------
-# IMPORTANT — rerunning after a v1 failure:
-#   If you previously ran v1 of A05 and it produced aligned.bam files
-#   in 06_Alignment_Polishing/{sample_id}/, DELETE THEM before running
-#   this version. v1 aligned the full calls.bam (all barcodes); v2
-#   aligns only this barcode's reads. The skip-guard would otherwise
-#   reuse a stale, all-barcodes BAM.
-#
-#     rm -rf ${ATLAS_BATCH_DIR}/06_Alignment_Polishing/Fus_Bar*/
 # -----------------------------------------------------------------------
 # Sandbox pattern:
 #   06_Alignment_Polishing/{sample_id}/
@@ -81,9 +49,10 @@ shopt -s nullglob
 # -----------------------------------------------------------------------
 # HARDCODED Atlas paths  (EDIT PER BATCH)
 # -----------------------------------------------------------------------
-ATLAS_BATCH_DIR="/90daydata/silage_microbiome/Max_Batch3"
+ATLAS_BATCH_DIR="/90daydata/silage_microbiome/Max_Fus_Batch3"
 A02_DEMUX_DIR="${ATLAS_BATCH_DIR}/A02_demux"
-ASSEMBLY_DIR="${ATLAS_BATCH_DIR}/05_Genome_Assembly"
+ASSEMBLY_DIR="${ATLAS_BATCH_DIR}/05_Genome_Assembly" # named assemblies from Ceres
+MODEL_DIR="${ATLAS_BATCH_DIR}/dorado_models"
 SANDBOX_DIR="${ATLAS_BATCH_DIR}/06_Alignment_Polishing"
 POLISHED_DIR="${ATLAS_BATCH_DIR}/07_Polished_Genome"
 
@@ -134,7 +103,7 @@ READS_BAM="${candidates[0]}"
 # -----------------------------------------------------------------------
 # Paths
 # -----------------------------------------------------------------------
-ASSEMBLY="${ASSEMBLY_DIR}/${sample_id}_assembly.fasta"
+ASSEMBLY="${ASSEMBLY_DIR}/${sample_id}_flye/${sample_id}_assembly.fasta"
 SAMPLE_SANDBOX="${SANDBOX_DIR}/${sample_id}"
 ALIGNED_BAM="${SAMPLE_SANDBOX}/aligned.bam"
 POLISHED_FASTA="${POLISHED_DIR}/${sample_id}_polished.fasta"
@@ -143,7 +112,7 @@ POLISHED_FASTA="${POLISHED_DIR}/${sample_id}_polished.fasta"
 # Set up logging — match A01/A02/A04 pattern
 # -----------------------------------------------------------------------
 LOG_DIR="${ATLAS_BATCH_DIR}/logs/polish"
-mkdir -p "${SAMPLE_SANDBOX}" "${POLISHED_DIR}" "${LOG_DIR}"
+mkdir -p "${SAMPLE_SANDBOX}" "${POLISHED_DIR}" "${LOG_DIR}" "${MODEL_DIR}"
 
 sample_log="${LOG_DIR}/${sample_id}_${SLURM_JOB_ID}.log"
 exec >"${sample_log}" 2>&1
@@ -243,6 +212,7 @@ echo "[$(date)] STEP 3: Polishing assembly..."
 dorado polish \
     "${ALIGNED_BAM}" \
     "${ASSEMBLY}" \
+    --model "${MODEL_DIR}"
     > "${POLISHED_FASTA}"
 
 if [[ ! -s "${POLISHED_FASTA}" ]]; then

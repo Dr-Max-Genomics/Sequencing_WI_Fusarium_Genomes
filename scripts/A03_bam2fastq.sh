@@ -77,7 +77,7 @@ shopt -s nullglob
 # -----------------------------------------------------------------------
 # HARDCODED Atlas paths and barcode->sample mapping  (EDIT PER BATCH)
 # -----------------------------------------------------------------------
-ATLAS_BATCH_DIR="/90daydata/silage_microbiome/Max_Batch3"
+ATLAS_BATCH_DIR="/90daydata/silage_microbiome/Max_Fus_Batch3"
 DEMUX_DIR="${ATLAS_BATCH_DIR}/A02_demux"
 OUT_DIR="${ATLAS_BATCH_DIR}/A03_fastq"
 

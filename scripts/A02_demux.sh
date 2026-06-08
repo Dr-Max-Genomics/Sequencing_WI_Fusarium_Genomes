@@ -4,7 +4,8 @@
 #SBATCH -p atlas
 #SBATCH --qos=normal
 #SBATCH -N 1
-#SBATCH -n 60
+#SBATCH -n 40
+#SBATCH --mem=120G
 #SBATCH -t 8:00:00
 #SBATCH --mail-user=maxwell.chibuogwu@usda.gov
 #SBATCH --mail-type=BEGIN,END,FAIL
@@ -55,7 +56,7 @@ set -euo pipefail
 # -----------------------------------------------------------------------
 # HARDCODED Atlas paths  (EDIT PER BATCH)
 # -----------------------------------------------------------------------
-ATLAS_BATCH_DIR="/90daydata/silage_microbiome/Max_Batch3"
+ATLAS_BATCH_DIR="/90daydata/silage_microbiome/Max_Fus_Batch3"
 A01_OUT_DIR="${ATLAS_BATCH_DIR}/A01_basecall"
 INPUT_BAM="${A01_OUT_DIR}/calls.bam"
 OUT_DIR="${ATLAS_BATCH_DIR}/A02_demux"
