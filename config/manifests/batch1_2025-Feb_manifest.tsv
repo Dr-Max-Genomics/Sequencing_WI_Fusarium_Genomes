@@ -1,0 +1,10 @@
+barcode	sample_id	assembly_file	busco_name	earlgrey_species	funannotate_name	funannotate_species	protein_evidence_file	antismash_file
+49	Fus_Bar49	polished49_assembly.fasta	Bar49_Busco	Fus49	FunAnnotate_Bar49	Fusarium proliferatum	F_verticillioides_7600_proteins.faa	FusBar49.scaffolds.gbk	
+50	Fus_Bar50	polished50_assembly.fasta	Bar50_Busco	Fus50	FunAnnotate_Bar50	Fusarium fujikuroi	F_verticillioides_7600_proteins.faa	FusBar50.scaffolds.gbk
+51	Fus_Bar51	polished51_assembly.fasta	Bar51_Busco	Fus51	FunAnnotate_Bar51	Fusarium fujikuroi	F_verticillioides_7600_proteins.faa	FusBar51.scaffolds.gbk
+52	Fus_Bar52	polished52_assembly.fasta	Bar52_Busco	Fus52	FunAnnotate_Bar52	Fusarium fujikuroi	F_verticillioides_7600_proteins.faa	FusBar52.scaffolds.gbk
+53	Fus_Bar53	polished53_assembly.fasta	Bar53_Busco	Fus53	FunAnnotate_Bar53	Fusarium proliferatum	F_verticillioides_7600_proteins.faa	FusBar53.scaffolds.gbk
+55	Fus_Bar55	polished55_assembly.fasta	Bar55_Busco	Fus55	FunAnnotate_Bar55	Fusarium subglutinans	F_verticillioides_7600_proteins.faa	FusBar55.scaffolds.gbk
+56	Fus_Bar56	polished56_assembly.fasta	Bar56_Busco	Fus56	FunAnnotate_Bar56	Fusarium cerealis	F_graminearum_PH1_proteins.faa	FusBar56.scaffolds.gbk
+57	Fus_Bar57	polished57_assembly.fasta	Bar57_Busco	Fus57	FunAnnotate_Bar57	Fusarium graminearum	F_graminearum_PH1_proteins.faa	FusBar57.scaffolds.gbk
+58	Fus_Bar58	polished58_assembly.fasta	Bar58_Busco	Fus58	FunAnnotate_Bar58	Fusarium proliferatum	F_verticillioides_7600_proteins.faa	FusBar58.scaffolds.gbk
