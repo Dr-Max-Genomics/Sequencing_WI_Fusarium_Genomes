@@ -75,15 +75,27 @@ if [[ ! -d "${predict_dir}" ]]; then
     exit 1
 fi
 
-echo "[$(date)] Running funannotate annotate"
-echo "Predict input: ${predict_dir}"
+echo "=========================================="
+echo "Running FunAnnotate"
+echo "[$(date)] Funannotate Annotate — functional annotation"
+echo "Sample:        ${sample_id}"
+echo "Barcode:       ${barcode}"
+echo "Predict dir:   ${predict_dir}"
 echo "IPR XML:       ${ipr_xml}"
 echo "AntiSMASH:     ${anti_gbk}"
+echo "Job:           ${SLURM_JOB_ID} / array ${SLURM_ARRAY_JOB_ID} task ${SLURM_ARRAY_TASK_ID}"
+echo "Host:          $(hostname)"
+echo "Threads:       ${SLURM_NTASKS}"
+echo "=========================================="
+echo
 
 funannotate annotate \
     -i "${predict_dir}" \
     --iprscan "${ipr_xml}" \
     --antismash "${anti_gbk}" \
-    --cpus 32
+    --cpus "${SLURM_NTASKS}"
 
-echo "[$(date)] Finished funannotate annotate for sample: ${sample_id}"
+echo
+echo "=========================================="
+echo "[$(date)] Done: Finished funannotate annotate for sample: ${sample_id}"
+echo "=========================================="

@@ -6,7 +6,7 @@
 #SBATCH -p ceres
 #SBATCH -t 2:00:00
 #SBATCH --job-name=antiSMASH
-#SBATCH --array=1-7
+#SBATCH --array=1-10
 #SBATCH --output=/dev/null
 
 set -euo pipefail
@@ -14,7 +14,7 @@ set -euo pipefail
 # =======================================================================
 # 11_antismash.sh
 # Purpose : Identify biosynthetic gene clusters (BGCs) using antiSMASH v8.
-# Input   : annotate_results/*_new.gbk  (funannotate annotate output)
+# Input   : predict_results/*_new.gbk  (funannotate predict output)
 # Output  : 12a_AntiSMASH_gbk/{sample_id}/  (full antiSMASH results dir)
 #           12a_AntiSMASH_gbk/{sample_id}.gbk  (GBK symlink for 09c_FUN_annotate)
 # Usage   : sbatch --array=1 scripts/11_antismash.sh     # test one
@@ -72,10 +72,10 @@ fi
 # -----------------------------------------------------------------------
 # Paths
 # -----------------------------------------------------------------------
-# Input: the _new.gbk from funannotate annotate
+# Input: the _new.gbk from funannotate predict
 # Use -print -quit (not |head) — pipelines can SIGPIPE under set -o pipefail
-ANNOTATE_DIR="${FUN_PREDICT_DIR}/${funannotate_name}/annotate_results"
-INPUT_GBK=$(find "${ANNOTATE_DIR}" -maxdepth 1 -name "*.gbk" -print -quit)
+PREDICT_DIR="${FUN_PREDICT_DIR}/${funannotate_name}/predict_results"
+INPUT_GBK=$(find "${PREDICT_DIR}" -maxdepth 1 -name "*.gbk" -print -quit)
 
 # Output directory per sample
 OUT_DIR="${ANTISMASH_DIR}/${sample_id}"
@@ -99,8 +99,8 @@ echo "=========================================="
 
 # Validate input
 if [[ -z "${INPUT_GBK}" || ! -s "${INPUT_GBK}" ]]; then
-    echo "ERROR: no *.gbk found in ${ANNOTATE_DIR}" >&2
-    ls "${ANNOTATE_DIR}" >&2 || true
+    echo "ERROR: no *.gbk found in ${PREDICT_DIR}" >&2
+    ls "${PREDICT_DIR}" >&2 || true
     echo "Did 09c_FUN_annotate.sh complete for ${sample_id}?" >&2
     exit 1
 fi

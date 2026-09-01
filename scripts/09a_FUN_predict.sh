@@ -47,7 +47,7 @@ esac
 
 # Per-sample log
 mkdir -p "${LOG_DIR}/fun_predict"
-log_file="${LOG_DIR}/fun_predict/${sample_id}.log"
+log_file="${LOG_DIR}/fun_predict/${sample_id}_${SLURM_JOB_ID}.log"
 exec >"${log_file}" 2>&1
 
 echo "[$(date)] Starting predict: ${sample_id} (task ${SLURM_ARRAY_TASK_ID})"
@@ -74,7 +74,7 @@ mkdir -p "${FUN_PREDICT_DIR}"
 ##############################
 echo "[$(date)] Running funannotate predict"
 
-if [[ ! -s "${OUTPUT_DIR}/predict_results/${funannotate_species// /_}_${sample_id}.gff3" ]]; then
+if ! ls "${OUTPUT_DIR}/predict_results/"*.gff3 >/dev/null 2>&1; then
     funannotate predict \
         -i "${MASKED}" \
         -o "${OUTPUT_DIR}" \
@@ -85,7 +85,6 @@ if [[ ! -s "${OUTPUT_DIR}/predict_results/${funannotate_species// /_}_${sample_i
         --busco_db hypocreales \
         --protein_evidence "${PROTEIN_EVIDENCE}" \
         --optimize_augustus \
-        --tbl2asn "-l paired-ends" \
         --cpus "${SLURM_NTASKS}"
 else
     echo "  Skipping — output exists: ${OUTPUT_DIR}/predict_results/"

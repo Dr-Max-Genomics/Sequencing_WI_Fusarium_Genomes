@@ -15,6 +15,8 @@
 # Run interactively — not a SLURM batch job.
 # Assumes paths.sh is sourced (or BATCH_DIR is set in environment).
 # =======================================================================
+REPORT="assembly_report_FusBarXX_$(date +%Y%m%d_%H%M).txt"
+exec >"$REPORT" 2>&1
 
 set -euo pipefail
 
@@ -277,12 +279,17 @@ echo "── SUMMARY: sequence counts across stages ─────────�
 printf "  %-30s %10s %15s\n" "STAGE" "SEQUENCES" "TOTAL_BP"
 printf "  %-30s %10s %15s\n" "-----" "---------" "--------"
 
-for stage_label stage_file in \
-    "Flye_assembly" "${FLYE_ASSEMBLY}" \
-    "Sorted_(minlen1000)" "${SORTED_FA}" \
-    "Polished" "${POLISHED_FA}" \
-    "Masked" "${MASKED_FA}"
-do
+stages=(
+  "Flye_assembly" "${FLYE_ASSEMBLY}"
+  "Sorted_(minlen1000)" "${SORTED_FA}"
+  "Polished" "${POLISHED_FA}"
+  "Masked" "${MASKED_FA}"
+)
+
+for ((i=0; i<${#stages[@]}; i+=2)); do
+    stage_label="${stages[$i]}"
+    stage_file="${stages[$i+1]}"
+
     if [[ -f "${stage_file}" ]]; then
         n=$(grep -c "^>" "${stage_file}" 2>/dev/null || echo 0)
         bp=$(fasta_lengths "${stage_file}" | awk '{s+=$2} END {print s+0}')
@@ -291,6 +298,7 @@ do
         printf "  %-30s %10s %15s\n" "${stage_label}" "—" "—"
     fi
 done
+
 echo
 
 echo "========================================================"

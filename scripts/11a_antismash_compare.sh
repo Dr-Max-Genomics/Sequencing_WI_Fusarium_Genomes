@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+#SBATCH -A silage_microbiome
+#SBATCH -N 1
+#SBATCH -n 4
+#SBATCH --mem=4G
+#SBATCH -p ceres
+#SBATCH -t 2:00:00
+#SBATCH --job-name=BGC_Comparison
 
 # =======================================================================
 # 11a_antismash_compare.sh

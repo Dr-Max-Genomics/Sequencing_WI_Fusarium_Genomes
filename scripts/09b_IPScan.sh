@@ -33,9 +33,6 @@ fi
 log_file="${LOG_DIR}/interproscan/${sample_id}.log"
 exec >"${log_file}" 2>&1
 
-echo "[$(date)] Starting InterProScan for sample: ${sample_id}"
-echo "Manifest: ${MANIFEST}"
-
 # Locate input proteins from predict output
 protein_dir="${FUN_PREDICT_DIR}/${funannotate_name}/predict_results"
 protein_fa=( "${protein_dir}"/*.proteins.fa )
@@ -55,9 +52,16 @@ if [[ -s "${output_xml}" ]]; then
 fi
 
 module load interproscan
-
-echo "Input FASTA: ${input_fa}"
-echo "Output XML:  ${output_xml}"
+echo "=========================================="
+echo "[$(date)] InterProScan — functional annotation"
+echo "Sample:        ${sample_id}"
+echo "Barcode:       ${barcode}"
+echo "Proteins:      ${input_fa}"
+echo "Output XML:    ${output_xml}"
+echo "Job:           ${SLURM_JOB_ID} / array ${SLURM_ARRAY_JOB_ID} task ${SLURM_ARRAY_TASK_ID}"
+echo "Host:          $(hostname)"
+echo "Threads:       ${SLURM_NTASKS}"
+echo "=========================================="
 
 interproscan.sh \
     -i "${input_fa}" \
@@ -67,4 +71,7 @@ interproscan.sh \
     -dp -pa \
     -goterms -iprlookup
 
-echo "[$(date)] Finished InterProScan for sample: ${sample_id}"
+echo "=========================================="
+echo "[$(date)] Done: Finished InterProScan for sample: ${sample_id}"
+echo "=========================================="
+
