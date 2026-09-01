@@ -15,12 +15,14 @@
 *.fa
 *.fa.gz
 *.tar.gz
+*.zip
 
 # Large directories
 00_Raw_Data/
 results/
 DB_Databases/
 Containers/
+analyses/
 
 # -------------------------
 # Logs and scheduler output
