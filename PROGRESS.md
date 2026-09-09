@@ -49,16 +49,161 @@
 
 | Batch | Barcodes | Current stage | Cluster | Next action |
 |-------|----------|--------------|---------|-------------|
-| batch_2025-Feb | 49–53, 55–58 | 🟡 S5 in progress (telomere done) | Ceres | Run telomere on batch 2; CAZymes; antiSMASH |
-| batch_2025-Dec | 36–45 | 🟢 S4 complete | Ceres | Run telomere search (array); begin S5 |
-| batch_2026-May | 01,02,04–08 | ⚪ S1 starting | Ceres | Concatenation |
+| batch_2025-Feb | 49–53, 55–58 | 🟢 S5 complete | Ceres | Move to /project/ (path TBD); funannotate compare |
+| batch_2025-Dec | 36–45 | 🟢 S5 complete | Ceres | Move to /project/ (path TBD); funannotate compare |
+| batch_2026-May | 01,02,04–08 | 🟢 S5 complete | Ceres/Atlas | funannotate compare |
+| batch4_2026-Sep | 73–76, 81–84 | 🔵 Basecalling | MinKNOW | Complete basecalling; begin S1 concat |
 
-> Status key: 🟢 Complete · 🟡 In progress · 🔴 Blocked · ⚪ Not started
+> Status key: 🟢 Complete · 🔵 In progress · 🔴 Blocked · ⚪ Not started
 
 ---
 
 ## Log entries
 <!-- ─── Most recent entry at TOP ─────────────────────────── -->
+
+---
+
+## 2026-07-28 — Ceres/Atlas — batch_2026-May — Effectorome (S5.6)
+
+**Working directory:** `/90daydata/silage_microbiome/max_seq/batch_2026-May/`
+**Barcodes in scope:** barcode01, 02, 04–08 (all 7)
+
+### What I ran
+- Script: effectorome pipeline (SignalP → Effector3.0)
+- Job IDs: TBD — fill in from logs
+
+### Outcome
+- [x] Completed successfully — all 7 isolates
+
+### Notes / observations
+- Effectorome (S5.6) run separately from the main 7/23 batch due to
+  compute scheduling / dependency on secretome outputs
+- Sub-stages: 5.6a SignalP, 5.6b Effector3.0
+
+### Next step
+- funannotate compare across all completed isolates (26 total — prerequisite:
+  confirm consistent Augustus species parameters in permanent storage)
+
+---
+
+## 2026-07-23 — Ceres/Atlas — batch_2026-May — Full S1→S5 run (minus effectorome)
+
+**Working directory:** `/90daydata/silage_microbiome/max_seq/batch_2026-May/`
+**Atlas working dir:** `/90daydata/silage_microbiome/Max_Batch3/`
+**Barcodes in scope:** barcode01, 02, 04–08 (all 7)
+
+### What I ran
+
+| Stage | Script | Job IDs | Notes |
+|-------|--------|---------|-------|
+| S1 preprocessing | `02_porechop.sh`, `03_seqkit_dedup.sh`, `04_nanofilt.sh`, `05_nanoplot.sh` | TBD | Array 1–7 |
+| Atlas HERRO correction | `A04_dorado_corr.sh` | TBD | Atlas GPU; Path 1 workflow |
+| S2 Flye assembly | `06_flye_assemble.sh` | TBD | `--nano-corr`; array 1–7 |
+| S3 BUSCO eval | `07_busco_eval.sh` | TBD | hypocreales_odb10; offline |
+| S4 EarlGrey+mask | `08_sort_earlgrey_mask.sh` | TBD | Array 1–7 |
+| S4 funannotate predict | `09a_FUN_predict.sh` | TBD | Fixed script (v 2026-06-24); APPTAINERENV_AUGUSTUS_CONFIG_PATH corrected |
+| S4 InterProScan | `09b_IPScan.sh` | TBD | XML output; `-dp` flag |
+| S4 funannotate annotate | `09c_FUN_annotate.sh` | TBD | emapper auto-invoked |
+| S5.1 Telomere | `10_telomere_search.sh` | TBD | Array 1–7; mycotools env |
+| S5.2 antiSMASH | *(script TBD)* | TBD | Run on predict GBK; `--genefinding-tool none` |
+| S5.3 CAZymes | *(script TBD)* | TBD | |
+| S5.5 Secretome | *(script TBD)* | TBD | |
+
+### Outcome
+- [x] All 7 isolates through S1–S5 (minus S5.6 effectorome — see 2026-07-28)
+- BUSCO scores: TBD — fill in from job output logs
+
+### Notes / observations
+- Path 1 (MinKNOW pre-basecalled): MinKNOW output → Ceres S1 → Atlas A04
+  HERRO correction → Ceres S2 onward
+- `09a_FUN_predict.sh` ran successfully for all 7 isolates using the
+  2026-06-24 script fix (see session note below)
+- _F. annulatum_ (barcode05): `F_verticillioides_7600_proteins.faa` used
+  as protein evidence — dedicated file not confirmed; note for future batches
+- Test-task-1-first pattern used before full array submission for S4 scripts
+
+### Parameter changes from last session
+| Parameter | Previous | This session | Reason |
+|-----------|----------|--------------|--------|
+| S1 entry point | Not started | 02_porechop onward (concat done 2026-05-27) | Resuming after May concat |
+| APPTAINERENV_AUGUSTUS_CONFIG_PATH | Missing (bug) | Set correctly in 09a | Fixed 2026-06-24 |
+
+### Next step
+- Effectorome (S5.6): see 2026-07-28 entry
+- Fill in all job IDs from Ceres/Atlas SLURM logs
+
+---
+
+## 2026-07-23 — Ceres — batch_2025-Dec — Telomere search (S5.1)
+
+**Working directory:** `/90daydata/silage_microbiome/max_seq/jan_batch2_all_barcodes/`
+**Barcodes in scope:** barcode36–45 (all 10)
+
+### What I ran
+- Script: `10_telomere_search.sh` (array job)
+- Job IDs: TBD — fill in from logs
+
+### Outcome
+- [x] Completed successfully — all 10 isolates
+- Outputs: TSV density files + PNG plots per contig at `13_Telomere/{sample_id}/`
+
+### Notes / observations
+- Used fixed conda activation pattern (`source conda.sh && conda activate mycotools`)
+  — the batch-node Bio import failure that affected batch_2025-Feb interactive
+  run was resolved in `10_telomere_search.sh`
+
+### Next step
+- Remaining S5 sub-stages (antiSMASH, CAZymes, BigScape, effectorome): fill in
+  dates/job IDs from Atlas logs
+
+---
+
+## 2026-07-22 — Ceres — batch_2025-Feb — antiSMASH (S5.2)
+
+**Working directory:** `/90daydata/silage_microbiome/max_seq/batch1_all_barcodes/`
+**Barcodes in scope:** barcode49–53, 55–58 (all 9)
+
+### What I ran
+- Script: antiSMASH array job
+- Job IDs: TBD — fill in from logs
+
+### Outcome
+- [x] Completed successfully — all 9 isolates
+
+### Notes / observations
+- Run on funannotate predict GBK (not raw assembly) — gene IDs match for
+  funannotate annotate merge
+- `--genefinding-tool none` flag used to suppress empty-scaffold errors
+
+### Next step
+- CAZymes, BigScape, effectorome for batch_2025-Feb: fill in from Atlas logs
+- Telomere for batch_2025-Dec: see 2026-07-23 entry
+
+---
+
+## 2026-06-24 — Ceres — Script fix — 09a_FUN_predict.sh (APPTAINERENV_AUGUSTUS_CONFIG_PATH)
+
+**Barcodes in scope:** N/A — script update only
+
+### What I ran
+- Updated `09a_FUN_predict.sh`: added `APPTAINERENV_AUGUSTUS_CONFIG_PATH`
+  (previously `AUGUSTUS_CONFIG_PATH` was set but not propagated into
+  the Apptainer container)
+
+### Outcome
+- [x] Script updated; not yet run on batch_2026-May at this point
+- Tested and confirmed working during batch_2026-May full run (2026-07-23)
+
+### Notes / observations
+- Root cause: Apptainer requires the `APPTAINERENV_` prefix to propagate
+  any env var into the container. Without it, Augustus fell back to the
+  container's ephemeral config layer, discarding trained species parameters.
+- Fix: `export APPTAINERENV_AUGUSTUS_CONFIG_PATH="${DB_ROOT}/augustus_config/config"`
+- This is a prerequisite for `funannotate compare` — all isolates must have
+  Augustus parameters written to the same persistent `AUGUSTUS_CONFIG_PATH`
+
+### Next step
+- Run updated `09a_FUN_predict.sh` for batch_2026-May on 2026-07-23
 
 ---
 
@@ -81,37 +226,36 @@ python scripts/telomere_density.py \
     --outdir ${TELOMERE_DIR}/${sample_id}/plots \
     --window 10000 --step 1000
 ```
+- Also ran: `01_concat.sh` array for batch_2026-May (7 isolates, barcode01/02/04–08)
 
 ### Outcome
-- [x] Completed successfully — all 9 isolates processed
+- [x] Telomere: Completed successfully — all 9 batch_2025-Feb isolates
+- [x] batch_2026-May concat: Completed successfully — all 7 isolates
 - Outputs: TSV density files + PNG plots per contig per isolate
 
 ### Notes / observations
-- ⚠️ Could not run as SLURM batch/array job — `from Bio import SeqIO`
+- ⚠️ Telomere could not run as SLURM batch/array job — `from Bio import SeqIO`
   failed on batch nodes due to conda environment not being activated
   in the non-interactive shell
-- Ran manually on an interactive node as a workaround
 - Root cause: `module load miniconda` alone is insufficient for batch
   nodes — conda env must be explicitly activated via
-  `source $(conda info --base)/etc/profile.d/conda.sh && conda activate seqenv`
+  `source $(conda info --base)/etc/profile.d/conda.sh && conda activate mycotools`
 - **Fixed in `10_telomere_search.sh`** — new array wrapper handles
-  conda activation correctly; ready to use for batch_2025-Dec
+  conda activation correctly; ready to use for batch_2025-Dec (run 2026-07-23)
 - Plots and TSVs written to `13_Telomere/{sample_id}/`
+- batch_2026-May concat: `01_concat.sh` manifest-driven; reads
+  `config/manifests/batch_2026-May_manifest.tsv`; skip-if-exists logic active
 
 ### Parameter changes from last session
 | Parameter | Previous | This session | Reason |
 |-----------|----------|--------------|--------|
-| Telomere search | Not run | Added as S5 stage | New analysis |
+| Telomere search | Not run | Added as S5.1 stage | New analysis |
 | Window size | — | 10,000 bp | Default; captures telomeric regions |
 | Step size | — | 1,000 bp | 1 kb resolution |
 
 ### Next step
-- Run `10_telomere_search.sh` array for batch_2025-Dec (barcode36–45)
-- Begin batch_2026-May: concatenation with `01_concat.sh`
-- Prep: confirm `batch3_manifest.tsv` is in place on Ceres at
-  `/90daydata/silage_microbiome/max_seq/batch_2026-May/`
-- Note: `barlist.txt` no longer needed for new batches — manifest is the
-  single source of truth (see CHANGELOG v1.5)
+- Resolved: batch_2025-Dec telomere run 2026-07-23
+- Resolved: batch_2026-May full pipeline run 2026-07-23
 
 ---
 
@@ -178,7 +322,7 @@ architecture and refactored scripts (07–09c). DB paths migrated to /project/.
 | barcode49 | F-Arl-23.2 | _F. proliferatum_ | 99.2% |
 | barcode50 | F-22-6 | _F. fujikuroi_ | 99.2% |
 | barcode51 | F-22-24 | _F. fujikuroi_ | 99.3% |
-| barcode52 | F-22-6 | _F. fujikuroi_ | 99.3% ⚠️ verify |
+| barcode52 | F-22-6 | _F. fujikuroi_ | 99.3% ✅ verified |
 | barcode53 | F-23-5.2 | _F. proliferatum_ | 99.2% |
 | barcode55 | F-23-2.3 | Put. _F. subglutinans_ | 99.2% |
 | barcode56 | F-23-4.4 | _F. cerealis_ | 99.2% |
@@ -204,17 +348,21 @@ architecture and refactored scripts (07–09c). DB paths migrated to /project/.
 
 ## Backlog / known issues
 
-- [ ] Verify barcode52 BUSCO score — currently inferred as 99.3%
+- [ ] Fill in all job IDs for batch_2026-May (S1–S5) from Ceres/Atlas logs
+- [ ] Fill in batch_2025-Dec S5 sub-stage dates/job IDs from Atlas logs
+- [ ] Fill in batch_2025-Feb S5 CAZymes, BigScape, effectorome dates/job IDs
+- [ ] Fill in batch_2026-May BUSCO scores from 07_busco_eval.sh output
 - [ ] Locate wtdbg2 trial barcode and BUSCO score — add to CHANGELOG v1.1
-- [ ] Run `10_telomere_search.sh` array on batch_2025-Dec (fixed script ready)
-- [ ] Move batch_2025-Feb outputs to `/project/` permanent storage
-- [ ] Move batch_2025-Dec outputs to `/project/` permanent storage
-- [ ] Update BATCHES.md permanent storage index for both batches once moved
-- [ ] Confirm which stages ran on Atlas vs Ceres for batch_2025-Dec
-- [ ] Begin S5 CAZymes + antiSMASH for both batches
-- [ ] Add protein evidence file for _F. annulatum_ to PROTEIN_EVIDENCE_DIR
-      (not seen in previous batches — verify file exists before batch 3 predict)
-- [ ] Confirm whether `funannotate setup -u -w -d $DB` needed before annotate
+- [ ] Move batch_2026-May outputs to `/project/` permanent storage
+- [ ] Confirm permanent storage full paths for batch_2025-Feb and batch_2025-Dec
+- [ ] Update BATCHES.md permanent storage index for all three batches once paths confirmed
+- [ ] Confirm which S5 stages ran on Atlas vs Ceres for batch_2025-Dec
+- [ ] Run funannotate compare across all 26 completed isolates
+      (prerequisite: confirm APPTAINERENV_AUGUSTUS_CONFIG_PATH fix active for
+      batch_2025-Feb and batch_2025-Dec — re-check before compare)
+- [ ] Confirm _F. annulatum_ protein evidence situation (barcode05 / barcode74):
+      F_verticillioides_7600 used in batch 3; confirm whether dedicated file
+      exists or should be sourced from NCBI
 
 ---
 
@@ -222,9 +370,10 @@ architecture and refactored scripts (07–09c). DB paths migrated to /project/.
 
 | Item | Value |
 |------|-------|
-| Conda env | `seqenv` |
-| Activate (interactive) | `module load miniconda && source activate seqenv` |
-| Activate (batch scripts) | `source $(conda info --base)/etc/profile.d/conda.sh && conda activate seqenv` |
+| Conda env (general) | `seqenv` |
+| Conda env (telomere) | `mycotools` |
+| Activate (interactive) | `module load miniconda && source activate <env>` |
+| Activate (batch scripts) | `source $(conda info --base)/etc/profile.d/conda.sh && conda activate <env>` |
 | Porechop | `module unload miniconda && module load porechop` |
 | Primary cluster | Ceres |
 | Secondary cluster | Atlas |
