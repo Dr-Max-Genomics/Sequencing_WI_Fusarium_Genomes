@@ -17,6 +17,18 @@ set -euo pipefail
 #   - parsed/cazyme_profiles.tsv
 #   - cazyme_diversity.tsv
 # Output  : ${CAZYMES_DIR}/13b_Cazyme_summary/*
+#
+# CHANGELOG (this revision):
+#   - get_proteins_faa(): guard `find` against a missing annotate_results dir
+#     (e.g. deleted by a later concurrent funannotate job pointed at the same
+#     output folder — see CHANGELOG history for the Fus_Bar01 incident).
+#     Previously this `find` could exit 1 and, under `set -e`, kill the whole
+#     summary job for every sample, not just the affected one.
+#   - Manifest lookup: replaced the `read < <(get_meta ...)` process-substitution
+#     pattern with an explicit variable check. If get_meta finds no match,
+#     `read` hits EOF and returns 1, which is also fatal under `set -e`.
+#   - Both failure modes now log a WARNING for the affected sample and continue
+#     with degraded (zero/unknown) values, instead of aborting the entire run.
 ###############################################################################
 
 PROJECT_ROOT="${PROJECT_ROOT:-/project/silage_microbiome/max.chi/fusarium_sequencing}"
@@ -72,16 +84,19 @@ profiles_from_overview() {
 }
 
 # Manifest lookup: sample -> species, isolate (9-col manifest)
+# Prints "species\tisolate" (fields 7,6) on a match; prints nothing otherwise.
 get_meta() {
   local sample="$1"
   awk -F'\t' -v s="${sample}" 'NR>1 && $2==s {print $7 "\t" $6; exit}' "${MANIFEST}"
 }
 
-# Proteins path for counts
+# Proteins path for counts. Never lets a missing directory kill the script:
+# `find` on a nonexistent path exits 1, which is fatal under `set -e` unless
+# guarded here.
 get_proteins_faa() {
   local isolate="$1"
   local dir="${FUN_PREDICT_DIR}/${isolate}/annotate_results"
-  find "${dir}" -maxdepth 1 -type f -name "*.proteins.fa" -print -quit
+  find "${dir}" -maxdepth 1 -type f -name "*.proteins.fa" -print -quit 2>/dev/null || true
 }
 
 # --------------- Iterate over 13a outputs ---------------
@@ -94,21 +109,37 @@ for d in "${OUT_ROOT}"/*; do
 
   SAMPLE="$(basename "${d}")"
 
-  read -r SPECIES ISOLATE < <(get_meta "${SAMPLE}")
+  # --- Manifest lookup (guarded: no match must not kill the script) ---
+  META="$(get_meta "${SAMPLE}" || true)"
+  if [[ -n "${META}" ]]; then
+    IFS=$'\t' read -r SPECIES ISOLATE <<< "${META}"
+  else
+    echo "WARNING: [${SAMPLE}] no manifest match (column 2) in ${MANIFEST}; species/isolate set to 'unknown'"
+    SPECIES=""
+    ISOLATE=""
+  fi
   SPECIES="${SPECIES:-unknown}"
   ISOLATE="${ISOLATE:-unknown}"
 
-  PROTEOME="$(get_proteins_faa "${ISOLATE}")"
+  # --- Proteome lookup (guarded: missing annotate_results dir must not kill the script) ---
   TOTAL_PROTEINS=0
-  if [[ -n "${PROTEOME}" && -s "${PROTEOME}" ]]; then
-    TOTAL_PROTEINS=$(grep -c '^>' "${PROTEOME}" || echo "0")
+  if [[ "${ISOLATE}" != "unknown" ]]; then
+    PROTEOME="$(get_proteins_faa "${ISOLATE}")"
+    if [[ -n "${PROTEOME}" && -s "${PROTEOME}" ]]; then
+      TOTAL_PROTEINS=$(grep -c '^>' "${PROTEOME}" || echo "0")
+    else
+      echo "WARNING: [${SAMPLE}] no *.proteins.fa found under ${FUN_PREDICT_DIR}/${ISOLATE}/annotate_results (dir may be missing or was overwritten by a later job); total_proteins=0"
+    fi
   fi
 
+  # --- dbCAN overview lookup ---
   OVERVIEW="$(find_overview "${d}")"
   GH=0; GT=0; PL=0; CE=0; TOTAL_CAZYMES=0
   if [[ -n "${OVERVIEW}" ]]; then
     read -r TOTAL_CAZYMES GH GT PL CE < <(counts_from_overview "${OVERVIEW}")
     profiles_from_overview "${OVERVIEW}" "${SAMPLE}" "${ISOLATE}" "${SPECIES}"
+  else
+    echo "WARNING: [${SAMPLE}] no overview file found under ${d} (dbCAN may not have completed); cazyme counts=0"
   fi
 
   PCT=$(awk "BEGIN{if(${TOTAL_PROTEINS}>0) printf \"%.2f\", (${TOTAL_CAZYMES}/${TOTAL_PROTEINS})*100; else print \"0.00\"}")
