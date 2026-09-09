@@ -65,21 +65,78 @@ find_overview() {
   echo ""
 }
 
+# --------------- CAZyme family parsing ---------------
+# overview.txt column layout varies with which --tools were passed to
+# run_dbcan (13a currently uses `hmmer diamond`, no dbCAN_sub) and across
+# dbCAN versions (v4: Gene ID/HMMER/dbCAN_sub/DIAMOND/#ofTools; v5 adds
+# EC#/Recommend Results). Hardcoding "family = column 2" silently returns
+# all-zero counts whenever HMMER's column is mostly "-" for a genome (common,
+# since HMMER's coverage filter is stricter than DIAMOND's) or whenever the
+# column layout shifts. Both functions below instead read the header row and
+# treat every column except Gene ID / EC# / #ofTools / Recommend Results as a
+# tool-call column, then take the union of family hits across whichever of
+# those columns are actually present. A "+"-joined multi-domain entry (e.g.
+# "CE1(1-50)+GH18(60-200)") is also split so a non-leading domain isn't missed.
+
 counts_from_overview() {
   local O="$1"
-  local GH GT PL CE TOTAL
-  GH=$(awk -F'\t' 'NR>1 && $2 ~ /^GH[0-9]+/ {c++} END{print c+0}' "${O}")
-  GT=$(awk -F'\t' 'NR>1 && $2 ~ /^GT[0-9]+/ {c++} END{print c+0}' "${O}")
-  PL=$(awk -F'\t' 'NR>1 && $2 ~ /^PL[0-9]+/ {c++} END{print c+0}' "${O}")
-  CE=$(awk -F'\t' 'NR>1 && $2 ~ /^CE[0-9]+/ {c++} END{print c+0}' "${O}")
-  TOTAL=$((GH + GT + PL + CE))
-  printf "%s %s %s %s %s\n" "${TOTAL}" "${GH}" "${GT}" "${PL}" "${CE}"
+  awk -F'\t' '
+    NR==1 {
+      for (i=1;i<=NF;i++) {
+        if (i==1) { skip[i]=1; continue }          # Gene ID
+        h=tolower($i)
+        if (h ~ /tool/ || h ~ /recommend/ || h ~ /^ec#?$/) skip[i]=1
+      }
+      next
+    }
+    {
+      hasGH=0; hasGT=0; hasPL=0; hasCE=0
+      for (i=2;i<=NF;i++) {
+        if (i in skip) continue
+        n=split($i, parts, "+")
+        for (j=1;j<=n;j++) {
+          if (parts[j] ~ /^GH[0-9]/)      hasGH=1
+          else if (parts[j] ~ /^GT[0-9]/) hasGT=1
+          else if (parts[j] ~ /^PL[0-9]/) hasPL=1
+          else if (parts[j] ~ /^CE[0-9]/) hasCE=1
+        }
+      }
+      gh+=hasGH; gt+=hasGT; pl+=hasPL; ce+=hasCE
+    }
+    END { printf "%d %d %d %d %d\n", gh+gt+pl+ce, gh+0, gt+0, pl+0, ce+0 }
+  ' "${O}"
 }
 
 profiles_from_overview() {
   local O="$1" sample="$2" isolate="$3" species="$4"
   awk -F'\t' -v OFS='\t' -v samp="${sample}" -v iso="${isolate}" -v sp="${species}" '
-    NR>1 && $2 ~ /^(GH|GT|PL|CE)[0-9]+/ { print samp, iso, sp, NR-1, $2, $1, "NA" }
+    NR==1 {
+      for (i=1;i<=NF;i++) {
+        if (i==1) { skip[i]=1; continue }
+        h=tolower($i)
+        if (h ~ /tool/ || h ~ /recommend/ || h ~ /^ec#?$/) skip[i]=1
+      }
+      next
+    }
+    {
+      gid=$1
+      for (i=2;i<=NF;i++) {
+        if (i in skip) continue
+        n=split($i, parts, "+")
+        for (j=1;j<=n;j++) {
+          fam=parts[j]
+          gsub(/\(.*$/, "", fam)     # strip trailing "(123-456)" coordinates
+          gsub(/_e[0-9]+$/, "", fam) # normalize dbCAN_sub subfamily suffix, e.g. GT2_e46 -> GT2
+          if (fam ~ /^(GH|GT|PL|CE)[0-9]+/) {
+            key = gid SUBSEP fam
+            if (!(key in emitted)) {
+              emitted[key]=1
+              print samp, iso, sp, ++rownum, fam, gid, "NA"
+            }
+          }
+        }
+      }
+    }
   ' "${O}" >> "${CAZYME_PROFILES}"
 }
 
