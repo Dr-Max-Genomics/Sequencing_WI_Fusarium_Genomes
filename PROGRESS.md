@@ -97,7 +97,7 @@
 | Stage | Script | Job IDs | Notes |
 |-------|--------|---------|-------|
 | S1 preprocessing | `02_porechop.sh`, `03_seqkit_dedup.sh`, `04_nanofilt.sh`, `05_nanoplot.sh` | TBD | Array 1–7 |
-| Atlas HERRO correction | `A04_dorado_corr.sh` | TBD | Atlas GPU; Path 1 workflow |
+| Atlas HERRO correction | `A04_dorado_corr.sh` | 19845447, 19845699, 19846285, 19845700-4 | Atlas GPU; Path 1 workflow |
 | S2 Flye assembly | `06_flye_assemble.sh` | TBD | `--nano-corr`; array 1–7 |
 | S3 BUSCO eval | `07_busco_eval.sh` | TBD | hypocreales_odb10; offline |
 | S4 EarlGrey+mask | `08_sort_earlgrey_mask.sh` | TBD | Array 1–7 |
