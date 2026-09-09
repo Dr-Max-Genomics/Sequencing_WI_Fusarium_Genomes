@@ -9,18 +9,109 @@
 ================================================================ -->
 
 ---
-
+ 
 ## Unreleased — in progress
-
+ 
 ### Pending
-- [ ] S5 CAZymes, antiSMASH docs not yet finalized
-- [ ] batch_2026-May: run S1 (01→05) → S2 (06) → onward
-- [ ] Telomere search for batch_2025-Dec pending (array script ready)
-- [ ] antiSMASH version and exact flags not yet documented
+- [ ] S5 CAZymes, BigScape, effectorome job IDs and dates for batch_2025-Feb
+      and batch_2025-Dec — fill in from Atlas logs
+- [ ] batch_2026-May: fill in all job IDs from Ceres/Atlas logs
+- [ ] batch_2026-May BUSCO scores: fill in from 07_busco_eval.sh output
+- [ ] antiSMASH version and exact flags not yet formally documented
 - [ ] wtdbg2 trial barcode and BUSCO score still unrecovered (see v1.1)
-- [ ] Verify barcode52 BUSCO score (inferred 99.3%)
-- [ ] Confirm _F. annulatum_ protein evidence file exists in PROTEIN_EVIDENCE_DIR
-
+- [ ] funannotate compare — not yet run; requires all 26 isolates confirmed
+      in permanent storage with consistent AUGUSTUS_CONFIG_PATH
+- [ ] Permanent storage full paths for batch_2025-Feb and batch_2025-Dec
+      — moved but paths not yet recorded
+- [ ] Confirm _F. annulatum_ protein evidence: `F_verticillioides_7600` used
+      for barcode05 (batch_2026-May) and barcode74 (batch4_2026-Sep);
+      dedicated file not confirmed — check PROTEIN_EVIDENCE_DIR
+---
+ 
+## v1.9 — 2026-09-09 — Batches 1–3 S5 complete; batch4_2026-Sep initiated; Augustus fix deployed; S5 stage structure finalized; protein evidence mapping documented
+ 
+### What changed
+- All three completed batches (batch_2025-Feb, batch_2025-Dec, batch_2026-May)
+  are now through S5 (all sub-stages complete)
+- `09a_FUN_predict.sh` patched (2026-06-24): `APPTAINERENV_AUGUSTUS_CONFIG_PATH`
+  now correctly set — fixes silent failure where Augustus trained parameters
+  were written into the ephemeral container layer instead of permanent storage
+- `batch4_2026-Sep` initiated: 8 isolates (barcode73–76, 81–84), MinKNOW
+  pre-basecalled; manifest created at `config/manifests/batch4_2026-Sep_manifest.tsv`
+- S5 stage structure formalized from README (see below)
+- Protein evidence file mapping documented in BATCHES.md
+- barcode52 BUSCO score confirmed as 99.3% (closed open issue)
+- batch_2025-Feb and batch_2025-Dec outputs moved to `/project/` permanent storage
+  (full paths TBD — fill in when confirmed)
+### ✅ APPTAINERENV_AUGUSTUS_CONFIG_PATH fix (09a_FUN_predict.sh, 2026-06-24)
+ 
+This closes the bug first diagnosed during the batch_2026-May predict crash
+investigation. The root cause was that `AUGUSTUS_CONFIG_PATH` was exported
+in the SLURM script but the `APPTAINERENV_` prefix was missing, so Apptainer
+did not propagate it into the container. Augustus silently used the config
+inside the ephemeral container layer, writing trained species parameters to
+a path that was discarded when the job ended.
+ 
+```bash
+# WRONG — not propagated into Apptainer
+export AUGUSTUS_CONFIG_PATH="${DB_ROOT}/augustus_config/config"
+ 
+# CORRECT — Apptainerenv_ prefix required
+export APPTAINERENV_AUGUSTUS_CONFIG_PATH="${DB_ROOT}/augustus_config/config"
+```
+ 
+Confirmed working for batch_2026-May (all 7 isolates, 2026-07-23).
+This fix is a **prerequisite for funannotate compare** — without it, Augustus
+species models across batches land in inconsistent or ephemeral locations.
+Before running `funannotate compare`, verify the fix was active for
+batch_2025-Feb and batch_2025-Dec predict runs (or re-run predict with
+`--keep_evm` if uncertain).
+ 
+### S5 stage structure (finalized from README)
+ 
+```
+Stage 5 — Genome-wide analyses
+    ├── 5.1  Telomere search         (telomere_density.py / 10_telomere_search.sh)
+    ├── 5.2  Secondary metabolites   (antiSMASH)
+    ├── 5.3  CAZyme analysis         (funannotate / dbCAN)
+    ├── 5.4  BGC networking          (BiG-SCAPE)
+    ├── 5.5  Secretome / protein     (InterProScan / SignalP)
+    └── 5.6  Effectorome
+             ├── 5.6a  SignalP
+             └── 5.6b  Effector3.0
+```
+ 
+### batch4_2026-Sep details
+ 
+| Parameter | Value |
+|-----------|-------|
+| Barcodes | barcode73–76, barcode81–84 (77–80 absent) |
+| Isolates | 8 |
+| Basecalling | MinKNOW (Path 1 dual-path workflow) |
+| Manifest | `config/manifests/batch4_2026-Sep_manifest.tsv` |
+| Array range | `--array=1-8` |
+| Status | Basecalling in progress; S1 not yet started |
+ 
+### Protein evidence file mapping (documented)
+ 
+| Species | File |
+|---------|------|
+| _F. graminearum_ | `F_graminearum_PH1_proteins.faa` |
+| _F. sporotrichioides_ | `F_graminearum_PH1_proteins.faa` |
+| _F. proliferatum_ | `F_verticillioides_7600_proteins.faa` |
+| _F. verticillioides_ | `F_verticillioides_7600_proteins.faa` |
+| _F. fujikuroi_ | `F_verticillioides_7600_proteins.faa` |
+| _F. subglutinans_ | `F_verticillioides_7600_proteins.faa` |
+| _F. annulatum_ | `F_verticillioides_7600_proteins.faa` *(verify — no dedicated file confirmed)* |
+ 
+### S5 completion summary
+ 
+| Batch | 5.1 Telomere | 5.2 antiSMASH | 5.3 CAZymes | 5.4 BigScape | 5.5 Secretome | 5.6 Effectorome |
+|-------|-------------|--------------|------------|-------------|--------------|----------------|
+| batch_2025-Feb | ✅ 2026-05-27 | ✅ 2026-07-22 | ✅ TBD | ✅ TBD | ✅ TBD | ✅ TBD |
+| batch_2025-Dec | ✅ 2026-07-23 | ✅ TBD | ✅ TBD | ✅ TBD | ✅ TBD | ✅ TBD |
+| batch_2026-May | ✅ 2026-07-23 | ✅ 2026-07-23 | ✅ 2026-07-23 | ✅ TBD | ✅ 2026-07-23 | ✅ 2026-07-28 |
+ 
 ---
 
 ## v1.8 — 2026-05-28 — Flye assembly script (--nano-corr); A04 dorado correct (Atlas); dual-path workflow; telomere env → mycotools
