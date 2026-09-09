@@ -67,25 +67,11 @@ Before running `funannotate compare`, verify the fix was active for
 batch_2025-Feb and batch_2025-Dec predict runs (or re-run predict with
 `--keep_evm` if uncertain).
  
-### S5 stage structure (finalized from README)
- 
-```
-Stage 5 — Genome-wide analyses
-    ├── 5.1  Telomere search         (telomere_density.py / 10_telomere_search.sh)
-    ├── 5.2  Secondary metabolites   (antiSMASH)
-    ├── 5.3  CAZyme analysis         (funannotate / dbCAN)
-    ├── 5.4  BGC networking          (BiG-SCAPE)
-    ├── 5.5  Secretome / protein     (InterProScan / SignalP)
-    └── 5.6  Effectorome
-             ├── 5.6a  SignalP
-             └── 5.6b  Effector3.0
-```
- 
 ### batch4_2026-Sep details
  
 | Parameter | Value |
 |-----------|-------|
-| Barcodes | barcode73–76, barcode81–84 (77–80 absent) |
+| Barcodes | barcode73–76, barcode81–84 |
 | Isolates | 8 |
 | Basecalling | MinKNOW (Path 1 dual-path workflow) |
 | Manifest | `config/manifests/batch4_2026-Sep_manifest.tsv` |
@@ -108,9 +94,9 @@ Stage 5 — Genome-wide analyses
  
 | Batch | 5.1 Telomere | 5.2 antiSMASH | 5.3 CAZymes | 5.4 BigScape | 5.5 Secretome | 5.6 Effectorome |
 |-------|-------------|--------------|------------|-------------|--------------|----------------|
-| batch_2025-Feb | ✅ 2026-05-27 | ✅ 2026-07-22 | ✅ TBD | ✅ TBD | ✅ TBD | ✅ TBD |
-| batch_2025-Dec | ✅ 2026-07-23 | ✅ TBD | ✅ TBD | ✅ TBD | ✅ TBD | ✅ TBD |
-| batch_2026-May | ✅ 2026-07-23 | ✅ 2026-07-23 | ✅ 2026-07-23 | ✅ TBD | ✅ 2026-07-23 | ✅ 2026-07-28 |
+| batch_2025-Feb | ✅ 2026-05-27 | ✅ 2026-07-22 | ✅ TBD | ✅ TBD | ✅ 2026-06-11 | ✅ 2026-06-11 |
+| batch_2025-Dec | ✅ 2026-07-23 | ✅ TBD | ✅ TBD | ✅ TBD | ✅ 2026-06-11 | ✅ 2026-06-11 |
+| batch_2026-May | ✅ 2026-07-23 | ✅ 2026-07-23 | ✅ 2026-07-23 | ✅ TBD | ✅ 2026-07-23 | ✅ 2026-06-10 |
  
 ---
 
