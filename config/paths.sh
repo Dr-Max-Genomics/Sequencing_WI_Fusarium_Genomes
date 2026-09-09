@@ -8,7 +8,7 @@ PROJECT_ROOT="${PROJECT_ROOT:-/project/silage_microbiome/max.chi/fusarium_sequen
 
 # Set this once per batch — must match the manifest filename:
 #   ${PROJECT_ROOT}/config/manifests/${BATCH_ID}_manifest.tsv
-BATCH_ID="batch2_2025-Dec"
+BATCH_ID="batch3_2026-May"
 
 SCRATCH_ROOT="/90daydata/silage_microbiome/max_seq"
 
@@ -40,6 +40,7 @@ BUSCO_DOWNLOADS="${DB_ROOT}/busco_downloads"
 FUN_PREDICT_DIR="${BATCH_DIR}/11a_FUN_Predict_Result"    # input from predict
 INTERPROSCAN_DIR="${BATCH_DIR}/11b_InterProScan"         # global IP outputs
 ANTISMASH_DIR="${BATCH_DIR}/12a_AntiSMASH_gbk"           # antismash gbk output folder
+CAZYMES_DIR="${BATCH_DIR}/13a_CAzymes"
 # Annotate outputs live inside FUN_PREDICT_DIR per isolate (see CHANGELOG v1.4)
 
 # S5 — Genome-wide analyses
@@ -76,4 +77,4 @@ mkdir -p \
   "$ASSEMBLY_DIR" "$POLISH_DIR" "$POLISHED_DIR" "$BUSCO_DIR" \
   "$FUN_PREDICT_DIR" "$INTERPROSCAN_DIR" "$ANTISMASH_DIR" "$LOG_DIR" \
   "$DB_ROOT" "$BUSCO_DOWNLOADS" "$EARLGREY_DIR" "$MASK_DIR" \
-  "$TELOMERE_DIR"
+  "$TELOMERE_DIR" "$CAZYMES_DIR"
