@@ -58,18 +58,23 @@ set -euo pipefail
 #     "*.region001.gbk" — which is what the bash validation loop above
 #     already checks for and what Step 12a actually produces. Left at its
 #     default, BiG-SCAPE silently finds ~0 matching input files even though
-#   - Removed --mibig. This build of bigscape/1.1.9 auto-extracts its bundled
-#     MIBiG reference zip into its own install directory the first time it's
-#     used (.../site-packages/bigscape/Annotated_MIBiG_reference/...), which
-#     sits inside a read-only container filesystem here and fails every run
-#     with "OSError: [Errno 30] Read-only file system". 1.1.9 is the final
-#     1.x release, so there's no point-release fix to pick up. Since
-#     scripts/11a_antismash_compare.sh already pulls MIBiG knownclusterblast
-#     hits straight from each isolate's antiSMASH JSON into
-#     analyses/antismash_comparison/antismash_known_hits.tsv, that remains
-#     the source of known-vs-novel calls; without --mibig, BiG-SCAPE's own
-#     network just won't have MIBiG reference nodes sitting in it for visual
-#     comparison. See the NOTE printed by the summary step below.
+#     the antiSMASH directories are valid, so it "completes" having clustered
+#     nothing, and the summary step below then fails with
+#     "No BiG-SCAPE network_files found."
+#   - Re-added --mibig. It initially failed with "OSError: [Errno 30]
+#     Read-only file system" because bigscape/1.1.9 extracts its bundled
+#     MIBiG reference zip into its own install directory inside this
+#     module's read-only container the first time it's used
+#     (.../site-packages/bigscape/Annotated_MIBiG_reference/MIBiG_3.1_final).
+#     Worked around with the same APPTAINER_BINDPATH mechanism already used
+#     for the dbCAN container in 13a_cazyme_dbcan.sh: pre-create that exact
+#     directory on the host (under DB_ROOT, so it's cached once and reused
+#     across batches rather than re-extracted every run) and bind it onto
+#     the container path. Since the directory then already exists, bigscape's
+#     own os.makedirs() call is skipped and the extraction lands on real,
+#     writable host storage. If this ever regresses, `declare -f bigscape`
+#     after `module load bigscape` will show the actual singularity/apptainer
+#     invocation the module wraps, in case its own binds ever conflict.
 ###############################################################################
 
 # -------------------------------
@@ -103,8 +108,39 @@ echo ""
 # -------------------------------
 module load bigscape
 
+echo "[$(date)] bigscape CLI check (confirm 1.x vs 2.x flag/output conventions below):"
+bigscape --help 2>&1 | head -30 || true
+echo ""
 
 PFAM_DIR="${PROJECT_ROOT}/DB_Databases/pfam_db"
+
+# Fail fast (seconds, not most of a 10-hour allocation) if the Pfam database
+# hasn't been hmmpress'd. Left unchecked, `bigscape` prints a warning about
+# missing .h3f/.h3i/.h3m/.h3p files but still exits 0 having clustered
+# nothing, so `set -e` never catches it and the job "succeeds" with no output.
+missing_pfam_idx=()
+for ext in h3f h3i h3m h3p; do
+    if ! compgen -G "${PFAM_DIR}"/*."${ext}" > /dev/null; then
+        missing_pfam_idx+=("${ext}")
+    fi
+done
+if (( ${#missing_pfam_idx[@]} > 0 )); then
+    echo "ERROR: Pfam index file(s) missing in ${PFAM_DIR}: ${missing_pfam_idx[*]}"
+    echo "  Fix: module load hmmer; cd ${PFAM_DIR}; hmmpress Pfam-A.hmm"
+    exit 1
+fi
+
+# -------------------------------
+# --mibig workaround: bind a writable, persistent host directory over the
+# exact path bigscape's bundled MIBiG zip extracts into inside its (read-
+# only) container. Cached under DB_ROOT rather than BATCH_DIR since MIBiG
+# 3.1 doesn't change per batch — extracted once, reused by every future run.
+# -------------------------------
+MIBIG_CACHE_DIR="${DB_ROOT}/mibig_cache/MIBiG_3.1_final"
+mkdir -p "${MIBIG_CACHE_DIR}"
+export APPTAINER_BINDPATH="${APPTAINER_BINDPATH:+${APPTAINER_BINDPATH},}${MIBIG_CACHE_DIR}:/usr/local/lib/python3.7/site-packages/bigscape/Annotated_MIBiG_reference/MIBiG_3.1_final"
+echo "MIBiG cache dir : ${MIBIG_CACHE_DIR} (bound over the container's read-only install path)"
+echo ""
 
 # -------------------------------
 # Collect isolates from manifest (column 2 = sample_id; see header note)
@@ -160,6 +196,7 @@ bigscape \
     --pfam_dir "${PFAM_DIR}" \
     --cores "${SLURM_CPUS_PER_TASK:-40}" \
     --cutoffs 0.30 0.50 0.70 \
+    --mibig \
     --mix \
     --hybrids-off \
     --include_singletons \
@@ -210,12 +247,6 @@ if not clustering_files:
     raise SystemExit(1)
 
 print(f"Found {len(clustering_files)} clustering file(s) under: {run}")
-print("NOTE: this run did not use --mibig (see script header). 'is_mibig' will be "
-      "False and 'novel' True for every family below — that reflects no MIBiG "
-      "reference BGCs being present in this network, not a confirmed absence of "
-      "known homologs. Cross-reference "
-      "analyses/antismash_comparison/antismash_known_hits.tsv for actual "
-      "known-vs-novel calls (from antiSMASH's own knownclusterblast results).")
 
 for clust in clustering_files:
     df = pd.read_csv(clust, sep="\t")
@@ -224,6 +255,13 @@ for clust in clustering_files:
     df["isolate"] = df["#BGC Name"].str.extract(r"(Fus_[A-Za-z0-9]+)")
 
     df["is_mibig"] = df["#BGC Name"].str.startswith("BGC")
+
+    if not df["is_mibig"].any():
+        print(f"NOTE ({os.path.basename(clust)}): no MIBiG reference BGCs appear in "
+              "this network — 'novel' below reflects no comparison having been made, "
+              "not a confirmed absence of known homologs. Cross-reference "
+              "analyses/antismash_comparison/antismash_known_hits.tsv (antiSMASH's "
+              "own knownclusterblast results) for actual known-vs-novel calls.")
 
     summary = (
         df.groupby("Family Number")
