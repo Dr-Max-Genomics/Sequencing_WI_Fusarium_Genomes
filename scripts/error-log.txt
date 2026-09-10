@@ -1,0 +1,43 @@
+
+ Mixing all BGC classes
+  Warning: unknown product 'terpene-precursor'
+  Warning: unknown product 'cytokinin'
+  Warning: unknown product 'cytokinin'
+  Warning: unknown product 'cytokinin'
+  Warning: unknown product 'isocyanide'
+  Warning: unknown product 'cytokinin'
+  Warning: unknown product 'terpene-precursor'
+  Warning: unknown product 'terpene-precursor'
+  Warning: unknown product 'cytokinin'
+  Warning: unknown product 'terpene-precursor'
+  Warning: unknown product 'isocyanide-nrp'
+  Warning: unknown product 'terpene-precursor'
+  Warning: unknown product 'cytokinin'
+  Warning: unknown product 'terpene-precursor'
+  Warning: unknown product 'isocyanide'
+  Warning: unknown product 'isocyanide'
+  Warning: unknown product 'isocyanide'
+
+  Mix (2657 BGCs)
+  Calculating all pairwise distances
+Ignored unknown character X (seen 4 times)
+Ignored unknown character X (seen 1 times)
+/usr/local/lib/python3.7/site-packages/sklearn/cluster/_affinity_propagation.py:253: ConvergenceWarning: Affinity propagation did not converge, this model will not have any cluster centers.
+  ConvergenceWarning,
+generate_network took 151.077 seconds
+   Removing 1214 non-relevant MIBiG BGCs
+  Writing output files
+  Calling Gene Cluster Families
+  Cutoff: 0.3
+Traceback (most recent call last):
+  File "/usr/local/bin/bigscape", line 10, in <module>
+    sys.exit(main())
+  File "/usr/local/lib/python3.7/site-packages/bigscape/__main__.py", line 5, in main
+    bigscape.main()
+  File "/usr/local/lib/python3.7/site-packages/bigscape/bigscape.py", line 3026, in main
+    clanCutoff=options.clan_cutoff, htmlFolder=network_html_folder)
+  File "/usr/local/lib/python3.7/site-packages/bigscape/bigscape.py", line 1733, in clusterJsonBatch
+    clanLabels = [familyIdx[exemplarsClans[labelsClans[i]]] for i in range(len(familyIdx))]
+  File "/usr/local/lib/python3.7/site-packages/bigscape/bigscape.py", line 1733, in <listcomp>
+    clanLabels = [familyIdx[exemplarsClans[labelsClans[i]]] for i in range(len(familyIdx))]
+IndexError: list index out of range
