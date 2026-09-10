@@ -41,6 +41,7 @@ FUN_PREDICT_DIR="${BATCH_DIR}/11a_FUN_Predict_Result"    # input from predict
 INTERPROSCAN_DIR="${BATCH_DIR}/11b_InterProScan"         # global IP outputs
 ANTISMASH_DIR="${BATCH_DIR}/12a_AntiSMASH_gbk"           # antismash gbk output folder
 CAZYMES_DIR="${BATCH_DIR}/13a_CAzymes"
+BIGSCAPE_DIR="${BATCH_DIR}/14_BiGSCAPE"
 # Annotate outputs live inside FUN_PREDICT_DIR per isolate (see CHANGELOG v1.4)
 
 # S5 — Genome-wide analyses
@@ -77,4 +78,4 @@ mkdir -p \
   "$ASSEMBLY_DIR" "$POLISH_DIR" "$POLISHED_DIR" "$BUSCO_DIR" \
   "$FUN_PREDICT_DIR" "$INTERPROSCAN_DIR" "$ANTISMASH_DIR" "$LOG_DIR" \
   "$DB_ROOT" "$BUSCO_DOWNLOADS" "$EARLGREY_DIR" "$MASK_DIR" \
-  "$TELOMERE_DIR" "$CAZYMES_DIR"
+  "$TELOMERE_DIR" "$CAZYMES_DIR" "$BIGSCAPE_DIR"
