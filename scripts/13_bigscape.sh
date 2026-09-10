@@ -18,7 +18,7 @@ set -euo pipefail
 #       Contains *.region*.gbk
 #
 # Output (single directory):
-#   - ${BATCH_DIR}/14_BiGSCAPE/
+#   - ${BIGSCAPE_DIR}/
 #       bigscape_out/
 #       network_files/
 #       clustering summaries
@@ -26,7 +26,41 @@ set -euo pipefail
 # Notes:
 #   - No 14a/14b split needed.
 #   - BiG-SCAPE input = antiSMASH output folders (direct).
-#   - Manifest column $6 = funannotate_name controls isolate directories.
+#   - Isolate directories under ANTISMASH_DIR are keyed by manifest column $2
+#     (sample_id), matching how antismash_file ("Fus_BarNN...") is named in
+#     the manifest. Confirm with `ls ${ANTISMASH_DIR}` if this ever changes.
+#
+# CHANGELOG (this revision):
+#   - Added an explicit, readable check that BIGSCAPE_DIR is set (paths.sh did
+#     not define it as of the last review) instead of letting `set -u` kill
+#     the script with a bare "unbound variable" error.
+#   - Fixed `((valid_input_count++))`: under `set -e`, `((x++))` returns the
+#     PRE-increment value as its exit status, so the very first successful
+#     isolate (valid_input_count 0 -> 1) evaluated to 0 and was treated as a
+#     failed command, silently killing the script before BiG-SCAPE ever ran.
+#     Replaced with a plain arithmetic assignment, which has no such gotcha.
+#   - Fixed the Python summary block: it hardcoded a path relative to the
+#     job's working directory ("14_BiGSCAPE/bigscape_out/network_files")
+#     instead of using ${BIGSCAPE_DIR}. Since the heredoc is quoted (<<'PY'),
+#     bash never substituted into it anyway. BIGSCAPE_DIR is now exported and
+#     read via os.environ inside Python.
+#   - Logged `bigscape --help` up front. This script's flags (--inputdir,
+#     --outputdir, --hybrids-off, --include_singletons, space-separated
+#     --cutoffs) and the expected network_files/mix_clustering_c*.tsv output
+#     layout match classic BiG-SCAPE 1.1.x. BiG-SCAPE 2.x uses a different
+#     subcommand CLI (`bigscape cluster -i -o -p --gcf-cutoffs`) and a
+#     different (SQLite-backed) output structure entirely. If the module on
+#     this system resolves to 2.x, the command below will fail with an
+#     argument error — check the logged --help output first.
+#   - Added --include_gbk_str region. BiG-SCAPE's own file filter defaults to
+#     matching "cluster" in filenames (antiSMASH 3/4 naming, e.g.
+#     "*.cluster001.gbk"). antiSMASH 5+ renamed per-BGC output to
+#     "*.region001.gbk" — which is what the bash validation loop above
+#     already checks for and what Step 12a actually produces. Left at its
+#     default, BiG-SCAPE silently finds ~0 matching input files even though
+#     the antiSMASH directories are valid, so it "completes" having clustered
+#     nothing, and the summary step below then fails with
+#     "No BiG-SCAPE network_files found."
 ###############################################################################
 
 # -------------------------------
@@ -39,8 +73,11 @@ source "${PROJECT_ROOT}/config/paths.sh"
 # antiSMASH output root from your existing Step 12a:
 #   ANTISMASH_DIR="${BATCH_DIR}/12a_AntiSMASH_gbk"
 
+# Fail fast with a clear message rather than a bare "unbound variable" error
+# if BIGSCAPE_DIR hasn't been added to config/paths.sh yet.
+: "${BIGSCAPE_DIR:?BIGSCAPE_DIR is not set. Add it to config/paths.sh, e.g.: BIGSCAPE_DIR=\"\${BATCH_DIR}/14_BiGSCAPE\" (and add it to the mkdir -p list).}"
 
-mkdir -p "${LOG_DIR}/bigscape"
+mkdir -p "${LOG_DIR}/bigscape" "${BIGSCAPE_DIR}"
 
 LOG_FILE="${LOG_DIR}/bigscape/14_bigscape_${SLURM_JOB_ID}.log"
 exec >"${LOG_FILE}" 2>&1
@@ -57,10 +94,14 @@ echo ""
 # -------------------------------
 module load bigscape
 
+echo "[$(date)] bigscape CLI check (confirm 1.x vs 2.x flag/output conventions below):"
+bigscape --help 2>&1 | head -30 || true
+echo ""
+
 PFAM_DIR="${PROJECT_ROOT}/DB_Databases/pfam"
 
 # -------------------------------
-# Collect isolates from manifest (column 6 = funannotate_name)
+# Collect isolates from manifest (column 2 = sample_id; see header note)
 # -------------------------------
 mapfile -t isolates < <(
     awk -F'\t' 'NR>1 {print $2}' "${MANIFEST}" | sort -u
@@ -95,7 +136,7 @@ for iso in "${isolates[@]}"; do
     fi
 
     echo "✓ ${iso}: ${#region_files[@]} region GBKs found"
-    ((valid_input_count++))
+    valid_input_count=$((valid_input_count + 1))
 done
 
 if (( valid_input_count == 0 )); then
@@ -116,7 +157,8 @@ bigscape \
     --mibig \
     --mix \
     --hybrids-off \
-    --include_singletons
+    --include_singletons \
+    --include_gbk_str region
 
 echo ""
 echo "[$(date)] BiG-SCAPE clustering complete."
@@ -127,13 +169,15 @@ echo "[$(date)] BiG-SCAPE clustering complete."
 echo ""
 echo "[$(date)] Summarizing BiG-SCAPE clustering..."
 
-python3 - <<'PY'
-import glob, pandas as pd, os
+export BIGSCAPE_DIR
 
-base="14_BiGSCAPE/bigscape_out/network_files"
+python3 - <<'PY'
+import glob, os, pandas as pd
+
+base = os.path.join(os.environ["BIGSCAPE_DIR"], "bigscape_out", "network_files")
 runs = sorted(glob.glob(f"{base}/*/"))
 if not runs:
-    print("ERROR: No BiG-SCAPE network_files found.")
+    print(f"ERROR: No BiG-SCAPE network_files found under {base}")
     raise SystemExit(1)
 
 run = runs[-1]
@@ -141,10 +185,10 @@ mix_dir = f"{run}/mix"
 clustering_files = sorted(glob.glob(f"{mix_dir}/mix_clustering_c*.tsv"))
 
 if not clustering_files:
-    print("ERROR: No mix_clustering_c*.tsv found.")
+    print(f"ERROR: No mix_clustering_c*.tsv found under {mix_dir}")
     raise SystemExit(1)
 
-print(f"Using clustering file: {clustering_files[-1]}")
+print(f"Found {len(clustering_files)} clustering file(s) under: {run}")
 
 for clust in clustering_files:
     df = pd.read_csv(clust, sep="\t")
