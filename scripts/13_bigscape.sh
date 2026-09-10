@@ -100,6 +100,22 @@ echo ""
 
 PFAM_DIR="${PROJECT_ROOT}/DB_Databases/pfam"
 
+# Fail fast (seconds, not most of a 10-hour allocation) if the Pfam database
+# hasn't been hmmpress'd. Left unchecked, `bigscape` prints a warning about
+# missing .h3f/.h3i/.h3m/.h3p files but still exits 0 having clustered
+# nothing, so `set -e` never catches it and the job "succeeds" with no output.
+missing_pfam_idx=()
+for ext in h3f h3i h3m h3p; do
+    if ! compgen -G "${PFAM_DIR}"/*."${ext}" > /dev/null; then
+        missing_pfam_idx+=("${ext}")
+    fi
+done
+if (( ${#missing_pfam_idx[@]} > 0 )); then
+    echo "ERROR: Pfam index file(s) missing in ${PFAM_DIR}: ${missing_pfam_idx[*]}"
+    echo "  Fix: module load hmmer; cd ${PFAM_DIR}; hmmpress Pfam-A.hmm"
+    exit 1
+fi
+
 # -------------------------------
 # Collect isolates from manifest (column 2 = sample_id; see header note)
 # -------------------------------
@@ -163,11 +179,27 @@ bigscape \
 echo ""
 echo "[$(date)] BiG-SCAPE clustering complete."
 
+if ! compgen -G "${BIGSCAPE_DIR}/bigscape_out/network_files"/*/ > /dev/null; then
+    echo "ERROR: bigscape exited without error but produced no network_files output."
+    echo "  Check the log above for warnings (e.g. missing Pfam index, no matching"
+    echo "  input GBKs) — bigscape does not always exit non-zero on these."
+    exit 1
+fi
+
 # -------------------------------
 # Summaries — GCF statistics
 # -------------------------------
 echo ""
 echo "[$(date)] Summarizing BiG-SCAPE clustering..."
+
+# This job runs under sbatch, which starts a fresh, non-interactive shell —
+# unlike an interactive/login-node script, it does NOT inherit any conda
+# environment already active in your shell. `module load bigscape` only put
+# bigscape's own dependencies on PATH, not pandas. Activate seq_env now,
+# deliberately AFTER bigscape has already finished running, so it can't
+# shadow anything the bigscape module needs on PATH.
+module load miniconda
+source activate seq_env
 
 export BIGSCAPE_DIR
 
@@ -219,76 +251,3 @@ PY
 echo ""
 echo "[$(date)] Step 14 complete."
 echo "Open: ${BIGSCAPE_DIR}/bigscape_out/index.html"
-
-
-
-
-
-[Wed Sep  9 07:24:19 PM CDT 2026] Step 14 — BiG-SCAPE
-Batch dir       : /90daydata/silage_microbiome/max_seq/batch3_2026-May
-Manifest        : /project/silage_microbiome/max.chi/fusarium_sequencing/config/manifests/batch3_2026-May_manifest.tsv
-antiSMASH root  : /90daydata/silage_microbiome/max_seq/batch3_2026-May/12a_AntiSMASH_gbk
-BiGSCAPE out    : /90daydata/silage_microbiome/max_seq/batch3_2026-May/14_BiGSCAPE
-
-[Wed Sep  9 07:24:21 PM CDT 2026] bigscape CLI check (confirm 1.x vs 2.x flag/output conventions below):
-usage: BiG-SCAPE [-h] [-l LABEL] [-i INPUTDIR] -o OUTPUTDIR
-                 [--pfam_dir PFAM_DIR] [-c CORES]
-                 [--include_gbk_str INCLUDE_GBK_STR [INCLUDE_GBK_STR ...]]
-                 [--exclude_gbk_str EXCLUDE_GBK_STR [EXCLUDE_GBK_STR ...]]
-                 [-v] [--include_singletons] [-d DOMAIN_OVERLAP_CUTOFF]
-                 [-m MIN_BGC_SIZE] [--mix] [--no_classify]
-                 [--banned_classes {PKSI,PKSother,NRPS,RiPPs,Saccharides,Terpene,PKS-NRP_Hybrids,Others} [{PKSI,PKSother,NRPS,RiPPs,Saccharides,Terpene,PKS-NRP_Hybrids,Others} ...]]
-                 [--cutoffs CUTOFFS [CUTOFFS ...]] [--clans-off]
-                 [--clan_cutoff CLAN_CUTOFF CLAN_CUTOFF] [--hybrids-off]
-                 [--mode {global,glocal,auto}] [--anchorfile ANCHORFILE]
-                 [--force_hmmscan] [--skip_ma] [--mibig] [--mibig21]
-                 [--mibig14] [--mibig13] [--query_bgc QUERY_BGC]
-                 [--domain_includelist] [--version]
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -l LABEL, --label LABEL
-                        An extra label for this run (will be used as part of
-                        the folder name within the network_files results)
-  -i INPUTDIR, --inputdir INPUTDIR
-                        Input directory of gbk files, if left empty, all gbk
-                        files in current and lower directories will be used.
-  -o OUTPUTDIR, --outputdir OUTPUTDIR
-                        Output directory, this will contain all output data
-                        files.
-  --pfam_dir PFAM_DIR   Location of hmmpress-processed Pfam files. Default is
-                        same location of BiG-SCAPE
-  -c CORES, --cores CORES
-                        Set the number of cores the script may use (default:
-                        use all available cores)
-
-Isolates detected:
-  - Fus_Bar01
-  - Fus_Bar02
-  - Fus_Bar04
-  - Fus_Bar05
-  - Fus_Bar06
-  - Fus_Bar07
-  - Fus_Bar08
-
-[Wed Sep  9 07:24:25 PM CDT 2026] Checking antiSMASH region GBK folders...
-✓ Fus_Bar01: 61 region GBKs found
-✓ Fus_Bar02: 65 region GBKs found
-✓ Fus_Bar04: 48 region GBKs found
-✓ Fus_Bar05: 64 region GBKs found
-✓ Fus_Bar06: 47 region GBKs found
-✓ Fus_Bar07: 63 region GBKs found
-✓ Fus_Bar08: 61 region GBKs found
-
-[Wed Sep  9 07:24:26 PM CDT 2026] Running BiG-SCAPE on antiSMASH output structure...
-
-One or more of the necessary Pfam files (.h3f, .h3i, .h3m, .h3p) were not found
-Please download the latest Pfam-A.hmm file from http://pfam.xfam.org/
-Then use hmmpress on it, and use the --pfam_dir parameter to point to the location of the files
-
-[Wed Sep  9 07:24:27 PM CDT 2026] BiG-SCAPE clustering complete.
-
-[Wed Sep  9 07:24:27 PM CDT 2026] Summarizing BiG-SCAPE clustering...
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-ModuleNotFoundError: No module named 'pandas'
