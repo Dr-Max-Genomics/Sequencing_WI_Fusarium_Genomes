@@ -1,3 +1,62 @@
+busco -i assembly.fasta -l hypocreales_odb10 -o Fus_Bar81_busco -m genome --cpu 64
+2026-09-10 20:34:32 INFO:       ***** Start a BUSCO v5.7.1 analysis, current time: 09/10/2026 20:34:32 *****
+2026-09-10 20:34:32 INFO:       Configuring BUSCO with local environment
+2026-09-10 20:34:32 INFO:       Running genome mode
+2026-09-10 20:34:32 INFO:       Downloading information on latest versions of BUSCO data...
+2026-09-10 20:34:33 INFO:       Input file is /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/05_Genome_Assembly/Fus_Bar81_flye/assembly.fasta
+2026-09-10 20:34:33 INFO:       Downloading file 'https://busco-data.ezlab.org/v5/data/lineages/hypocreales_odb10.2024-01-08.tar.gz'
+2026-09-10 20:34:43 INFO:       Decompressing file '/90daydata/silage_microbiome/max_seq/batch4_2026-Sep/05_Genome_Assembly/Fus_Bar81_flye/busco_downloads/lineages/hypocreales_odb10.tar.gz'
+2026-09-10 20:35:59 INFO:       Running BUSCO using lineage dataset hypocreales_odb10 (eukaryota, 2024-01-08)
+2026-09-10 20:35:59 INFO:       Running 1 job(s) on bbtools, starting at 09/10/2026 20:35:59
+2026-09-10 20:36:07 INFO:       [bbtools]       1 of 1 task(s) completed
+2026-09-10 20:36:07 INFO:       Running 1 job(s) on miniprot_index, starting at 09/10/2026 20:36:07
+2026-09-10 20:36:16 INFO:       [miniprot_index]        1 of 1 task(s) completed
+2026-09-10 20:36:17 INFO:       Running 1 job(s) on miniprot_align, starting at 09/10/2026 20:36:17
+2026-09-10 20:36:37 INFO:       [miniprot_align]        1 of 1 task(s) completed
+2026-09-10 20:37:07 INFO:       ***** Run HMMER on gene sequences *****
+2026-09-10 20:37:16 INFO:       Running 4493 job(s) on hmmsearch, starting at 09/10/2026 20:37:16
+2026-09-10 20:37:45 INFO:       [hmmsearch]     450 of 4493 task(s) completed
+2026-09-10 20:37:56 INFO:       [hmmsearch]     899 of 4493 task(s) completed
+2026-09-10 20:38:08 INFO:       [hmmsearch]     1348 of 4493 task(s) completed
+2026-09-10 20:38:20 INFO:       [hmmsearch]     1798 of 4493 task(s) completed
+2026-09-10 20:38:32 INFO:       [hmmsearch]     2247 of 4493 task(s) completed
+2026-09-10 20:38:43 INFO:       [hmmsearch]     2696 of 4493 task(s) completed
+2026-09-10 20:38:55 INFO:       [hmmsearch]     3146 of 4493 task(s) completed
+2026-09-10 20:39:06 INFO:       [hmmsearch]     3595 of 4493 task(s) completed
+2026-09-10 20:39:18 INFO:       [hmmsearch]     4044 of 4493 task(s) completed
+2026-09-10 20:39:30 INFO:       [hmmsearch]     4493 of 4493 task(s) completed
+2026-09-10 20:39:44 INFO:       80 candidate overlapping regions found
+2026-09-10 20:39:44 INFO:       11371 exons in total
+2026-09-10 20:39:50 WARNING:    203 of 4461 Complete matches (4.6%) contain internal stop codons in Miniprot gene predictions
+2026-09-10 20:40:35 INFO:
+
+    -------------------------------------------------------------------------------------------
+    |Results from dataset hypocreales_odb10                                                    |
+    -------------------------------------------------------------------------------------------
+    |C:99.3%[S:99.2%,D:0.1%],F:0.1%,M:0.6%,n:4494,E:4.6%                                       |
+    |4461    Complete BUSCOs (C)    (of which 203 contain internal stop codons)                |
+    |4457    Complete and single-copy BUSCOs (S)                                               |
+    |4    Complete and duplicated BUSCOs (D)                                                   |
+    |5    Fragmented BUSCOs (F)                                                                |
+    |28    Missing BUSCOs (M)                                                                  |
+    |4494    Total BUSCO groups searched                                                       |
+    -------------------------------------------------------------------------------------------
+2026-09-10 20:40:35 INFO:       BUSCO analysis done with WARNING(s). Total running time: 362 seconds
+
+***** Summary of warnings: *****
+2026-09-10 20:39:50 WARNING:busco.busco_tools.hmmer     203 of 4461 Complete matches (4.6%) contain internal stop codons in Miniprot gene predictions
+
+2026-09-10 20:40:35 INFO:       Results written in /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/05_Genome_Assembly/Fus_Bar81_flye/Fus_Bar81_busco
+2026-09-10 20:40:35 INFO:       For assistance with interpreting the results, please consult the userguide: https://busco.ezlab.org/busco_userguide.html
+
+2026-09-10 20:40:35 INFO:       Visit this page https://gitlab.com/ezlab/busco#how-to-cite-busco to see how to cite BUSCO
+
+
+
+
+
+
+
 seqkit grep -f dup_ids.txt ../../03_Trimmed_Data/Fus_Bar81.fastq > dup_reads.fastq
 seqkit fx2tab -nl dup_reads.fastq | sort
 
