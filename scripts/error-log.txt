@@ -1,51 +1,108 @@
 ==========================================
-[Thu Sep 10 09:50:19 PM CDT 2026] dorado correct (HERRO) — test arm: Fus_Bar81.deduped
-Input:  /90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/Fus_Bar81.deduped.fastq
-Output: /90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/corrected/corrected_Fus_Bar81.deduped.fasta
-Job:    20615811 / array 20615810 task 1
-Host:   atlas-0243
+[Thu Sep 10 03:18:23 PM CDT 2026] Flye assembly
+Barcode:     barcode81
+Sample:      Fus_Bar81
+Read type:   --nano-corr (HERRO-corrected)
+Genome size: 50m
+Coverage:    100
+Input:       /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/corrected_Fus_Bar81.fasta
+Output dir:  /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/05_Genome_Assembly/Fus_Bar81_flye
+Threads:     40
+Manifest:    /project/silage_microbiome/max.chi/fusarium_sequencing/config/manifests/batch4_2026-Sep_manifest.tsv
+Job ID:      22005911 / task 5
+Host:        ceres20-mem-0
 ==========================================
-[Thu Sep 10 09:50:20 PM CDT 2026] Model ready: /project/silage_microbiome/fusarium_sequencing/config/dorado_models/herro-v1
-[Thu Sep 10 09:50:20 PM CDT 2026] Running dorado correct...
-[2026-09-10 21:50:21.200] [info] Running: "correct" "--model-path" "/project/silage_microbiome/fusarium_sequencing/config/dorado_models/herro-v1" "/90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/Fus_Bar81.deduped.fastq"
-[2026-09-10 21:50:21.593] [info] Using batch size 28 on device cuda:0 in inference thread 0.
-[2026-09-10 21:50:21.594] [info] Using batch size 28 on device cuda:0 in inference thread 1.
-[2026-09-10 21:52:51.755] [info] Starting
-[2026-09-10 22:43:59.057] [info] Corrected reads written: 790517
-[2026-09-10 22:43:59.058] [info] Finished
-[Thu Sep 10 10:44:14 PM CDT 2026] Done: Fus_Bar81.deduped
-Output FASTA:      /90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/corrected/corrected_Fus_Bar81.deduped.fasta
-Output size:       4.5G
-Corrected reads:   790084  (original uncleaned run: 789782)
+[Thu Sep 10 03:18:23 PM CDT 2026] Running Flye (--nano-corr)...
+[2026-09-10 15:18:24] INFO: Starting Flye 2.9.4-b1799
+[2026-09-10 15:18:24] INFO: >>>STAGE: configure
+[2026-09-10 15:18:24] INFO: Configuring run
+[2026-09-10 15:18:53] INFO: Total read length: 4696271036
+[2026-09-10 15:18:53] INFO: Input genome size: 50000000
+[2026-09-10 15:18:53] INFO: Estimated coverage: 93
+[2026-09-10 15:18:53] INFO: Reads N50/N90: 5798 / 4501
+[2026-09-10 15:18:53] INFO: Minimum overlap set to 5000
+[2026-09-10 15:18:53] INFO: >>>STAGE: assembly
+[2026-09-10 15:18:53] INFO: Assembling disjointigs
+[2026-09-10 15:18:53] INFO: Reading sequences
+[2026-09-10 15:19:19] INFO: Building minimizer index
+[2026-09-10 15:19:19] INFO: Pre-calculating index storage
+0% 10% 20% 30% % % 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-10 15:19:36] INFO: Filling index
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-10 15:20:09] INFO: Extending reads
+[2026-09-10 15:21:07] INFO: Overlap-based coverage: 73
+[2026-09-10 15:21:07] INFO: Median overlap divergence: 0
+0% 10% 20% 30% 40% 50% 60% 70% 90% 100% 
+[2026-09-10 15:23:45] INFO: Assembled 19 disjointigs
+[2026-09-10 15:23:46] INFO: Generating sequence
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-10 15:23:50] INFO: Filtering contained disjointigs
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-10 15:23:53] INFO: Contained seqs: 0
+[2026-09-10 15:23:56] INFO: >>>STAGE: consensus
+[2026-09-10 15:23:56] INFO: Running Minimap2
+[2026-09-10 15:25:39] INFO: Computing consensus
+[2026-09-10 15:28:39] INFO: Alignment error rate: 0.000092
+[2026-09-10 15:28:39] INFO: >>>STAGE: repeat
+[2026-09-10 15:28:39] INFO: Building and resolving repeat graph
+[2026-09-10 15:28:39] INFO: Parsing disjointigs
+[2026-09-10 15:28:39] INFO: Building repeat graph
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-10 15:28:50] INFO: Median overlap divergence: 0.125742
+[2026-09-10 15:28:50] INFO: Parsing reads
+[2026-09-10 15:29:17] INFO: Aligning reads to the graph
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-10 15:30:24] INFO: Aligned read sequence: 3477274950 / 3490958548 (0.99608)
+[2026-09-10 15:30:24] INFO: Median overlap divergence: 0
+[2026-09-10 15:30:24] INFO: Mean edge coverage: 71
+[2026-09-10 15:30:24] INFO: Simplifying the graph
+[2026-09-10 15:30:31] INFO: >>>STAGE: contigger
+[2026-09-10 15:30:31] INFO: Generating contigs
+[2026-09-10 15:30:31] INFO: Reading sequences
+[2026-09-10 15:31:02] INFO: Generated 24 contigs
+[2026-09-10 15:31:03] INFO: Added 1 scaffold connections
+[2026-09-10 15:31:05] INFO: >>>STAGE: polishing
+[2026-09-10 15:31:05] INFO: Polishing genome (1/1)
+[2026-09-10 15:31:05] INFO: Running minimap2
+[2026-09-10 15:32:49] INFO: Separating alignment into bubbles
+[2026-09-10 15:36:45] INFO: Alignment error rate: 0.000087
+[2026-09-10 15:36:45] INFO: Correcting bubbles
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-10 15:39:12] INFO: >>>STAGE: finalize
+[2026-09-10 15:39:13] INFO: Assembly statistics:
 
+	Total length:	48083345
+	Fragments:	23
+	Fragments N50:	3704920
+	Largest frg:	6945484
+	Scaffolds:	0
+	Mean coverage:	100
 
-==========================================
-[Thu Sep 10 09:50:19 PM CDT 2026] dorado correct (HERRO) — test arm: Fus_Bar81.renamed
-Input:  /90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/Fus_Bar81.renamed.fastq
-Output: /90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/corrected/corrected_Fus_Bar81.renamed.fasta
-Job:    20615810 / array 20615810 task 2
-Host:   atlas-0245
-==========================================
-[Thu Sep 10 09:50:20 PM CDT 2026] Model ready: /project/silage_microbiome/fusarium_sequencing/config/dorado_models/herro-v1
-[Thu Sep 10 09:50:20 PM CDT 2026] Running dorado correct...
-[2026-09-10 21:50:20.857] [info] Running: "correct" "--model-path" "/project/silage_microbiome/fusarium_sequencing/config/dorado_models/herro-v1" "/90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/Fus_Bar81.renamed.fastq"
-[2026-09-10 21:50:21.257] [info] Using batch size 28 on device cuda:0 in inference thread 0.
-[2026-09-10 21:50:21.257] [info] Using batch size 28 on device cuda:0 in inference thread 1.
-[2026-09-10 21:52:38.887] [info] Starting
-[2026-09-10 22:43:08.189] [info] Corrected reads written: 790545
-[2026-09-10 22:43:08.189] [info] Finished
-[Thu Sep 10 10:43:22 PM CDT 2026] Done: Fus_Bar81.renamed
-Output FASTA:      /90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/corrected/corrected_Fus_Bar81.renamed.fasta
-Output size:       4.5G
-Corrected reads:   790112  (original uncleaned run: 789782)
-
-jellyfish count -C -m 21 -s 1G -t 32 /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/corrected_Fus_Bar81.fasta /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/fus_81_reads.jf
-(seq_env)[maxwell.chibuogwu@ceres20-compute-2 ~]$ jellyfish count -C -m 21 -s 1G -t 32 /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/corrected_Fus_Bar81.fasta -o /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/fus_81_reads.jf
-(seq_env)[maxwell.chibuogwu@ceres20-compute-2 ~]$ jellyfish histo -t 32 /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/fus_81_reads.jf > /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/fus_81_reads.histo
-(seq_env)[maxwell.chibuogwu@ceres20-compute-2 ~]$ genomescope.R -i /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/fus_81_reads.histo -o /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/genomescope_out -k 21
--bash: genomescope.R: command not found
-(seq_env)[maxwell.chibuogwu@ceres20-compute-2 ~]$ genomescope2 -i /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/fus_81_reads.histo -o /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/genomescope_out -k 21
-GenomeScope analyzing /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/fus_81_reads.histo p=2 k=21 outdir=/90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/genomescope_out
-Fontconfig warning: using without calling FcInit()
-aa:99.9% ab:0.0971%
-Model converged het:0.000971 kcov:50.7 err:8.67e-05 model fit:2.06 len:46065849
+[2026-09-10 15:39:13] INFO: Final assembly: /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/05_Genome_Assembly/Fus_Bar81_flye/assembly.fasta
+[Thu Sep 10 03:39:13 PM CDT 2026] Done: Fus_Bar81
+Assembly: /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/05_Genome_Assembly/Fus_Bar81_flye/assembly.fasta
+--- assembly_info.txt ---
+#seq_name	length	cov.	circ.	repeat	mult.	alt_group	graph_path
+contig_29	6945484	99	N	N	1	*	*,27,29,-6,-27,*
+contig_25	5181418	100	N	N	1	*	*,25,*
+contig_24	4660879	100	N	N	1	*	*,24,-11
+contig_4	3748428	102	N	N	1	*	-26,4,-9,-27,*
+contig_13	3704920	101	N	N	1	*	*,27,13,*
+contig_16	3461770	99	N	N	1	*	*,27,6,16,-9,-27,*
+contig_15	3079149	102	N	N	1	*	*,27,6,-14,15,-8,-27,*
+contig_17	2747587	103	N	N	1	*	*,27,6,17,*
+contig_21	2683378	101	N	N	1	*	*,21,-8,-27,*
+contig_22	2548239	99	N	N	1	*	*,22,*
+contig_1	2543936	99	N	N	1	*	*,1,*
+contig_10	2411870	101	N	N	1	*	*,27,10,-11
+contig_12	1707127	102	N	N	1	*	*,27,12,*
+contig_5	968211	93	N	N	1	*	*,27,5,14,-6,-27,*
+contig_3	805000	93	N	N	1	*	26,3,*
+contig_20	528648	101	N	N	1	*	20
+contig_28	123867	93	N	N	1	*	*,27,28
+contig_30	102270	166	N	N	2	*	30
+contig_2	37656	158	N	Y	2	*	2
+contig_18	28633	91	N	Y	1	2	*,18,*
+contig_19	27771	20	N	Y	1	2	*,19,*
+contig_26	27111	38	N	Y	1	*	26
+contig_7	9993	72	N	N	1	*	*,27,7
