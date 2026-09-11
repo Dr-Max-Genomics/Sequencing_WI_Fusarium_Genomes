@@ -1,108 +1,180 @@
 ==========================================
-[Thu Sep 10 03:18:23 PM CDT 2026] Flye assembly
-Barcode:     barcode81
-Sample:      Fus_Bar81
+[Thu Sep 10 02:46:38 PM CDT 2026] Flye assembly
+Barcode:     barcode75
+Sample:      Fus_Bar75
 Read type:   --nano-corr (HERRO-corrected)
 Genome size: 50m
 Coverage:    100
-Input:       /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/corrected_Fus_Bar81.fasta
-Output dir:  /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/05_Genome_Assembly/Fus_Bar81_flye
+Input:       /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/corrected_Fus_Bar75.fasta
+Output dir:  /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/05_Genome_Assembly/Fus_Bar75_flye
 Threads:     40
 Manifest:    /project/silage_microbiome/max.chi/fusarium_sequencing/config/manifests/batch4_2026-Sep_manifest.tsv
-Job ID:      22005911 / task 5
-Host:        ceres20-mem-0
+Job ID:      22005275 / task 3
+Host:        ceres25-compute-29
 ==========================================
-[Thu Sep 10 03:18:23 PM CDT 2026] Running Flye (--nano-corr)...
-[2026-09-10 15:18:24] INFO: Starting Flye 2.9.4-b1799
-[2026-09-10 15:18:24] INFO: >>>STAGE: configure
-[2026-09-10 15:18:24] INFO: Configuring run
-[2026-09-10 15:18:53] INFO: Total read length: 4696271036
-[2026-09-10 15:18:53] INFO: Input genome size: 50000000
-[2026-09-10 15:18:53] INFO: Estimated coverage: 93
-[2026-09-10 15:18:53] INFO: Reads N50/N90: 5798 / 4501
-[2026-09-10 15:18:53] INFO: Minimum overlap set to 5000
-[2026-09-10 15:18:53] INFO: >>>STAGE: assembly
-[2026-09-10 15:18:53] INFO: Assembling disjointigs
-[2026-09-10 15:18:53] INFO: Reading sequences
-[2026-09-10 15:19:19] INFO: Building minimizer index
-[2026-09-10 15:19:19] INFO: Pre-calculating index storage
-0% 10% 20% 30% % % 40% 50% 60% 70% 80% 90% 100% 
-[2026-09-10 15:19:36] INFO: Filling index
+[Thu Sep 10 02:46:38 PM CDT 2026] Running Flye (--nano-corr)...
+[2026-09-10 14:46:39] INFO: Starting Flye 2.9.4-b1799
+[2026-09-10 14:46:39] INFO: >>>STAGE: configure
+[2026-09-10 14:46:39] INFO: Configuring run
+[2026-09-10 14:46:48] INFO: Total read length: 1998351439
+[2026-09-10 14:46:48] INFO: Input genome size: 50000000
+[2026-09-10 14:46:48] INFO: Estimated coverage: 39
+[2026-09-10 14:46:48] INFO: Reads N50/N90: 4882 / 4296
+[2026-09-10 14:46:48] INFO: Minimum overlap set to 4000
+[2026-09-10 14:46:48] INFO: >>>STAGE: assembly
+[2026-09-10 14:46:48] INFO: Assembling disjointigs
+[2026-09-10 14:46:48] INFO: Reading sequences
+[2026-09-10 14:46:54] INFO: Building minimizer index
+[2026-09-10 14:46:54] INFO: Pre-calculating index storage
 0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
-[2026-09-10 15:20:09] INFO: Extending reads
-[2026-09-10 15:21:07] INFO: Overlap-based coverage: 73
-[2026-09-10 15:21:07] INFO: Median overlap divergence: 0
-0% 10% 20% 30% 40% 50% 60% 70% 90% 100% 
-[2026-09-10 15:23:45] INFO: Assembled 19 disjointigs
-[2026-09-10 15:23:46] INFO: Generating sequence
+[2026-09-10 14:47:00] INFO: Filling index
 0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
-[2026-09-10 15:23:50] INFO: Filtering contained disjointigs
+[2026-09-10 14:47:13] INFO: Extending reads
+[2026-09-10 14:47:27] INFO: Overlap-based coverage: 43
+[2026-09-10 14:47:27] INFO: Median overlap divergence: 0
 0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
-[2026-09-10 15:23:53] INFO: Contained seqs: 0
-[2026-09-10 15:23:56] INFO: >>>STAGE: consensus
-[2026-09-10 15:23:56] INFO: Running Minimap2
-[2026-09-10 15:25:39] INFO: Computing consensus
-[2026-09-10 15:28:39] INFO: Alignment error rate: 0.000092
-[2026-09-10 15:28:39] INFO: >>>STAGE: repeat
-[2026-09-10 15:28:39] INFO: Building and resolving repeat graph
-[2026-09-10 15:28:39] INFO: Parsing disjointigs
-[2026-09-10 15:28:39] INFO: Building repeat graph
+[2026-09-10 14:48:24] INFO: Assembled 98 disjointigs
+[2026-09-10 14:48:24] INFO: Generating sequence
 0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
-[2026-09-10 15:28:50] INFO: Median overlap divergence: 0.125742
-[2026-09-10 15:28:50] INFO: Parsing reads
-[2026-09-10 15:29:17] INFO: Aligning reads to the graph
+[2026-09-10 14:48:25] INFO: Filtering contained disjointigs
 0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
-[2026-09-10 15:30:24] INFO: Aligned read sequence: 3477274950 / 3490958548 (0.99608)
-[2026-09-10 15:30:24] INFO: Median overlap divergence: 0
-[2026-09-10 15:30:24] INFO: Mean edge coverage: 71
-[2026-09-10 15:30:24] INFO: Simplifying the graph
-[2026-09-10 15:30:31] INFO: >>>STAGE: contigger
-[2026-09-10 15:30:31] INFO: Generating contigs
-[2026-09-10 15:30:31] INFO: Reading sequences
-[2026-09-10 15:31:02] INFO: Generated 24 contigs
-[2026-09-10 15:31:03] INFO: Added 1 scaffold connections
-[2026-09-10 15:31:05] INFO: >>>STAGE: polishing
-[2026-09-10 15:31:05] INFO: Polishing genome (1/1)
-[2026-09-10 15:31:05] INFO: Running minimap2
-[2026-09-10 15:32:49] INFO: Separating alignment into bubbles
-[2026-09-10 15:36:45] INFO: Alignment error rate: 0.000087
-[2026-09-10 15:36:45] INFO: Correcting bubbles
+[2026-09-10 14:48:27] INFO: Contained seqs: 1
+[2026-09-10 14:48:28] INFO: >>>STAGE: consensus
+[2026-09-10 14:48:29] INFO: Running Minimap2
+[2026-09-10 14:48:58] INFO: Computing consensus
+[2026-09-10 14:49:37] INFO: Alignment error rate: 0.000155
+[2026-09-10 14:49:37] INFO: >>>STAGE: repeat
+[2026-09-10 14:49:37] INFO: Building and resolving repeat graph
+[2026-09-10 14:49:38] INFO: Parsing disjointigs
+[2026-09-10 14:49:38] INFO: Building repeat graph
 0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
-[2026-09-10 15:39:12] INFO: >>>STAGE: finalize
-[2026-09-10 15:39:13] INFO: Assembly statistics:
+[2026-09-10 14:49:42] INFO: Median overlap divergence: 0.139102
+[2026-09-10 14:49:42] INFO: Parsing reads
+[2026-09-10 14:49:48] INFO: Aligning reads to the graph
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-10 14:50:17] INFO: Aligned read sequence: 1983680270 / 1987192180 (0.998233)
+[2026-09-10 14:50:17] INFO: Median overlap divergence: 0
+[2026-09-10 14:50:17] INFO: Mean edge coverage: 41
+[2026-09-10 14:50:17] INFO: Simplifying the graph
+[2026-09-10 14:50:20] INFO: >>>STAGE: contigger
+[2026-09-10 14:50:20] INFO: Generating contigs
+[2026-09-10 14:50:20] INFO: Reading sequences
+[2026-09-10 14:50:28] INFO: Generated 95 contigs
+[2026-09-10 14:50:29] INFO: Added 0 scaffold connections
+[2026-09-10 14:50:30] INFO: >>>STAGE: polishing
+[2026-09-10 14:50:30] INFO: Polishing genome (1/1)
+[2026-09-10 14:50:30] INFO: Running minimap2
+[2026-09-10 14:50:56] INFO: Separating alignment into bubbles
+[2026-09-10 14:51:57] INFO: Alignment error rate: 0.000111
+[2026-09-10 14:51:57] INFO: Correcting bubbles
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-10 14:53:18] INFO: >>>STAGE: finalize
+[2026-09-10 14:53:18] INFO: Assembly statistics:
 
-	Total length:	48083345
-	Fragments:	23
-	Fragments N50:	3704920
-	Largest frg:	6945484
+	Total length:	46564344
+	Fragments:	95
+	Fragments N50:	1008260
+	Largest frg:	2424515
 	Scaffolds:	0
-	Mean coverage:	100
+	Mean coverage:	44
 
-[2026-09-10 15:39:13] INFO: Final assembly: /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/05_Genome_Assembly/Fus_Bar81_flye/assembly.fasta
-[Thu Sep 10 03:39:13 PM CDT 2026] Done: Fus_Bar81
-Assembly: /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/05_Genome_Assembly/Fus_Bar81_flye/assembly.fasta
+[2026-09-10 14:53:18] INFO: Final assembly: /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/05_Genome_Assembly/Fus_Bar75_flye/assembly.fasta
+[Thu Sep 10 02:53:18 PM CDT 2026] Done: Fus_Bar75
+Assembly: /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/05_Genome_Assembly/Fus_Bar75_flye/assembly.fasta
 --- assembly_info.txt ---
 #seq_name	length	cov.	circ.	repeat	mult.	alt_group	graph_path
-contig_29	6945484	99	N	N	1	*	*,27,29,-6,-27,*
-contig_25	5181418	100	N	N	1	*	*,25,*
-contig_24	4660879	100	N	N	1	*	*,24,-11
-contig_4	3748428	102	N	N	1	*	-26,4,-9,-27,*
-contig_13	3704920	101	N	N	1	*	*,27,13,*
-contig_16	3461770	99	N	N	1	*	*,27,6,16,-9,-27,*
-contig_15	3079149	102	N	N	1	*	*,27,6,-14,15,-8,-27,*
-contig_17	2747587	103	N	N	1	*	*,27,6,17,*
-contig_21	2683378	101	N	N	1	*	*,21,-8,-27,*
-contig_22	2548239	99	N	N	1	*	*,22,*
-contig_1	2543936	99	N	N	1	*	*,1,*
-contig_10	2411870	101	N	N	1	*	*,27,10,-11
-contig_12	1707127	102	N	N	1	*	*,27,12,*
-contig_5	968211	93	N	N	1	*	*,27,5,14,-6,-27,*
-contig_3	805000	93	N	N	1	*	26,3,*
-contig_20	528648	101	N	N	1	*	20
-contig_28	123867	93	N	N	1	*	*,27,28
-contig_30	102270	166	N	N	2	*	30
-contig_2	37656	158	N	Y	2	*	2
-contig_18	28633	91	N	Y	1	2	*,18,*
-contig_19	27771	20	N	Y	1	2	*,19,*
-contig_26	27111	38	N	Y	1	*	26
-contig_7	9993	72	N	N	1	*	*,27,7
+contig_26	2424515	45	N	N	1	*	*,26,*
+contig_8	1957464	46	N	N	1	*	*,8,*
+contig_61	1798655	45	N	N	1	*	*,61,*
+contig_54	1778199	46	N	N	1	*	*,93,54,*
+contig_47	1738443	46	N	N	1	*	*,47,*
+contig_24	1662969	45	N	N	1	*	*,24,*
+contig_19	1633248	45	N	N	1	*	*,19,*
+contig_37	1594863	44	N	N	1	*	*,37,*
+contig_71	1391421	45	N	N	1	*	*,71,*
+contig_29	1262800	45	N	N	1	*	*,29,*
+contig_16	1204358	46	N	N	1	*	*,16,*
+contig_4	1138982	46	N	N	1	*	*,4,*
+contig_18	1054735	46	N	N	1	*	*,18,*
+contig_65	1042504	45	N	N	1	*	*,65,*
+contig_50	1032600	45	N	N	1	*	*,50,*
+contig_49	1008260	45	N	N	1	*	*,49,*
+contig_39	916529	47	N	N	1	*	*,39,*
+contig_11	914418	46	N	N	1	*	*,11,*
+contig_32	899282	45	N	N	1	*	*,32,*
+contig_35	881515	46	N	N	1	*	*,35,*
+contig_10	852414	46	N	N	1	*	*,10,*
+contig_15	739993	45	N	N	1	*	*,15,*
+contig_74	723673	45	N	N	1	*	*,74,*
+contig_7	692385	47	N	N	1	*	*,7,*
+contig_46	672930	45	N	N	1	*	*,46,*
+contig_6	653876	45	N	N	1	*	*,6,*
+contig_55	616488	43	N	N	1	*	*,93,55,*
+contig_48	614909	44	N	N	1	*	*,48,*
+contig_5	602673	45	N	N	1	*	*,5,*
+contig_38	584125	43	N	N	1	*	*,38,*
+contig_79	577997	47	N	N	1	*	*,79,*
+contig_2	556337	43	N	N	1	*	*,2,*
+contig_22	538869	46	N	N	1	*	*,22,*
+contig_66	530514	45	N	N	1	*	*,66,*
+contig_69	497200	45	N	N	1	*	*,69,*
+contig_3	491879	45	N	N	1	*	*,3,*
+contig_68	488305	47	N	N	1	*	*,68,*
+contig_33	488275	46	N	N	1	*	*,33,*
+contig_60	458207	47	N	N	1	*	*,60,*
+contig_73	441005	44	N	N	1	*	*,73,*
+contig_14	411418	47	N	N	1	*	*,14,*
+contig_59	411024	43	N	N	1	*	*,59,*
+contig_36	376934	44	N	N	1	*	*,36,*
+contig_41	374557	44	N	N	1	*	*,41,*
+contig_62	332866	46	N	N	1	*	*,62,*
+contig_64	324251	46	N	N	1	*	*,64,*
+contig_56	283829	44	N	N	1	*	*,93,56,*
+contig_40	279277	46	N	N	1	*	*,40,*
+contig_21	264897	45	N	N	1	*	*,21,*
+contig_80	254186	43	N	N	1	*	*,80,*
+contig_44	252218	40	N	N	1	*	*,44,*
+contig_27	223824	45	N	N	1	*	*,27,*
+contig_31	205532	46	N	N	1	*	*,31,*
+contig_42	203278	45	N	N	1	*	*,42,*
+contig_88	202112	45	N	N	1	*	*,88,*
+contig_28	192768	45	N	N	1	*	*,28,*
+contig_12	185138	45	N	N	1	*	*,12,*
+contig_34	165339	42	N	N	1	*	*,34,*
+contig_20	162073	47	N	N	1	*	*,20,*
+contig_23	160113	44	N	N	1	*	*,23,*
+contig_58	155426	44	N	N	1	*	*,58,*
+contig_9	154263	42	N	N	1	*	*,9,*
+contig_45	137112	44	N	N	1	*	*,45,*
+contig_17	132817	46	N	N	1	*	*,17,*
+contig_51	130551	44	N	N	1	*	*,51,*
+contig_83	128488	45	N	N	1	*	*,83,*
+contig_1	124645	44	N	N	1	*	*,1,*
+contig_13	123403	41	N	N	1	*	*,13,*
+contig_72	112337	41	N	N	1	*	*,72,*
+contig_63	104882	41	N	N	1	*	*,63,*
+contig_25	100733	46	N	N	1	*	*,25,*
+contig_70	84052	42	N	N	1	*	*,70,*
+contig_43	63909	48	N	N	1	*	*,43,*
+contig_78	61318	38	N	N	1	*	*,78,*
+contig_30	60701	41	N	N	1	*	*,30,*
+contig_67	56878	43	N	N	1	*	*,67,*
+contig_52	54986	35	N	N	1	*	*,52,*
+contig_82	39879	40	N	N	1	*	*,82,*
+contig_86	37888	20	N	N	1	*	*,86,*
+contig_89	33883	21	N	N	1	*	*,89,*
+contig_75	30577	37	N	N	1	*	*,75,*
+contig_84	26308	11	N	N	1	*	*,84,*
+contig_95	26219	20	N	N	1	*	*,95,*
+contig_94	22731	17	N	N	1	*	*,93,94,*
+contig_92	21955	10	N	N	1	*	*,92,*
+contig_77	19650	15	N	N	1	*	*,77,*
+contig_81	17818	12	N	N	1	*	*,81,*
+contig_90	15753	9	N	N	1	*	*,90,*
+contig_91	12531	12	N	N	1	*	*,91,*
+contig_87	9919	12	N	N	1	*	*,87,*
+contig_76	9384	86	N	Y	2	*	*,76,*
+contig_53	9146	21	N	N	1	*	*,53,*
+contig_57	7733	62	N	N	1	*	*,57,*
+contig_93	7349	36	N	Y	1	*	*,93
+contig_85	5672	10	N	N	1	*	*,85,*
