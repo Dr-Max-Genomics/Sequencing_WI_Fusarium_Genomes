@@ -38,3 +38,14 @@ Host:   atlas-0245
 Output FASTA:      /90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/corrected/corrected_Fus_Bar81.renamed.fasta
 Output size:       4.5G
 Corrected reads:   790112  (original uncleaned run: 789782)
+
+jellyfish count -C -m 21 -s 1G -t 32 /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/corrected_Fus_Bar81.fasta /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/fus_81_reads.jf
+(seq_env)[maxwell.chibuogwu@ceres20-compute-2 ~]$ jellyfish count -C -m 21 -s 1G -t 32 /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/corrected_Fus_Bar81.fasta -o /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/fus_81_reads.jf
+(seq_env)[maxwell.chibuogwu@ceres20-compute-2 ~]$ jellyfish histo -t 32 /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/fus_81_reads.jf > /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/fus_81_reads.histo
+(seq_env)[maxwell.chibuogwu@ceres20-compute-2 ~]$ genomescope.R -i /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/fus_81_reads.histo -o /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/genomescope_out -k 21
+-bash: genomescope.R: command not found
+(seq_env)[maxwell.chibuogwu@ceres20-compute-2 ~]$ genomescope2 -i /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/fus_81_reads.histo -o /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/genomescope_out -k 21
+GenomeScope analyzing /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/fus_81_reads.histo p=2 k=21 outdir=/90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/genomescope_out
+Fontconfig warning: using without calling FcInit()
+aa:99.9% ab:0.0971%
+Model converged het:0.000971 kcov:50.7 err:8.67e-05 model fit:2.06 len:46065849
