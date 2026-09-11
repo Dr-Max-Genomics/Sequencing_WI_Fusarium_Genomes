@@ -1,113 +1,40 @@
-#!/bin/bash
-#SBATCH --job-name=Dor_Test81
-#SBATCH -A silage_microbiome
-#SBATCH -p gpu-a100
-#SBATCH --gres=gpu:a100:1
-#SBATCH --qos=normal
-#SBATCH -N 1
-#SBATCH -n 16
-#SBATCH -t 04:00:00
-#SBATCH --array=1-2
-#SBATCH --mail-user=maxwell.chibuogwu@usda.gov
-#SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH -o log/dorcorr_test.%A_%a.%N.out
-#SBATCH -e log/dorcorr_test.%A_%a.%N.err
+==========================================
+[Thu Sep 10 09:50:19 PM CDT 2026] dorado correct (HERRO) — test arm: Fus_Bar81.deduped
+Input:  /90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/Fus_Bar81.deduped.fastq
+Output: /90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/corrected/corrected_Fus_Bar81.deduped.fasta
+Job:    20615811 / array 20615810 task 1
+Host:   atlas-0243
+==========================================
+[Thu Sep 10 09:50:20 PM CDT 2026] Model ready: /project/silage_microbiome/fusarium_sequencing/config/dorado_models/herro-v1
+[Thu Sep 10 09:50:20 PM CDT 2026] Running dorado correct...
+[2026-09-10 21:50:21.200] [info] Running: "correct" "--model-path" "/project/silage_microbiome/fusarium_sequencing/config/dorado_models/herro-v1" "/90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/Fus_Bar81.deduped.fastq"
+[2026-09-10 21:50:21.593] [info] Using batch size 28 on device cuda:0 in inference thread 0.
+[2026-09-10 21:50:21.594] [info] Using batch size 28 on device cuda:0 in inference thread 1.
+[2026-09-10 21:52:51.755] [info] Starting
+[2026-09-10 22:43:59.057] [info] Corrected reads written: 790517
+[2026-09-10 22:43:59.058] [info] Finished
+[Thu Sep 10 10:44:14 PM CDT 2026] Done: Fus_Bar81.deduped
+Output FASTA:      /90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/corrected/corrected_Fus_Bar81.deduped.fasta
+Output size:       4.5G
+Corrected reads:   790084  (original uncleaned run: 789782)
 
-set -euo pipefail
 
-# =======================================================================
-# A04_dorado_corr_test81.sh   —   ATLAS GPU, one-off A/B test
-# -----------------------------------------------------------------------
-# Purpose : Compare two fixes for the Fus_Bar81 duplicate-read-ID problem
-#           by running dorado correct on both cleaned inputs in parallel:
-#             task 1 — keep-longest dedup (dedup_by_readid_keep_longest.py)
-#             task 2 — seqkit rename (both split fragments kept, renamed)
-#           Compare corrected read counts against each other and against
-#           the original uncleaned run (789,782 corrected reads).
-# Dir     : everything for this test lives in one place, no batch
-#           structure, no Ceres<->Atlas transfer step involved here.
-# =======================================================================
-
-TEST_DIR="/90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81"
-INPUT_DIR="${TEST_DIR}"
-OUTPUT_DIR="${TEST_DIR}/corrected"
-LOG_DIR="${TEST_DIR}/logs"
-
-SAMPLES=(
-    ""                      # index 0 unused (arrays are 1-based here)
-    "Fus_Bar81.deduped"     # task 1 — keep-longest dedup arm
-    "Fus_Bar81.renamed"     # task 2 — rename / keep-both arm
-)
-
-sample_id="${SAMPLES[${SLURM_ARRAY_TASK_ID}]:-}"
-if [[ -z "${sample_id}" ]]; then
-    echo "ERROR: no sample for array task ${SLURM_ARRAY_TASK_ID}" >&2
-    exit 1
-fi
-
-INPUT_FASTQ="${INPUT_DIR}/${sample_id}.fastq"
-OUTPUT_FASTA="${OUTPUT_DIR}/corrected_${sample_id}.fasta"
-
-mkdir -p "${OUTPUT_DIR}" "${LOG_DIR}" log
-
-sample_log="${LOG_DIR}/${sample_id}.log"
-exec >>"${sample_log}" 2>&1
-
-echo "=========================================="
-echo "[$(date)] dorado correct (HERRO) — test arm: ${sample_id}"
-echo "Input:  ${INPUT_FASTQ}"
-echo "Output: ${OUTPUT_FASTA}"
-echo "Job:    ${SLURM_JOB_ID} / array ${SLURM_ARRAY_JOB_ID} task ${SLURM_ARRAY_TASK_ID}"
-echo "Host:   $(hostname)"
-echo "=========================================="
-
-if [[ ! -s "${INPUT_FASTQ}" ]]; then
-    echo "ERROR: input not found or empty: ${INPUT_FASTQ}" >&2
-    exit 1
-fi
-
-if [[ -s "${OUTPUT_FASTA}" ]]; then
-    echo "Corrected output already exists — skipping: ${OUTPUT_FASTA}"
-    exit 0
-fi
-
-module purge
-module load dorado
-
-# Shared, persistent HERRO model — same path your last real run confirmed
-# already has it cached, so this is just a safety check + flock guard for
-# the (unlikely, here) case both tasks somehow needed to fetch it at once.
-MODEL_PATH="/project/silage_microbiome/fusarium_sequencing/config/dorado_models/herro-v1"
-LOCKFILE="${TEST_DIR}/.herro_download.lock"
-
-exec 200>"${LOCKFILE}"
-flock 200
-if [[ ! -e "${MODEL_PATH}" ]]; then
-    echo "[$(date)] Model absent at ${MODEL_PATH} — downloading..."
-    dorado download --model herro-v1 --models-directory "$(dirname "${MODEL_PATH}")"
-    if [[ ! -e "${MODEL_PATH}" ]]; then
-        echo "ERROR: herro-v1 not found at ${MODEL_PATH} after download" >&2
-        flock -u 200
-        exit 1
-    fi
-fi
-flock -u 200
-echo "[$(date)] Model ready: ${MODEL_PATH}"
-
-echo "[$(date)] Running dorado correct..."
-dorado correct \
-    --model-path "${MODEL_PATH}" \
-    "${INPUT_FASTQ}" > "${OUTPUT_FASTA}"
-
-if [[ ! -s "${OUTPUT_FASTA}" ]]; then
-    echo "ERROR: dorado correct finished but output is empty: ${OUTPUT_FASTA}" >&2
-    exit 1
-fi
-
-module purge
-
-n_corrected=$(grep -c "^>" "${OUTPUT_FASTA}")
-echo "[$(date)] Done: ${sample_id}"
-echo "Output FASTA:      ${OUTPUT_FASTA}"
-echo "Output size:       $(du -sh "${OUTPUT_FASTA}" | cut -f1)"
-echo "Corrected reads:   ${n_corrected}  (original uncleaned run: 789782)"
+==========================================
+[Thu Sep 10 09:50:19 PM CDT 2026] dorado correct (HERRO) — test arm: Fus_Bar81.renamed
+Input:  /90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/Fus_Bar81.renamed.fastq
+Output: /90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/corrected/corrected_Fus_Bar81.renamed.fasta
+Job:    20615810 / array 20615810 task 2
+Host:   atlas-0245
+==========================================
+[Thu Sep 10 09:50:20 PM CDT 2026] Model ready: /project/silage_microbiome/fusarium_sequencing/config/dorado_models/herro-v1
+[Thu Sep 10 09:50:20 PM CDT 2026] Running dorado correct...
+[2026-09-10 21:50:20.857] [info] Running: "correct" "--model-path" "/project/silage_microbiome/fusarium_sequencing/config/dorado_models/herro-v1" "/90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/Fus_Bar81.renamed.fastq"
+[2026-09-10 21:50:21.257] [info] Using batch size 28 on device cuda:0 in inference thread 0.
+[2026-09-10 21:50:21.257] [info] Using batch size 28 on device cuda:0 in inference thread 1.
+[2026-09-10 21:52:38.887] [info] Starting
+[2026-09-10 22:43:08.189] [info] Corrected reads written: 790545
+[2026-09-10 22:43:08.189] [info] Finished
+[Thu Sep 10 10:43:22 PM CDT 2026] Done: Fus_Bar81.renamed
+Output FASTA:      /90daydata/silage_microbiome/Max_Fus_Batch4/test_dorado_correct_81/corrected/corrected_Fus_Bar81.renamed.fasta
+Output size:       4.5G
+Corrected reads:   790112  (original uncleaned run: 789782)
