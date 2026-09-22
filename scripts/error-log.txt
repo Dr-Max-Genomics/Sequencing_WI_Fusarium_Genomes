@@ -1,0 +1,564 @@
+==========================================
+[Wed Sep  9 09:25:28 PM CDT 2026] Concatenation
+Barcode:    barcode75
+Sample:     Fus_Bar75
+Source dir: /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/00_Raw_Data/barcode75
+Output:     /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/00_Raw_Data/barcode75/barcode75.fastq.gz
+Manifest:   /project/silage_microbiome/max.chi/fusarium_sequencing/config/manifests/batch4_2026-Sep_manifest.tsv
+Job ID:     21999582 / task 3
+==========================================
+Found 213 input file(s):
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_0.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_100.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_101.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_102.fastq.gz  (28M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_103.fastq.gz  (26M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_104.fastq.gz  (28M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_105.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_106.fastq.gz  (28M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_107.fastq.gz  (26M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_108.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_109.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_10.fastq.gz  (41M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_110.fastq.gz  (28M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_111.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_112.fastq.gz  (28M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_113.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_114.fastq.gz  (25M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_115.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_116.fastq.gz  (26M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_117.fastq.gz  (23M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_118.fastq.gz  (22M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_119.fastq.gz  (31M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_11.fastq.gz  (39M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_120.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_121.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_122.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_123.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_124.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_125.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_126.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_127.fastq.gz  (38M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_128.fastq.gz  (38M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_129.fastq.gz  (38M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_12.fastq.gz  (40M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_130.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_131.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_132.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_133.fastq.gz  (35M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_134.fastq.gz  (35M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_135.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_136.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_137.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_138.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_139.fastq.gz  (38M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_13.fastq.gz  (39M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_140.fastq.gz  (38M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_141.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_142.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_143.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_144.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_145.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_146.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_147.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_148.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_149.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_14.fastq.gz  (38M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_150.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_151.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_152.fastq.gz  (38M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_153.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_154.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_155.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_156.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_157.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_158.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_159.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_15.fastq.gz  (38M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_160.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_161.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_162.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_163.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_164.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_165.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_166.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_167.fastq.gz  (38M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_168.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_169.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_16.fastq.gz  (39M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_170.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_171.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_172.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_173.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_174.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_175.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_176.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_177.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_178.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_179.fastq.gz  (38M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_17.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_180.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_181.fastq.gz  (38M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_182.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_183.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_184.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_185.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_186.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_187.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_188.fastq.gz  (32M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_189.fastq.gz  (26M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_18.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_190.fastq.gz  (23M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_191.fastq.gz  (25M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_192.fastq.gz  (19M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_193.fastq.gz  (25M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_194.fastq.gz  (23M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_195.fastq.gz  (23M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_196.fastq.gz  (19M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_197.fastq.gz  (22M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_198.fastq.gz  (20M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_199.fastq.gz  (23M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_19.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_1.fastq.gz  (39M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_200.fastq.gz  (21M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_201.fastq.gz  (21M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_202.fastq.gz  (25M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_203.fastq.gz  (21M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_204.fastq.gz  (21M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_205.fastq.gz  (22M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_206.fastq.gz  (20M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_207.fastq.gz  (22M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_208.fastq.gz  (22M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_209.fastq.gz  (21M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_20.fastq.gz  (38M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_210.fastq.gz  (22M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_211.fastq.gz  (21M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_212.fastq.gz  (11M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_21.fastq.gz  (38M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_22.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_23.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_24.fastq.gz  (39M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_25.fastq.gz  (38M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_26.fastq.gz  (39M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_27.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_28.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_29.fastq.gz  (39M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_2.fastq.gz  (39M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_30.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_31.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_32.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_33.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_34.fastq.gz  (38M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_35.fastq.gz  (39M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_36.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_37.fastq.gz  (35M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_38.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_39.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_3.fastq.gz  (40M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_40.fastq.gz  (38M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_41.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_42.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_43.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_44.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_45.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_46.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_47.fastq.gz  (35M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_48.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_49.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_4.fastq.gz  (39M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_50.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_51.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_52.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_53.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_54.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_55.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_56.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_57.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_58.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_59.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_5.fastq.gz  (40M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_60.fastq.gz  (35M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_61.fastq.gz  (36M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_62.fastq.gz  (35M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_63.fastq.gz  (37M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_64.fastq.gz  (33M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_65.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_66.fastq.gz  (29M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_67.fastq.gz  (28M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_68.fastq.gz  (29M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_69.fastq.gz  (28M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_6.fastq.gz  (39M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_70.fastq.gz  (29M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_71.fastq.gz  (29M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_72.fastq.gz  (26M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_73.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_74.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_75.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_76.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_77.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_78.fastq.gz  (25M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_79.fastq.gz  (24M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_7.fastq.gz  (39M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_80.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_81.fastq.gz  (28M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_82.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_83.fastq.gz  (26M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_84.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_85.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_86.fastq.gz  (26M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_87.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_88.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_89.fastq.gz  (28M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_8.fastq.gz  (40M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_90.fastq.gz  (28M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_91.fastq.gz  (28M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_92.fastq.gz  (29M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_93.fastq.gz  (28M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_94.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_95.fastq.gz  (28M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_96.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_97.fastq.gz  (27M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_98.fastq.gz  (28M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_99.fastq.gz  (28M)
+  PBI33084_pass_barcode75_acc3a5f0_99c2de58_9.fastq.gz  (40M)
+[Wed Sep  9 09:25:29 PM CDT 2026] Concatenating...
+[Wed Sep  9 09:25:45 PM CDT 2026] Done. Output: 6.8G
+
+
+==========================================
+[Fri Sep 11 12:51:49 PM CDT 2026] NanoFilt length filtering
+Barcode:   barcode75
+Sample:    Fus_Bar75
+Min length:1000 bp
+Input:     /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/02_Trimming/PC_Fus_Bar75_D.fastq
+Output:    /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/Fus_Bar75.fastq
+Manifest:  /project/silage_microbiome/max.chi/fusarium_sequencing/config/manifests/batch4_2026-Sep_manifest.tsv
+Job ID:    22014457 / task 3
+Host:      ceres20-compute-3
+==========================================
+[Fri Sep 11 12:51:49 PM CDT 2026] Running NanoFilt (-l 1000)...
+[Fri Sep 11 01:01:17 PM CDT 2026] Done: Fus_Bar75 → /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/Fus_Bar75.fastq
+Output size: 12G
+
+==========================================
+[Fri Sep 11 12:43:27 PM CDT 2026] seqkit rmdup deduplication
+Barcode:  barcode75
+Sample:   Fus_Bar75
+Input:    /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/02_Trimming/PC_Fus_Bar75.fastq
+Output:   /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/02_Trimming/PC_Fus_Bar75_D.fastq
+Manifest: /project/silage_microbiome/max.chi/fusarium_sequencing/config/manifests/batch4_2026-Sep_manifest.tsv
+Job ID:   22014389 / task 3
+Host:     ceres20-compute-3
+==========================================
+[Fri Sep 11 12:43:28 PM CDT 2026] Running seqkit rmdup.. + rename (disambiguate porechop splid IDs)...
+[INFO][0m 0 duplicated records removed
+No duplicated records.
+[Fri Sep 11 12:44:25 PM CDT 2026] Done: Fus_Bar75 → /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/02_Trimming/PC_Fus_Bar75_D.fastq
+Output size: 15G
+
+==========================================
+[Wed Sep  9 09:29:35 PM CDT 2026] Porechop adapter trimming
+Barcode:  barcode75
+Sample:   Fus_Bar75
+Input:    /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/00_Raw_Data/barcode75/barcode75.fastq.gz
+Output:   /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/02_Trimming/PC_Fus_Bar75.fastq
+Manifest: /project/silage_microbiome/max.chi/fusarium_sequencing/config/manifests/batch4_2026-Sep_manifest.tsv
+Job ID:   21999592 / task 3
+Host:     ceres25-compute-27
+==========================================
+[Wed Sep  9 09:29:37 PM CDT 2026] Running Porechop...
+/software/el9/apps/porechop/0.2.4/porechop/misc.py:261: DeprecationWarning: invalid escape sequence '\['
+  row_str = re.sub('\033\[4m', '', row_str)
+
+[1m[4mLoading reads[0m
+/90daydata/silage_microbiome/max_seq/batch4_2026-Sep/00_Raw_Data/barcode75/barcode75.fastq.gz
+2,089,228 reads loaded
+
+
+[1m[4mLooking for known adapter sets[0m
+
+0 / 10,000 (0.0%)
+10 / 10,000 (0.1%)
+20 / 10,000 (0.2%)
+30 / 10,000 (0.3%)
+40 / 10,000 (0.4%)
+50 / 10,000 (0.5%)
+60 / 10,000 (0.6%)
+70 / 10,000 (0.7%)
+80 / 10,000 (0.8%)
+90 / 10,000 (0.9%)
+100 / 10,000 (1.0%)
+110 / 10,000 (1.1%)
+120 / 10,000 (1.2%)
+130 / 10,000 (1.3%)
+140 / 10,000 (1.4%)
+150 / 10,000 (1.5%)
+160 / 10,000 (1.6%)
+170 / 10,000 (1.7%)
+180 / 10,000 (1.8%)
+190 / 10,000 (1.9%)
+200 / 10,000 (2.0%)
+210 / 10,000 (2.1%)
+220 / 10,000 (2.2%)
+230 / 10,000 (2.3%)
+240 / 10,000 (2.4%)
+250 / 10,000 (2.5%)
+260 / 10,000 (2.6%)
+270 / 10,000 (2.7%)
+280 / 10,000 (2.8%)
+290 / 10,000 (2.9%)
+300 / 10,000 (3.0%)
+310 / 10,000 (3.1%)
+320 / 10,000 (3.2%)
+330 / 10,000 (3.3%)
+340 / 10,000 (3.4%)
+350 / 10,000 (3.5%)
+360 / 10,000 (3.6%)
+370 / 10,000 (3.7%)
+380 / 10,000 (3.8%)
+390 / 10,000 (3.9%)
+.
+.
+.
+.
+.
+2,089,010 / 2,089,228 (100.0%)
+2,089,020 / 2,089,228 (100.0%)
+2,089,030 / 2,089,228 (100.0%)
+2,089,040 / 2,089,228 (100.0%)
+2,089,050 / 2,089,228 (100.0%)
+2,089,060 / 2,089,228 (100.0%)
+2,089,070 / 2,089,228 (100.0%)
+2,089,080 / 2,089,228 (100.0%)
+2,089,090 / 2,089,228 (100.0%)
+2,089,100 / 2,089,228 (100.0%)
+2,089,110 / 2,089,228 (100.0%)
+2,089,120 / 2,089,228 (100.0%)
+2,089,130 / 2,089,228 (100.0%)
+2,089,140 / 2,089,228 (100.0%)
+2,089,150 / 2,089,228 (100.0%)
+2,089,160 / 2,089,228 (100.0%)
+2,089,170 / 2,089,228 (100.0%)
+2,089,180 / 2,089,228 (100.0%)
+2,089,190 / 2,089,228 (100.0%)
+2,089,200 / 2,089,228 (100.0%)
+2,089,210 / 2,089,228 (100.0%)
+2,089,220 / 2,089,228 (100.0%)
+2,089,228 / 2,089,228 (100.0%)
+2,089,228 / 2,089,228 (100.0%)
+
+1,654 / 2,089,228 reads were split based on middle adapters
+
+
+[1m[4mSaving trimmed reads to file[0m
+
+Saved result to /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/02_Trimming/PC_Fus_Bar75.fastq
+
+[Wed Sep  9 11:37:09 PM CDT 2026] Done: Fus_Bar75 → /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/02_Trimming/PC_Fus_Bar75.fastq
+Output size: 15G
+
+==========================================
+[Fri Sep 11 02:58:35 PM CDT 2026] dorado correct (HERRO)  — ATLAS GPU
+Sample:     Fus_Bar75
+Input:      /90daydata/silage_microbiome/Max_Fus_Batch4/03_Trimmed_Data/Fus_Bar75.fastq
+Output:     /90daydata/silage_microbiome/Max_Fus_Batch4/03_Trimmed_Data/corrected_reads/corrected_Fus_Bar75.fasta
+Job:        20622314 / array 20619599 task 3
+Host:       atlas-0245
+GPU:        0
+==========================================
+[Fri Sep 11 02:58:36 PM CDT 2026] Ensuring HERRO model is present (flock-guarded)...
+[Fri Sep 11 02:58:36 PM CDT 2026] Model already present at /project/silage_microbiome/fusarium_sequencing/config/dorado_models/herro-v1 — skipping download
+[Fri Sep 11 02:58:36 PM CDT 2026] Model ready.
+[Fri Sep 11 02:58:36 PM CDT 2026] Running dorado correct...
+[2026-09-11 14:58:36.667] [info] Running: "correct" "--model-path" "/project/silage_microbiome/fusarium_sequencing/config/dorado_models/herro-v1" "/90daydata/silage_microbiome/Max_Fus_Batch4/03_Trimmed_Data/Fus_Bar75.fastq"
+[2026-09-11 14:58:37.154] [info] Using batch size 28 on device cuda:0 in inference thread 0.
+[2026-09-11 14:58:37.154] [info] Using batch size 28 on device cuda:0 in inference thread 1.
+[2026-09-11 15:00:51.685] [info] Starting
+[2026-09-11 15:15:43.803] [info] Corrected reads written: 419052
+[2026-09-11 15:15:43.803] [info] Finished
+[Fri Sep 11 03:15:46 PM CDT 2026] Done: Fus_Bar75
+Output FASTA: /90daydata/silage_microbiome/Max_Fus_Batch4/03_Trimmed_Data/corrected_reads/corrected_Fus_Bar75.fasta
+Output size:  1.9G
+
+NEXT: transfer /90daydata/silage_microbiome/Max_Fus_Batch4/03_Trimmed_Data/corrected_reads/corrected_Fus_Bar75.fasta back to Ceres:
+  /90daydata/silage_microbiome/Max_Fus_Batch4/03_Trimmed_Data/corrected_reads/  →  Ceres 03_Trimmed_Data/corrected_reads/
+Then run 05b_nanoplot (QC) and 06_flye_assemble (--nano-corr) on Ceres.
+
+==========================================
+[Fri Sep 11 03:51:24 PM CDT 2026] Flye assembly
+Barcode:     barcode75
+Sample:      Fus_Bar75
+Read type:   --nano-corr (HERRO-corrected)
+Genome size: 50m
+Coverage:    100
+Input:       /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/03_Trimmed_Data/corrected_reads/corrected_Fus_Bar75.fasta
+Output dir:  /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/05_Genome_Assembly/Fus_Bar75_flye
+Threads:     40
+Manifest:    /project/silage_microbiome/max.chi/fusarium_sequencing/config/manifests/batch4_2026-Sep_manifest.tsv
+Job ID:      22015627 / task 3
+Host:        ceres20-compute-11
+==========================================
+[Fri Sep 11 03:51:24 PM CDT 2026] Running Flye (--nano-corr)...
+[2026-09-11 15:51:25] INFO: Starting Flye 2.9.4-b1799
+[2026-09-11 15:51:25] INFO: >>>STAGE: configure
+[2026-09-11 15:51:25] INFO: Configuring run
+[2026-09-11 15:51:36] INFO: Total read length: 2006312678
+[2026-09-11 15:51:36] INFO: Input genome size: 50000000
+[2026-09-11 15:51:36] INFO: Estimated coverage: 40
+[2026-09-11 15:51:36] INFO: Reads N50/N90: 4883 / 4296
+[2026-09-11 15:51:36] INFO: Minimum overlap set to 4000
+[2026-09-11 15:51:36] INFO: >>>STAGE: assembly
+[2026-09-11 15:51:36] INFO: Assembling disjointigs
+[2026-09-11 15:51:36] INFO: Reading sequences
+[2026-09-11 15:51:47] INFO: Building minimizer index
+[2026-09-11 15:51:47] INFO: Pre-calculating index storage
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-11 15:51:55] INFO: Filling index
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-11 15:52:09] INFO: Extending reads
+[2026-09-11 15:52:27] INFO: Overlap-based coverage: 42
+[2026-09-11 15:52:27] INFO: Median overlap divergence: 0
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-11 15:54:20] INFO: Assembled 101 disjointigs
+[2026-09-11 15:54:20] INFO: Generating sequence
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-11 15:54:23] INFO: Filtering contained disjointigs
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-11 15:54:24] INFO: Contained seqs: 4
+[2026-09-11 15:54:25] INFO: >>>STAGE: consensus
+[2026-09-11 15:54:25] INFO: Running Minimap2
+[2026-09-11 15:55:10] INFO: Computing consensus
+[2026-09-11 15:56:31] INFO: Alignment error rate: 0.000154
+[2026-09-11 15:56:32] INFO: >>>STAGE: repeat
+[2026-09-11 15:56:32] INFO: Building and resolving repeat graph
+[2026-09-11 15:56:32] INFO: Parsing disjointigs
+[2026-09-11 15:56:33] INFO: Building repeat graph
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-11 15:56:37] INFO: Median overlap divergence: 0.140226
+[2026-09-11 15:56:37] INFO: Parsing reads
+[2026-09-11 15:56:48] INFO: Aligning reads to the graph
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-11 15:57:18] INFO: Aligned read sequence: 1991541681 / 1995126133 (0.998203)
+[2026-09-11 15:57:18] INFO: Median overlap divergence: 0
+[2026-09-11 15:57:18] INFO: Mean edge coverage: 41
+[2026-09-11 15:57:18] INFO: Simplifying the graph
+[2026-09-11 15:57:22] INFO: >>>STAGE: contigger
+[2026-09-11 15:57:22] INFO: Generating contigs
+[2026-09-11 15:57:22] INFO: Reading sequences
+[2026-09-11 15:57:36] INFO: Generated 96 contigs
+[2026-09-11 15:57:36] INFO: Added 0 scaffold connections
+[2026-09-11 15:57:38] INFO: >>>STAGE: polishing
+[2026-09-11 15:57:38] INFO: Polishing genome (1/1)
+[2026-09-11 15:57:38] INFO: Running minimap2
+[2026-09-11 15:58:22] INFO: Separating alignment into bubbles
+[2026-09-11 16:00:17] INFO: Alignment error rate: 0.000105
+[2026-09-11 16:00:17] INFO: Correcting bubbles
+0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100% 
+[2026-09-11 16:02:22] INFO: >>>STAGE: finalize
+[2026-09-11 16:02:22] INFO: Assembly statistics:
+
+	Total length:	46547288
+	Fragments:	93
+	Fragments N50:	1008260
+	Largest frg:	2424515
+	Scaffolds:	0
+	Mean coverage:	45
+
+[2026-09-11 16:02:22] INFO: Final assembly: /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/05_Genome_Assembly/Fus_Bar75_flye/assembly.fasta
+[Fri Sep 11 04:02:23 PM CDT 2026] Done: Fus_Bar75
+Assembly: /90daydata/silage_microbiome/max_seq/batch4_2026-Sep/05_Genome_Assembly/Fus_Bar75_flye/assembly.fasta
+--- assembly_info.txt ---
+#seq_name	length	cov.	circ.	repeat	mult.	alt_group	graph_path
+contig_27	2424515	45	N	N	1	*	*,27,*
+contig_14	1957464	46	N	N	1	*	*,14,*
+contig_52	1798661	45	N	N	1	*	*,52,*
+contig_17	1778199	46	N	N	1	*	*,17,96,*
+contig_45	1738443	46	N	N	1	*	*,45,*
+contig_65	1662969	45	N	N	1	*	*,65,*
+contig_10	1633248	45	N	N	1	*	*,10,*
+contig_67	1594864	44	N	N	1	*	*,67,*
+contig_42	1391421	46	N	N	1	*	*,42,*
+contig_13	1262800	45	N	N	1	*	*,13,*
+contig_24	1204358	46	N	N	1	*	*,24,*
+contig_16	1138983	46	N	N	1	*	*,16,*
+contig_30	1054735	47	N	N	1	*	*,30,*
+contig_34	1042503	45	N	N	1	*	*,34,*
+contig_22	1032600	46	N	N	1	*	*,22,*
+contig_15	1008260	45	N	N	1	*	*,15,*
+contig_69	916527	47	N	N	1	*	*,69,*
+contig_3	914418	46	N	N	1	*	*,3,*
+contig_28	899276	45	N	N	1	*	*,28,*
+contig_35	881514	46	N	N	1	*	*,35,*
+contig_8	852414	46	N	N	1	*	*,8,*
+contig_9	739993	45	N	N	1	*	*,9,*
+contig_79	723673	45	N	N	1	*	*,79,*
+contig_11	692385	47	N	N	1	*	*,11,*
+contig_7	672928	45	N	N	1	*	*,7,*
+contig_43	653876	46	N	N	1	*	*,43,*
+contig_18	616488	43	N	N	1	*	*,-96,18,*
+contig_21	614909	44	N	N	1	*	*,21,*
+contig_41	602673	45	N	N	1	*	*,41,*
+contig_44	584124	43	N	N	1	*	*,44,*
+contig_38	577997	47	N	N	1	*	*,38,*
+contig_6	556337	43	N	N	1	*	*,6,*
+contig_4	538869	46	N	N	1	*	*,4,*
+contig_54	530514	45	N	N	1	*	*,54,*
+contig_39	497200	45	N	N	1	*	*,39,*
+contig_62	491881	46	N	N	1	*	*,62,*
+contig_51	488306	47	N	N	1	*	*,51,*
+contig_55	488275	46	N	N	1	*	*,55,*
+contig_32	458207	47	N	N	1	*	*,32,*
+contig_68	441005	44	N	N	1	*	*,68,*
+contig_50	411418	47	N	N	1	*	*,50,*
+contig_23	411024	44	N	N	1	*	*,23,*
+contig_56	376934	44	N	N	1	*	*,56,*
+contig_5	374557	44	N	N	1	*	*,5,*
+contig_47	332866	46	N	N	1	*	*,47,*
+contig_60	324249	46	N	N	1	*	*,58,60,*
+contig_19	282408	44	N	N	1	*	*,-96,19,*
+contig_36	279277	46	N	N	1	*	*,36,*
+contig_26	264897	45	N	N	1	*	*,26,*
+contig_66	254186	43	N	N	1	*	*,66,*
+contig_81	252218	41	N	N	1	*	*,81,*
+contig_64	223824	45	N	N	1	*	*,64,*
+contig_74	205532	46	N	N	1	*	*,74,*
+contig_25	203279	45	N	N	1	*	*,25,*
+contig_53	202112	45	N	N	1	*	*,53,*
+contig_59	189638	45	N	N	1	*	*,58,59,*
+contig_82	185138	45	N	N	1	*	*,82,*
+contig_75	165339	42	N	N	1	*	*,75,*
+contig_33	162073	47	N	N	1	*	*,33,*
+contig_2	160113	44	N	N	1	*	*,2,*
+contig_63	155426	44	N	N	1	*	*,63,*
+contig_12	154262	42	N	N	1	*	*,12,*
+contig_49	137112	44	N	N	1	*	*,49,*
+contig_72	132817	46	N	N	1	*	*,72,*
+contig_40	130551	44	N	N	1	*	*,40,*
+contig_71	128488	45	N	N	1	*	*,71,*
+contig_29	124645	44	N	N	1	*	*,29,*
+contig_90	123403	41	N	N	1	*	*,90,*
+contig_37	112337	41	N	N	1	*	*,37,*
+contig_61	104882	41	N	N	1	*	*,61,*
+contig_46	100733	46	N	N	1	*	*,46,*
+contig_77	84051	42	N	N	1	*	*,77,*
+contig_48	63909	48	N	N	1	*	*,48,*
+contig_76	61318	39	N	N	1	*	*,76,*
+contig_73	60701	42	N	N	1	*	*,73,*
+contig_1	56878	44	N	N	1	*	*,1,*
+contig_88	54986	35	N	N	1	*	*,88,*
+contig_31	39879	40	N	N	1	*	*,31,*
+contig_84	37888	20	N	N	1	*	*,84,*
+contig_78	33883	21	N	N	1	*	*,78,*
+contig_70	30577	37	N	N	1	*	*,70,*
+contig_87	29411	19	N	N	1	*	*,87,*
+contig_95	22964	11	N	N	1	*	*,95,*
+contig_94	21955	10	N	N	1	*	*,94,*
+contig_91	20063	14	N	N	1	*	*,91,*
+contig_83	19650	15	N	N	1	*	*,83,*
+contig_57	17818	12	N	N	1	*	*,57,*
+contig_96	16604	22	N	Y	1	*	96,*
+contig_92	15753	9	N	N	1	*	*,92,*
+contig_85	12534	18	N	N	1	*	*,85,*
+contig_93	9954	12	N	N	1	*	*,93,*
+contig_80	6714	100	N	Y	1	*	*,80,*
+contig_86	6248	63	N	N	1	*	*,86,*
