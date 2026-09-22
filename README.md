@@ -132,9 +132,14 @@ Sequencing_WI_Fusarium_Genomes/
 │   │   └── sample_sheet.csv
 │   └── [batch_YYYY-MM]/
 │
-├── Atlas Scripts in sequencing pipeline/   ← Legacy scripts
-│
-└── logs/                        ← Auto-populated by sbatch (gitignored)
+└── Atlas Scripts in sequencing pipeline/   ← Legacy scripts
+    ├── A01_.sh
+    ├── A02_.sh
+    ├── A03_.sh
+    ├── A04_.sh
+    ├── A05_.sh
+    └── A06_.sh
+
 ```
 
 > **Data never lives in this repo.** All `.fastq`, `.fasta`, and assembly files stay on
