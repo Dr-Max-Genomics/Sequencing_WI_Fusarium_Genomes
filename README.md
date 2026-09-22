@@ -118,11 +118,17 @@ Sequencing_WI_Fusarium_Genomes/
 │   ├── 06_flye_assemble.sh
 │   ├── 07_busco_eval.sh
 │   ├── 08_sort_earlgrey_mask.sh
-│   └── 09_Funannotate/
-│       ├── 09a_FUN_predict.sh
-│       ├── 09b_IPScan.sh
-│       └── 09c_FUN_annotate.sh
-│
+│   ├── 09_Funannotate/
+│   |   ├── 09a_FUN_predict.sh
+│   |   ├── 09b_IPScan.sh
+│   |   └── 09c_FUN_annotate.sh
+│   ├── 10_telomere_density.sh
+|   ├── 11_antismash.sh
+|   ├── 12_cazyme_annotation.sh
+|   ├── 13_bigscape.sh
+|   ├── assembly_contig_tracker.sh
+|   └── 00.sh
+|
 ├── batches/
 │   ├── batch_2025-Feb/
 │   │   ├── barlist.txt
@@ -133,12 +139,12 @@ Sequencing_WI_Fusarium_Genomes/
 │   └── [batch_YYYY-MM]/
 │
 └── Atlas Scripts in sequencing pipeline/   ← Legacy scripts
-    ├── A01_.sh
-    ├── A02_.sh
-    ├── A03_.sh
-    ├── A04_.sh
-    ├── A05_.sh
-    └── A06_.sh
+    ├── A01_basecall.sh
+    ├── A02_demux.sh
+    ├── A03_bam2fastq.sh
+    ├── A04_dorado_corr.sh
+    ├── A05_alignment_polish.sh
+    └── A06_effectorome.sh
 
 ```
 
