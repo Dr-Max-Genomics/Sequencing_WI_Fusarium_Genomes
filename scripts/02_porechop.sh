@@ -6,7 +6,7 @@
 #SBATCH --mem=300GB
 #SBATCH -t 1-0
 #SBATCH --job-name=porechop
-#SBATCH --array=1-7
+#SBATCH --array=1-8
 #SBATCH --output=/dev/null
 
 set -euo pipefail

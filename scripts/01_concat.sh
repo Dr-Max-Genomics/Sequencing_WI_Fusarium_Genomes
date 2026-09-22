@@ -6,7 +6,7 @@
 #SBATCH -p ceres
 #SBATCH -t 2:00:00
 #SBATCH --job-name=concat
-#SBATCH --array=1-7
+#SBATCH --array=1-8
 #SBATCH --output=/dev/null
 
 set -euo pipefail

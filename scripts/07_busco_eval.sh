@@ -6,7 +6,7 @@
 #SBATCH -p ceres
 #SBATCH -t 1:00:00
 #SBATCH --job-name=busco_eval
-#SBATCH --array=1-9
+#SBATCH --array=1-8
 #SBATCH --output=/dev/null
 
 set -euo pipefail

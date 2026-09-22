@@ -87,13 +87,9 @@ source "${PROJECT_ROOT}/config/paths.sh"
 # antiSMASH output root from your existing Step 12a:
 #   ANTISMASH_DIR="${BATCH_DIR}/12a_AntiSMASH_gbk"
 
-# Fail fast with a clear message rather than a bare "unbound variable" error
-# if BIGSCAPE_DIR hasn't been added to config/paths.sh yet.
-: "${BIGSCAPE_DIR:?BIGSCAPE_DIR is not set. Add it to config/paths.sh, e.g.: BIGSCAPE_DIR=\"\${BATCH_DIR}/14_BiGSCAPE\" (and add it to the mkdir -p list).}"
+mkdir -p "${LOG_DIR}/bigscape" 
 
-mkdir -p "${LOG_DIR}/bigscape" "${BIGSCAPE_DIR}"
-
-LOG_FILE="${LOG_DIR}/bigscape/14_bigscape_${SLURM_JOB_ID}.log"
+LOG_FILE="${LOG_DIR}/bigscape/bigscape_${SLURM_JOB_ID}.log"
 exec >"${LOG_FILE}" 2>&1
 
 echo "[$(date)] Step 14 — BiG-SCAPE"
@@ -108,27 +104,8 @@ echo ""
 # -------------------------------
 module load bigscape
 
-echo "[$(date)] bigscape CLI check (confirm 1.x vs 2.x flag/output conventions below):"
-bigscape --help 2>&1 | head -30 || true
-echo ""
-
 PFAM_DIR="${PROJECT_ROOT}/DB_Databases/pfam_db"
 
-# Fail fast (seconds, not most of a 10-hour allocation) if the Pfam database
-# hasn't been hmmpress'd. Left unchecked, `bigscape` prints a warning about
-# missing .h3f/.h3i/.h3m/.h3p files but still exits 0 having clustered
-# nothing, so `set -e` never catches it and the job "succeeds" with no output.
-missing_pfam_idx=()
-for ext in h3f h3i h3m h3p; do
-    if ! compgen -G "${PFAM_DIR}"/*."${ext}" > /dev/null; then
-        missing_pfam_idx+=("${ext}")
-    fi
-done
-if (( ${#missing_pfam_idx[@]} > 0 )); then
-    echo "ERROR: Pfam index file(s) missing in ${PFAM_DIR}: ${missing_pfam_idx[*]}"
-    echo "  Fix: module load hmmer; cd ${PFAM_DIR}; hmmpress Pfam-A.hmm"
-    exit 1
-fi
 
 # -------------------------------
 # --mibig workaround: bind a writable, persistent host directory over the
@@ -192,20 +169,21 @@ echo ""
 
 bigscape \
     --inputdir "${ANTISMASH_DIR}" \
-    --outputdir "${BIGSCAPE_DIR}/bigscape_out" \
+    --outputdir "${BIGSCAPE_DIR}" \
     --pfam_dir "${PFAM_DIR}" \
     --cores "${SLURM_CPUS_PER_TASK:-40}" \
     --cutoffs 0.30 0.50 0.70 \
     --mibig \
     --mix \
     --hybrids-off \
+    --clans-off \
     --include_singletons \
     --include_gbk_str region
 
 echo ""
 echo "[$(date)] BiG-SCAPE clustering complete."
 
-if ! compgen -G "${BIGSCAPE_DIR}/bigscape_out/network_files"/*/ > /dev/null; then
+if ! compgen -G "${BIGSCAPE_DIR}/network_files"/*/ > /dev/null; then
     echo "ERROR: bigscape exited without error but produced no network_files output."
     echo "  Check the log above for warnings (e.g. missing Pfam index, no matching"
     echo "  input GBKs) — bigscape does not always exit non-zero on these."
@@ -232,7 +210,7 @@ export BIGSCAPE_DIR
 python3 - <<'PY'
 import glob, os, pandas as pd
 
-base = os.path.join(os.environ["BIGSCAPE_DIR"], "bigscape_out", "network_files")
+base = os.path.join(os.environ["BIGSCAPE_DIR"], "network_files")
 runs = sorted(glob.glob(f"{base}/*/"))
 if not runs:
     print(f"ERROR: No BiG-SCAPE network_files found under {base}")
@@ -283,4 +261,4 @@ PY
 
 echo ""
 echo "[$(date)] Step 14 complete."
-echo "Open: ${BIGSCAPE_DIR}/bigscape_out/index.html"
+echo "Open: ${BIGSCAPE_DIR}/index.html"

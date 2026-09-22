@@ -6,7 +6,7 @@
 #SBATCH -p ceres
 #SBATCH -t 02:00:00
 #SBATCH --job-name=seqkit_dedup
-#SBATCH --array=1-7
+#SBATCH --array=1-8
 #SBATCH --output=/dev/null
 
 set -euo pipefail
@@ -87,6 +87,15 @@ seqkit rmdup "${INPUT}" \
     -n \
     -o "${OUTPUT}" \
     -D "${DEREP_LIST}"
+
+################################################################################
+## If porechop finds duplicates that interfere with correction, run this!
+## echo "[$(date)] Running seqkit rmdup.. + rename (disambiguate porechop splid IDs)..."
+## seqkit rmdup "${INPUT}" \
+##    -n \
+##    -D "${DEREP_LIST}" \
+##    | seqkit rename -o "${OUTPUT}" 
+################################################################################
 
 if [[ ! -s "${OUTPUT}" ]]; then
     echo "ERROR: output empty after rmdup: ${OUTPUT}" >&2

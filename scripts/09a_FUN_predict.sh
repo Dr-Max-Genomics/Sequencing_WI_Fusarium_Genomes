@@ -6,7 +6,7 @@
 #SBATCH -p ceres
 #SBATCH -t 1-0
 #SBATCH --job-name=fun_predict
-#SBATCH --array=1-9
+#SBATCH --array=1-8
 #SBATCH --output=/dev/null
 
 set -euo pipefail

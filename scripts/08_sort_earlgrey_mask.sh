@@ -4,9 +4,9 @@
 #SBATCH -n 20
 #SBATCH --mem=40G
 #SBATCH -p ceres
-#SBATCH -t 6:00:00
+#SBATCH -t 12:00:00
 #SBATCH --job-name=sort_eg_mask
-#SBATCH --array=1-9
+#SBATCH --array=1-8
 #SBATCH --output=/dev/null
 
 set -euo pipefail
