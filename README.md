@@ -163,7 +163,10 @@ Sequencing_WI_Fusarium_Genomes/
 │       └── annotate_results/     ← funannotate annotate output
 ├── 11b_InterProScan/             ← per-sample .xml files
 ├── 12a_AntiSMASH_gbk/            ← per-sample antiSMASH .gbk files
-├── batch{N}_manifest.tsv         ← sample manifest for stages 07–09c
+├── 12b_Telomere/            
+├── 13a_CAzymes            
+├── 14_BIGSCAPE
+├── 15_Effectorome
 └── logs/
 ```
 
