@@ -120,7 +120,14 @@ if [[ ! -s "${ASSEMBLY_OUT}" ]]; then
     exit 1
 fi
 
+NAMED_ASSEMBLY="${OUTDIR}/${sample_id}_assembly.fasta"
+if [[ ! -s "${NAMED_ASSEMBLY}" ]]; then
+    cp "${ASSEMBLY_OUT}" "${NAMED_ASSEMBLY}"
+    echo "Named copy for transfer: ${NAMED_ASSEMBLY}"
+fi
+
 echo "[$(date)] Done: ${sample_id}"
 echo "Assembly: ${ASSEMBLY_OUT}"
 echo "--- assembly_info.txt ---"
 cat "${OUTDIR}/assembly_info.txt" 2>/dev/null || echo "(assembly_info.txt not found)"
+
