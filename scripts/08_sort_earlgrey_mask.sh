@@ -33,7 +33,7 @@ fi
 
 # Per-sample log
 mkdir -p "${LOG_DIR}/sort_earlgrey_mask"
-log_file="${LOG_DIR}/sort_earlgrey_mask/${sample_id}.log"
+log_file="${LOG_DIR}/sort_earlgrey_mask/${sample_id}_${SLURM_JOB_ID}.log"
 exec >"${log_file}" 2>&1
 
 echo "[$(date)] Starting: ${sample_id} (task ${SLURM_ARRAY_TASK_ID})"

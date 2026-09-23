@@ -5,16 +5,16 @@
 #SBATCH --mem=128G
 #SBATCH -p ceres
 #SBATCH -t 10:00:00
-#SBATCH --job-name=14_bigscape
+#SBATCH --job-name=13_bigscape
 #SBATCH --output=/dev/null
 
 set -euo pipefail
 
 ###############################################################################
-# Step 14 — BiG-SCAPE clustering of antiSMASH BGCs
+# Step 13 — BiG-SCAPE clustering of antiSMASH BGCs
 #
 # Input:
-#   - ${ANTISMASH_DIR}/${sample_id}/  (from Step 12a)
+#   - ${ANTISMASH_DIR}/${sample_id}/  (from Step 11a)
 #       Contains *.region*.gbk
 #
 # Output (single directory):
@@ -24,7 +24,7 @@ set -euo pipefail
 #       clustering summaries
 #
 # Notes:
-#   - No 14a/14b split needed.
+#   - No 13a/13b split needed.
 #   - BiG-SCAPE input = antiSMASH output folders (direct).
 #   - Isolate directories under ANTISMASH_DIR are keyed by manifest column $2
 #     (sample_id), matching how antismash_file ("Fus_BarNN...") is named in
@@ -84,8 +84,8 @@ PROJECT_ROOT="${PROJECT_ROOT:-/project/silage_microbiome/max.chi/fusarium_sequen
 # shellcheck disable=SC1091
 source "${PROJECT_ROOT}/config/paths.sh"
 
-# antiSMASH output root from your existing Step 12a:
-#   ANTISMASH_DIR="${BATCH_DIR}/12a_AntiSMASH_gbk"
+# antiSMASH output root from your existing Step 11a:
+#   ANTISMASH_DIR="${BATCH_DIR}/11a_AntiSMASH_gbk"
 
 mkdir -p "${LOG_DIR}/bigscape" 
 

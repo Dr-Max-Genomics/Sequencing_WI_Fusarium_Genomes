@@ -31,7 +31,7 @@ if [[ -z "${sample_id:-}" ]]; then
 fi
 
 # Per-sample log
-log_file="${LOG_DIR}/annotate/${sample_id}.log"
+log_file="${LOG_DIR}/annotate/${sample_id}_${SLURM_JOB_ID}.log"
 exec >"${log_file}" 2>&1
 
 echo "[$(date)] Starting funannotate annotate for sample: ${sample_id}"

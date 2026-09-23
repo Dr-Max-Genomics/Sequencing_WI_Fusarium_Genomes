@@ -37,12 +37,12 @@ MASK_DIR="${BATCH_DIR}/10_Mask"
 # Funannotate / annotation steps
 DB_ROOT="${PROJECT_ROOT}/DB_Databases"
 BUSCO_DOWNLOADS="${DB_ROOT}/busco_downloads"
-FUN_PREDICT_DIR="${BATCH_DIR}/11a_FUN_Predict_Result"    # input from predict
+FUN_PREDICT_DIR="${BATCH_DIR}/11a_FUN_Predict_Result"    # input from predict and annotate
 INTERPROSCAN_DIR="${BATCH_DIR}/11b_InterProScan"         # global IP outputs
 ANTISMASH_DIR="${BATCH_DIR}/12a_AntiSMASH_gbk"           # antismash gbk output folder
 CAZYMES_DIR="${BATCH_DIR}/13a_CAzymes"
 BIGSCAPE_DIR="${BATCH_DIR}/14_BiGSCAPE"
-# Annotate outputs live inside FUN_PREDICT_DIR per isolate (see CHANGELOG v1.4)
+EFFECTORS_DIR="${BATCH_DIR}/15_Effectorome"
 
 # S5 — Genome-wide analyses
 TELOMERE_DIR="${BATCH_DIR}/12b_Telomere"
@@ -78,4 +78,4 @@ mkdir -p \
   "$ASSEMBLY_DIR" "$POLISH_DIR" "$POLISHED_DIR" "$BUSCO_DIR" \
   "$FUN_PREDICT_DIR" "$INTERPROSCAN_DIR" "$ANTISMASH_DIR" "$LOG_DIR" \
   "$DB_ROOT" "$BUSCO_DOWNLOADS" "$EARLGREY_DIR" "$MASK_DIR" \
-  "$TELOMERE_DIR" "$CAZYMES_DIR" "$BIGSCAPE_DIR"
+  "$TELOMERE_DIR" "$CAZYMES_DIR" "$BIGSCAPE_DIR" "$EFFECTORS_DIR" 

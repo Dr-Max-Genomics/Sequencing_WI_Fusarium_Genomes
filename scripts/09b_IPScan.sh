@@ -6,7 +6,7 @@
 #SBATCH -p ceres
 #SBATCH -t 6:00:00
 #SBATCH --job-name=iprscan
-#SBATCH --array=1-9
+#SBATCH --array=1-8
 
 set -euo pipefail
 
@@ -30,7 +30,7 @@ if [[ -z "${sample_id:-}" ]]; then
 fi
 
 # Per-sample log
-log_file="${LOG_DIR}/interproscan/${sample_id}.log"
+log_file="${LOG_DIR}/interproscan/${sample_id}_${SLURM_JOB_ID}.log"
 exec >"${log_file}" 2>&1
 
 # Locate input proteins from predict output

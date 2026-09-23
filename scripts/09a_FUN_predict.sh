@@ -34,7 +34,7 @@ fi
 
 # Pick BUSCO seed species based on actual species
 case "$funannotate_species" in
-    "Fusarium graminearum"|"Fusarium cerealis")
+    "Fusarium graminearum"|"Fusarium sporotrichioides")
         BUSCO_SEED="fusarium_graminearum"
         ;;
     "Fusarium "*)

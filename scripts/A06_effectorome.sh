@@ -8,7 +8,7 @@
 #SBATCH -n 8
 #SBATCH -t 02:00:00
 #SBATCH --mem=128G
-#SBATCH --array=1-7
+#SBATCH --array=1-8
 #SBATCH --mail-user=maxwell.chibuogwu@usda.gov
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --output=/dev/null
@@ -19,13 +19,13 @@ set -euo pipefail
 # -----------------------------------------------------------------------
 # CONFIGURATION
 # -----------------------------------------------------------------------
-PROJECT_ROOT="/90daydata/silage_microbiome/Max_Fus_Batch3"
+PROJECT_ROOT="/90daydata/silage_microbiome/Max_Fus_Batch4"
+CONFIG_ROOT="//project/silage_microbiome/fusarium_sequencing/config"
 
 INPUT_DIR="${PROJECT_ROOT}/fun_annotate_effectorome_input"
 OUTPUT_DIR="${PROJECT_ROOT}/Effectorome_results"
-SCRIPTS_DIR="${PROJECT_ROOT}/Scripts"
 
-EFFECTORP_DIR="${PROJECT_ROOT}/effectorP3c"
+EFFECTORP_DIR="${CONFIG_ROOT}/effectorP3c"
 EFFECTORP="${EFFECTORP_DIR}/EffectorP.py"
 WEKA_JAR="${EFFECTORP_DIR}/weka-3-8-4/weka.jar"
 FUNCTIONS_PY="${EFFECTORP_DIR}/functions.py"
@@ -35,7 +35,7 @@ mkdir -p "${OUTPUT_DIR}"
 # ----------------------------
 # INLINE SAMPLE LIST
 # ----------------------------
-SAMPLES=("" "Fus_Bar01" "Fus_Bar02" "Fus_Bar04" "Fus_Bar05" "Fus_Bar06" "Fus_Bar07" "Fus_Bar08")
+SAMPLES=("" "Fus_Bar73" "Fus_Bar74" "Fus_Bar75" "Fus_Bar76" "Fus_Bar81" "Fus_Bar82" "Fus_Bar83" "Fus_Bar84")
 sample_id="${SAMPLES[$SLURM_ARRAY_TASK_ID]:-}"
 [[ -z "${sample_id}" ]] && { echo "ERROR: No sample for task $SLURM_ARRAY_TASK_ID"; exit 1; }
 
@@ -121,7 +121,7 @@ if [[ ! -s "${SP_SUMMARY}" ]]; then
       --mode fast \
       --bsize 256 \
       --torch_num_threads 1 \
-      --model_dir "${PROJECT_ROOT}/signalp6_fast/signalp-6-package/models"
+      --model_dir "${CONFIG_ROOT}/signalp6_fast/signalp-6-package/models"
 
   echo "[$(date)] SignalP6 complete."
 else
