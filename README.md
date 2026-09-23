@@ -403,7 +403,7 @@ sbatch --array=1 scripts/09_Funannotate/09a_FUN_predict.sh
 sbatch --array=2-9 scripts/09_Funannotate/09a_FUN_predict.sh
 ```
 
-Species-aware: `fusarium_graminearum` seed used for *F. graminearum* and
+Species-aware: `fusarium_graminearum` seed used for *F. graminearum*, *F. sporotrichioides* and
 *F. cerealis*; `fusarium` seed used for all others. Controlled via `case`
 statement on `funannotate_species` field in manifest.
 
