@@ -29,6 +29,14 @@ It is the single source of truth for "what has been done to which isolate."
 | `S5` | Genome-wide analyses (5.1 telomere · 5.2 antiSMASH · 5.3 CAZymes · 5.4 BigScape · 5.5 secretome · 5.6 effectorome) |
 | `DONE` | All stages complete, in permanent storage |
 
+> **Run-order note (added 2026-09):** `11_antismash.sh` (tracked under S5.2
+> below, "antiSMASH") must actually run and finish **before** the S4
+> `09c_FUN_annotate.sh` step, since `funannotate annotate --antismash`
+> consumes its GBK output. The S4/S5 category split in this file is kept for
+> consistency with existing tracking, but the file numbers do not reflect
+> execution order. See `README.md` §5 "Pipeline at a glance" for the full
+> explicit script sequence.
+
 ---
 
 ## Summary
@@ -38,8 +46,8 @@ It is the single source of truth for "what has been done to which isolate."
 | batch_2025-Feb | 9 | 9 | 9 | 9 | 9 | 🟢 | All stages complete; outputs in /project/ |
 | batch_2025-Dec | 10 | 10 | 10 | 10 | 10 | 🟢 | All stages complete; outputs in /project/ |
 | batch_2026-May | 7 | 7 | 7 | 7 | 7 | 🟢 | All stages complete |
-| batch4_2026-Sep | 8 | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | Basecalling in progress (MinKNOW) |
-| **Total** | **34** | **26** | **26** | **26** | **26** | — | |
+| batch4_2026-Sep | 8 | 8 | 8 | 8 | 🔵 | 🔵 | Path 2 (self-basecalled on Atlas, not MinKNOW); S4 in progress — see isolate table |
+| **Total** | **34** | **34** | **34** | **34** | **26 done + 8 in progress** | — | |
 
 > Status key: 🟢 Complete · 🔵 In progress · 🔴 Blocked · ⚪ Not started
 
@@ -196,7 +204,8 @@ It is the single source of truth for "what has been done to which isolate."
 ### batch4_2026-Sep
 
 **Sequencing date:** 2026-09
-**Basecaller:** MinKNOW (pre-basecalled — Path 1 dual-path workflow)
+**Basecaller:** Self-basecalled on Atlas from POD5s — **Path 2** dual-path workflow
+(corrects earlier "MinKNOW / Path 1" note — this batch never used MinKNOW)
 **Manifest:** `config/manifests/batch4_2026-Sep_manifest.tsv`
 **Ceres working path:** `/90daydata/silage_microbiome/max_seq/batch4_2026-Sep/` *(confirm path on Ceres)*
 **Atlas working path:** TBD
@@ -206,14 +215,18 @@ It is the single source of truth for "what has been done to which isolate."
 
 | Barcode | Isolate ID | Species | S1 | S2 | S3 | S4 | S5 | Notes |
 |---------|------------|---------|----|----|----|----|-----|-------|
-| barcode73 | F-23-7.1 | _F. graminearum_ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | Basecalling in progress |
-| barcode74 | F-22-9 | _F. annulatum_ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | New species; verify protein evidence before predict |
-| barcode75 | F-22-262 | _F. subglutinans_ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode76 | F-23-8.10 | _F. graminearum_ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode81 | F-23-2.1 | _F. subglutinans_ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode82 | F-22-12a | _F. sporotrichioides_ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode83 | F-22-214.2 | _F. verticillioides_ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
-| barcode84 | F-22-24 | _F. fujikuroi_ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | |
+| barcode73 | F-23-7.1 | _F. graminearum_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `09a_FUN_predict.sh` in progress. Telomere ✅ tracker ✅; antiSMASH not yet (predict incomplete) |
+| barcode74 | F-22-9 | _F. annulatum_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `09c_FUN_annotate.sh` in progress. Telomere ✅ antiSMASH ✅ tracker ✅. New species; `F_verticillioides_7600` protein evidence used — predict succeeded but dedicated file still unconfirmed |
+| barcode75 | F-22-262 | _F. subglutinans_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `09a_FUN_predict.sh` in progress. Telomere ✅ tracker ✅; antiSMASH not yet (predict incomplete) |
+| barcode76 | F-23-8.10 | _F. graminearum_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `09c_FUN_annotate.sh` in progress. Telomere ✅ antiSMASH ✅ tracker ✅ |
+| barcode81 | F-23-2.1 | _F. subglutinans_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `08_sort_earlgrey_mask.sh` in progress. Telomere ✅ tracker ✅ (assumed — confirm); antiSMASH not yet reached |
+| barcode82 | F-22-12a | _F. sporotrichioides_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `09c_FUN_annotate.sh` in progress. Telomere ✅ antiSMASH ✅ tracker ✅ |
+| barcode83 | F-22-214.2 | _F. verticillioides_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `09c_FUN_annotate.sh` in progress. Telomere ✅ antiSMASH ✅ tracker ✅ |
+| barcode84 | F-22-24 | _F. fujikuroi_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `09c_FUN_annotate.sh` in progress. Telomere ✅ antiSMASH ✅ tracker ✅ |
+
+> Telomere/tracker scope for barcode81 marked "assumed" — inferred from it
+> having an assembly (telomere and the contig tracker only need that), not
+> confirmed against logs. Verify and correct if it didn't actually run yet.
 
 ---
 
@@ -234,7 +247,7 @@ It is the single source of truth for "what has been done to which isolate."
 | barcode52 | F-22-6 | BUSCO score inferred (99.3%) | ✅ Verified 99.3% |
 | *(wtdbg2 trial)* | unknown | Trial barcode not recorded — locate on Ceres | ⚪ Open |
 | barcode05 | F-23-1.1 | _F. annulatum_ — protein evidence not explicitly confirmed; `F_verticillioides_7600` used | ⚪ Verify |
-| barcode74 | F-22-9 | _F. annulatum_ (batch4) — same as barcode05; confirm protein evidence before predict | ⚪ Open |
+| barcode74 | F-22-9 | _F. annulatum_ (batch4) — same as barcode05; `F_verticillioides_7600` used, predict succeeded (2026-09) | 🔵 Works operationally — dedicated protein evidence file still unconfirmed |
 
 ---
 
@@ -262,8 +275,8 @@ It is the single source of truth for "what has been done to which isolate."
 | batch_2025-Feb | Flye (all) | wtdbg2 trialed on 1 barcode; lower contiguity |
 | batch_2025-Dec | Flye (all) | wtdbg2 not used |
 | batch_2026-May | Flye (all) | Standard pipeline |
-| batch4_2026-Sep | Flye (planned) | Standard pipeline |
+| batch4_2026-Sep | Flye (all) | Standard pipeline; assembly complete for all 8, now in S4 |
 
 ---
 
-*Last updated: Sep 9, 2026*
+*Last updated: Sep 23, 2026*
