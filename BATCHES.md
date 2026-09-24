@@ -46,7 +46,7 @@ It is the single source of truth for "what has been done to which isolate."
 | batch_2025-Feb | 9 | 9 | 9 | 9 | 9 | 🟢 | All stages complete; outputs in /project/ |
 | batch_2025-Dec | 10 | 10 | 10 | 10 | 10 | 🟢 | All stages complete; outputs in /project/ |
 | batch_2026-May | 7 | 7 | 7 | 7 | 7 | 🟢 | All stages complete |
-| batch4_2026-Sep | 8 | 8 | 8 | 8 | 🔵 | 🔵 | Path 2 (self-basecalled on Atlas, not MinKNOW); S4 in progress — see isolate table |
+| batch4_2026-Sep | 8 | 8 | 8 | 8 | 🔵 | 🔵 | Path 2 (self-basecalled on Atlas, not MinKNOW); S4 & S5 in progress — see isolate table |
 | **Total** | **34** | **34** | **34** | **34** | **26 done + 8 in progress** | — | |
 
 > Status key: 🟢 Complete · 🔵 In progress · 🔴 Blocked · ⚪ Not started
@@ -205,28 +205,23 @@ It is the single source of truth for "what has been done to which isolate."
 
 **Sequencing date:** 2026-09
 **Basecaller:** Self-basecalled on Atlas from POD5s — **Path 2** dual-path workflow
-(corrects earlier "MinKNOW / Path 1" note — this batch never used MinKNOW)
 **Manifest:** `config/manifests/batch4_2026-Sep_manifest.tsv`
 **Ceres working path:** `/90daydata/silage_microbiome/max_seq/batch4_2026-Sep/` *(confirm path on Ceres)*
-**Atlas working path:** TBD
+**Atlas working path:** `/90daydata/silage_microbiome/Max_Fus_Batch4`
 **Permanent storage:** TBD
 
 > Note: barcodes 77–80 absent — not sequenced in this batch.
 
 | Barcode | Isolate ID | Species | S1 | S2 | S3 | S4 | S5 | Notes |
 |---------|------------|---------|----|----|----|----|-----|-------|
-| barcode73 | F-23-7.1 | _F. graminearum_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `09a_FUN_predict.sh` in progress. Telomere ✅ tracker ✅; antiSMASH not yet (predict incomplete) |
-| barcode74 | F-22-9 | _F. annulatum_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `09c_FUN_annotate.sh` in progress. Telomere ✅ antiSMASH ✅ tracker ✅. New species; `F_verticillioides_7600` protein evidence used — predict succeeded but dedicated file still unconfirmed |
-| barcode75 | F-22-262 | _F. subglutinans_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `09a_FUN_predict.sh` in progress. Telomere ✅ tracker ✅; antiSMASH not yet (predict incomplete) |
-| barcode76 | F-23-8.10 | _F. graminearum_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `09c_FUN_annotate.sh` in progress. Telomere ✅ antiSMASH ✅ tracker ✅ |
-| barcode81 | F-23-2.1 | _F. subglutinans_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `08_sort_earlgrey_mask.sh` in progress. Telomere ✅ tracker ✅ (assumed — confirm); antiSMASH not yet reached |
-| barcode82 | F-22-12a | _F. sporotrichioides_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `09c_FUN_annotate.sh` in progress. Telomere ✅ antiSMASH ✅ tracker ✅ |
-| barcode83 | F-22-214.2 | _F. verticillioides_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `09c_FUN_annotate.sh` in progress. Telomere ✅ antiSMASH ✅ tracker ✅ |
-| barcode84 | F-22-24 | _F. fujikuroi_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `09c_FUN_annotate.sh` in progress. Telomere ✅ antiSMASH ✅ tracker ✅ |
-
-> Telomere/tracker scope for barcode81 marked "assumed" — inferred from it
-> having an assembly (telomere and the contig tracker only need that), not
-> confirmed against logs. Verify and correct if it didn't actually run yet.
+| barcode73 | F-23-7.1 | _F. graminearum_ | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | All S5 Complete |
+| barcode74 | F-22-9 | _F. annulatum_ | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | S4: `09c_FUN_annotate.sh` in progress. Telomere ✅ antiSMASH ✅ tracker ✅. New species; `F_verticillioides_7600` protein evidence used — predict succeeded but dedicated file still unconfirmed |
+| barcode75 | F-22-262 | _F. subglutinans_ | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | All S5 Complete. Telomere ✅ tracker ✅; antiSMASH ✅ |
+| barcode76 | F-23-8.10 | _F. graminearum_ | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | All S5 Complete. Telomere ✅ antiSMASH ✅ tracker ✅ |
+| barcode81 | F-23-2.1 | _F. subglutinans_ | 🟢 | 🟢 | 🟢 | 🔵 | 🔵 | S4: `09a_FUN_predict.sh` in progress. Telomere ✅ tracker ✅  |
+| barcode82 | F-22-12a | _F. sporotrichioides_ | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | All S5 Complete. Telomere ✅ tracker ✅; antiSMASH ✅|
+| barcode83 | F-22-214.2 | _F. verticillioides_ | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | All S5 Complete. Telomere ✅ tracker ✅; antiSMASH ✅ |
+| barcode84 | F-22-24 | _F. fujikuroi_ | 🟢 | 🟢 | 🟢 | 🟢 | 🟢 | All S5 Complete. Telomere ✅ tracker ✅; antiSMASH ✅ |
 
 ---
 
@@ -262,8 +257,8 @@ It is the single source of truth for "what has been done to which isolate."
 | _F. fujikuroi_ | `F_verticillioides_7600_proteins.faa` | Closest available |
 | _F. subglutinans_ | `F_verticillioides_7600_proteins.faa` | Closest available |
 | _F. annulatum_ | `F_verticillioides_7600_proteins.faa` | No dedicated file; verify |
-| _F. cerealis_ | TBD | Check PROTEIN_EVIDENCE_DIR |
-| _F. ipomoea_ | TBD | Check PROTEIN_EVIDENCE_DIR |
+| _F. cerealis_ | `F_graminearum_PH1_proteins.faa` | Closest available - Sambucinum |
+| _F. ipomoea_ | `F_verticillioides_7600_proteins.faa` | Closest available - Fujikuroi |
 | _F. sporotrichioides_ | `F_graminearum_PH1_proteins.faa` | Closest available |
 
 ---
@@ -279,4 +274,4 @@ It is the single source of truth for "what has been done to which isolate."
 
 ---
 
-*Last updated: Sep 23, 2026*
+*Last updated: Sep 24, 2026*
