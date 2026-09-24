@@ -162,6 +162,12 @@ Sequencing_WI_Fusarium_Genomes/
 ├── CHANGELOG.md                 ← Pipeline and parameter version history
 │
 ├── config/
+|   ├── manifests/
+|   |   ├── batch_2025-Feb_manifest.tsv
+|   |   ├── batch_2025-Dec_manifest.tsv
+|   |   ├── batch_2026-May_manifest.tsv
+|   |   ├── batch_2026-Sep_manifest.tsv
+|   |   └── batch_[YYYY-MM]_manifest.tsv
 │   └── paths.sh                 ← All directory and DB path definitions
 │
 ├── scripts/
@@ -183,15 +189,6 @@ Sequencing_WI_Fusarium_Genomes/
 |   ├── 13_bigscape.sh
 |   ├── assembly_contig_tracker.sh
 |   └── 00.sh
-|
-├── batches/
-│   ├── batch_2025-Feb/
-│   │   ├── barlist.txt
-│   │   └── sample_sheet.csv
-│   ├── batch_2025-Dec/
-│   │   ├── barlist.txt
-│   │   └── sample_sheet.csv
-│   └── [batch_YYYY-MM]/
 │
 └── Atlas Scripts in sequencing pipeline/   ← Atlas GPU steps (basecalling, correction, polishing); actively used in path 2.
     ├── A01_basecall.sh
