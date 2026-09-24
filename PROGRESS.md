@@ -52,7 +52,7 @@
 | batch_2025-Feb | 49–53, 55–58 | 🟢 S5 complete | Ceres | Move to /project/ (path TBD); funannotate compare |
 | batch_2025-Dec | 36–45 | 🟢 S5 complete | Ceres | Move to /project/ (path TBD); funannotate compare |
 | batch_2026-May | 01,02,04–08 | 🟢 S5 complete | Ceres/Atlas | funannotate compare |
-| batch4_2026-Sep | 73–76, 81–84 | 🔵 Basecalling | MinKNOW | Complete basecalling; begin S1 concat |
+| batch4_2026-Sep | 73–76, 81–84 | 🔵 S4 (mixed — see notes) | Ceres/Atlas (Path 2) | Finish S4 for all 8; then S5 remainder (CAZymes, BigScape, secretome, effectorome) |
 
 > Status key: 🟢 Complete · 🔵 In progress · 🔴 Blocked · ⚪ Not started
 
@@ -60,6 +60,57 @@
 
 ## Log entries
 <!-- ─── Most recent entry at TOP ─────────────────────────── -->
+
+---
+
+## 2026-09-23 — Ceres/Atlas — batch4_2026-Sep — S4 in progress (Path 2); docs sync
+
+**Working directory:** `/90daydata/silage_microbiome/max_seq/batch4_2026-Sep/` (Ceres) — Atlas path TBD
+**Barcodes in scope:** barcode73–76, 81–84 (all 8)
+
+### What I ran
+- Path 2 (self-basecalled on Atlas from POD5s — NOT MinKNOW): confirms and
+  corrects the earlier "Basecalling in progress (MinKNOW)" status for this
+  batch
+- Script / stage, per isolate:
+  - barcode74, 76, 82, 83, 84 → `09c_FUN_annotate.sh` (in progress)
+  - barcode81 → `08_sort_earlgrey_mask.sh` (in progress)
+  - barcode73, 75 → `09a_FUN_predict.sh` (in progress)
+- Also ran: telomere density search + plotting (`10_telomere_density.sh`),
+  antiSMASH (`11_antismash.sh`), and `assembly_contig_tracker.sh`
+- Job IDs: TBD — fill in from Ceres/Atlas logs
+
+### Outcome
+- [ ] Completed successfully — S1–S3 done for all 8; S4 in progress, staged
+      per isolate as above (none finished 09c yet)
+
+### Notes / observations
+- All 8 isolates followed Path 2 (self-basecalled on Atlas), the first
+  batch to run this path end-to-end in production — see CHANGELOG v1.10 for
+  the finalized Path 2 script order, including the newly-documented
+  `A05_alignment_polish.sh` step after Flye
+- antiSMASH ran ahead of `09c_FUN_annotate.sh` for barcode74/76/82/83/84,
+  consistent with the run-order dependency now formalized in README/
+  CHANGELOG v1.10 (antiSMASH GBK is required input for annotate's
+  `--antismash` merge)
+- Scope of the telomere/antiSMASH/contig-tracker runs recorded as: telomere
+  + tracker for all 8 barcodes (only need an assembly, which all 8 have);
+  antiSMASH for the 5 barcodes that had reached predict completion
+  (74/76/82/83/84) — **this scope is an inference, not confirmed against
+  logs; correct if wrong**
+- Documentation sync this session: README, CHANGELOG, BATCHES.md updated to
+  (1) make the antiSMASH-before-annotate run order explicit, (2) document
+  the finalized Path 2 script order, (3) reflect current script inventory
+  (07a, 08b, 11a, 12b additions)
+
+### Next step
+- Finish S4 for barcode73/75/81
+- Run antiSMASH for barcode73/75/81 once each reaches predict completion
+- Confirm telomere/antiSMASH/tracker scope against actual logs
+- Fill in job IDs for this session from Ceres/Atlas logs
+- Decide whether to rename `11_antismash.sh`/`09c_FUN_annotate.sh`/
+  `11a_antismash_compare.sh` to reflect run order (see CHANGELOG v1.10
+  "Pending")
 
 ---
 
@@ -363,6 +414,12 @@ architecture and refactored scripts (07–09c). DB paths migrated to /project/.
 - [ ] Confirm _F. annulatum_ protein evidence situation (barcode05 / barcode74):
       F_verticillioides_7600 used in batch 3; confirm whether dedicated file
       exists or should be sourced from NCBI
+- [ ] Confirm scope of 2026-09 telomere/antiSMASH/contig-tracker runs for
+      batch4_2026-Sep against actual logs (currently recorded as an inference
+      — see 2026-09-23 entry above)
+- [ ] Fill in job IDs for batch4_2026-Sep Path 2 run (A01–A05, S1–S4)
+- [ ] Decide on antiSMASH/annotate script rename (see CHANGELOG v1.10 Pending)
+- [ ] Confirm purpose of 07a_unpol_busco_eval.sh / 08b_sort_earlgrey_mask_upolished.sh
 
 ---
 
