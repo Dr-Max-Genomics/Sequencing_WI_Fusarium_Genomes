@@ -4,7 +4,7 @@ A bioinformatics pipeline for whole genome sequencing and annotation of *Fusariu
 using Oxford Nanopore long-read sequencing data on USDA SCINet's Ceres and Atlas HPC clusters.
 
 **Maintainer:** Maxwell Chibuogwu (Dr. Max), Postdoctoral Fellow — USDA-ARS DFRC, Madison, WI
-**Project:** Wisconsin *Fusarium* Isolate Genomics
+**Project:** Wisconsin *Fusarium sp* Genomics
 **Contact:** maxwell.chibuogwu@usda.gov
 
 > Isolates are sequenced and processed in batches over time.
@@ -56,23 +56,23 @@ stage for any subset of barcodes.
 POD5 files from sequencer
         │
         ▼
-Raw basecalled reads (barcoded)
-        │
+Raw basecalled reads (barcoded)   ← see "Entry Points" below for how these
+        │                           reads are produced (Path 1 vs 2)
         ▼
 Stage 1 — Preprocessing
-        ├── 1.1  Concatenate per-barcode fastq.gz files
-        ├── 1.2  Remove duplicate reads (seqkit rmdup)
-        ├── 1.3  Trim ONT adapters (Porechop)
-        ├── 1.4  Filter reads < 500 bp (NanoFilt)
-        └── 1.5  QC plots and stats (NanoPlot)
+        ├── 1.1  Concatenate per-barcode fastq.gz files   01_concat.sh
+        ├── 1.2  Trim ONT adapters (Porechop)             02_porechop.sh
+        ├── 1.3  Remove duplicate reads (seqkit rmdup)    03_seqkit_dedup.sh
+        ├── 1.4  Filter reads < 500 bp (NanoFilt)         04_nanofilt.sh
+        └── 1.5  QC plots and stats (NanoPlot)            05_nanoplot.sh
         │
         ▼
 Stage 2 — Genome assembly
-        └── Flye (recommended) or wtdbg2
+        └── Flye (recommended) or wtdbg2                 06_flye.sh
         │
         ▼
 Stage 3 — Assembly evaluation
-        ├── 3.1  BUSCO (hypocreales / sordariomycetes lineages)
+        ├── 3.1  BUSCO (hypocreales / sordariomycetes lineages) 07_busco_eval.sh
         └── 3.2  Merqury, CRAQ, Quast
         │
         ▼
@@ -81,16 +81,20 @@ Stage 4 — Genome annotation        [scripts/07_ → 09c_]
         ├── 4.2  Sort + EarlGrey + Mask                08_sort_earlgrey_mask.sh
         ├── 4.3  Gene prediction (Funannotate predict) 09a_FUN_predict.sh
         ├── 4.4  Protein domain annotation (IPRScan)   09b_IPScan.sh
-        └── 4.5  Functional annotation (Fun. annotate) 09c_FUN_annotate.sh
+        ├── 4.5  Secondary metabolite clusters ⚠️     11_antismash.sh
+        |        antiSMASH - MUST complete before 4.6; `funannotate annotate --antismash` uses its GBK directly.
+        |        Numbered 11 for "historic reasons" (grouped with stage 5 on disk) the file number does not represent run order here.
+        └── 4.6  Functional annotation (Fun. annotate) 09c_FUN_annotate.sh
         │
         ▼
 Stage 5 — Genome-wide analyses
-        ├── 5.1  Telomere search (TelomereSearch.py)
-        ├── 5.2  Secondary metabolite clusters (antiSMASH)
-        ├── 5.3  CAZyme analysis (Funannotate / dbCAN)
-        ├── 5.4  BGC networking (BiG-SCAPE)
+        ├── 5.1  Telomere search (TelomereSearch.py)         10_telomere_density.sh
+        ├── 5.2  antiSMASH cross-isolate comparison          11a_antismash_compare.sh
+        ├── 5.3  CAZyme analysis (Funannotate / dbCAN)       12_cazyme_annotation.sh
+        |        (12b_cazyme_summary.sh - cross-isolate summary)
+        ├── 5.4  BGC networking (BiG-SCAPE)                  13_bigscape.sh
         ├── 5.5  Secretome / protein analysis
-        └── 5.6  Effectorome
+        └── 5.6  Effectorome                                 A06_effectorome
                  ├── 5.6a  SignalP
                  └── 5.6b  Effector3.0
 ```
@@ -121,9 +125,9 @@ Sequencing_WI_Fusarium_Genomes/
 │   ├── 09_Funannotate/
 │   |   ├── 09a_FUN_predict.sh
 │   |   ├── 09b_IPScan.sh
-│   |   └── 09c_FUN_annotate.sh
+│   |   └── 09c_FUN_annotate.sh         ← run AFTER 11_antismash.sh see 5
 │   ├── 10_telomere_density.sh
-|   ├── 11_antismash.sh
+|   ├── 11_antismash.sh                 ← run BEFORE 09c_FUN_annotate.   
 |   ├── 12_cazyme_annotation.sh
 |   ├── 13_bigscape.sh
 |   ├── assembly_contig_tracker.sh
@@ -138,7 +142,7 @@ Sequencing_WI_Fusarium_Genomes/
 │   │   └── sample_sheet.csv
 │   └── [batch_YYYY-MM]/
 │
-└── Atlas Scripts in sequencing pipeline/   ← Legacy scripts
+└── Atlas Scripts in sequencing pipeline/   ← Atlas GPU steps (basecalling, correction, polishing); actively used in path 2.
     ├── A01_basecall.sh
     ├── A02_demux.sh
     ├── A03_bam2fastq.sh
