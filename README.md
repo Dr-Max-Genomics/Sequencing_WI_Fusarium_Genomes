@@ -99,6 +99,57 @@ Stage 5 — Genome-wide analyses
                  └── 5.6b  Effector3.0
 ```
 
+> ⚠️ **Explicit run-order note:** despite living in the "Stage 5" part of the
+> script inventory, `11_antismash.sh` MUST be run — and must finish — for an
+> isolate **before** `09c_FUN_annotate.sh` runs for that isolate. The correct
+> per-isolate execution order through Stage 4 is:
+> `08_sort_earlgrey_mask.sh` → `09a_FUN_predict.sh` → `09b_IPScan.sh` →
+> **`11_antismash.sh`** → `09c_FUN_annotate.sh`.
+
+
+### Entry points: Path 1 (MinKNOW) vs Path 2 (self-basecalled on Atlas' GPU)
+
+The pipeline has two entry points depending on how basecalling was done.
+Both converge at Stage 3 (assembly evaluation), on the assembled genome.
+
+**Path 1 — MinKNOW pre-basecalled** (used for batch_2026-May):
+
+```
+MinKNOW (basecall + demux on-instrument)
+  → Ceres:  01_concat → 02_porechop → 03_seqkit_dedup → 04_nanofilt → 05_nanoplot
+  → [transfer filtered reads to Atlas]
+  → Atlas:  A04_dorado_corr    (HERRO correction, GPU)
+  → [transfer corrected reads back to Ceres]
+  → Ceres:  06_flye_assemble (--nano-corr)
+  → Stage 3 onward
+```
+
+**Path 2 — Self-basecalled on Atlas** (Used for batch4_2026-Sep):
+
+```
+Atlas:  A01_basecall → A02_demux → A03_bam2fastq → A04_dorado_corr
+  → [transfer HERRO-corrected reads to Ceres]
+  → Ceres:  (skip 01_concat — demux already split reads per barcode)
+            02_porechop → 03_seqkit_dedup → 04_nanofilt
+            (05_nanoplot skipped — reads are already HERRO-corrected FASTA
+             with no quality scores left to plot, otherwise run in this order
+            A03_bam2fastq → 05_nanoplot → A04_dorado_corr - before correction)
+  → Ceres:  06_flye_assemble (--nano-corr)
+  → [transfer assembly to Atlas]
+  → Atlas:  A05_alignment_polish
+  → [transfer polished assembly back to Ceres]
+  → Stage 3 onward, on the POLISHED assembly
+```
+
+> ⚠️ Note the correction step falls in a different place in each path: in
+> Path 1, `A04_dorado_corr` runs *after* trimming/dedup/filtering (on Atlas,
+> mid-pipeline); in Path 2, it runs immediately after basecalling/demux,
+> *before* any of the Ceres trim/dedup/filter steps. This is simply because
+> in Path 2 basecalling and correction both happen on Atlas before anything
+> transfers to Ceres.
+>
+> `A05_alignment_polish.sh` is then used to polish the assembly with raw read bam files. 
+
 ---
 
 ## 2. Repository layout
