@@ -1,129 +1,300 @@
-Here's the error log during funannotate predict:​‌
-     Progress: 428 complete, 0 failed, 1 remaining        
-     Progress: 429 complete, 0 failed, 0 remaining        
-  [4mSource         Weight   Count[0m
-  Augustus       1        8319 
-  Augustus HiQ   2        4468 
-  GeneMark       1        15284
-  GlimmerHMM     1        15063
-  snap           1        14071
-  Total          -        57205
-[Sep 23 12:30 AM]: 14,646 total gene models from EVM
-[Sep 23 12:30 AM]: Generating protein fasta files from 14,646 EVM models
-[Sep 23 12:30 AM]: now filtering out bad gene models (< 50 aa in length, transposable elements, etc).
-[Sep 23 12:30 AM]: Found 29 gene models to remove: 2 too short; 0 span gaps; 27 transposable elements
-[Sep 23 12:30 AM]: 14,617 gene models remaining
-[Sep 23 12:30 AM]: Predicting tRNAs
-[Sep 23 12:31 AM]: 291 tRNAscan models are valid (non-overlapping)
-[Sep 23 12:31 AM]: Generating GenBank tbl annotation file
-Traceback (most recent call last):
-  File "/venv/bin/funannotate", line 8, in <module>
-    sys.exit(main())
-  File "/venv/lib/python3.8/site-packages/funannotate/funannotate.py", line 717, in main
-    mod.main(arguments)
-  File "/venv/lib/python3.8/site-packages/funannotate/predict.py", line 2761, in main
-    shutil.copyfile(tbl_file, final_tbl)
-  File "/venv/lib/python3.8/shutil.py", line 264, in copyfile
-    with open(src, 'rb') as fsrc, open(dst, 'wb') as fdst:
-FileNotFoundError: [Errno 2] No such file or directory: '/90daydata/silage_microbiome/max_seq/batch4_2026-Sep/11a_FUN_Predict_Result/FunAnnotate_Fus_Bar84/predict_results/Fusarium_fujikuroi_Fus_Bar84.tbl'​‌
+srun -A silage_microbiome -p atlas -N 1 -n 32 -t 1-0 --pty bash
+srun: job 20863265 queued and waiting for resources
+srun: job 20863265 has been allocated resources
+[maxwell.chibuogwu@atlas-0141 orthofinder]$ source activate mycotool_gpu
+bash: activate: No such file or directory
+[maxwell.chibuogwu@atlas-0141 orthofinder]$ conda env list
+bash: conda: command not found
+[maxwell.chibuogwu@atlas-0141 orthofinder]$ cat orthofinder-offline.def 
+Bootstrap: localimage
+From: /project/silage_microbiome/orthofinder/ubuntu.sif
 
-Here is the name for the tbl file in previous runs that completed: Fusarium_proliferatum_Fus_Bar02.tbl​‌
-So the tbl should have been created similarly and found. Or is it better to search the .../predict_results/ directory for any .tbl file and use that - because that's usually the only one there?​‌
+%labels
+    Author Maxwell Chibuogwu
+    Version v1.2-offline
+    Description Offline OrthoFinder (py312 wheels) + MMseqs2-GPU; no apt, no WAN
 
-Another question, what's the point or role of the Busco seed species? Based on the manifest uploaded earlier, can that be used to tailor the script used for prediction below? ​‌
+%setup
+    mkdir -p "${APPTAINER_ROOTFS}/project" \
+             "${APPTAINER_ROOTFS}/90daydata" \
+             "${APPTAINER_ROOTFS}/reference"
 
-#!/usr/bin/env bash
+%files
+    /project/silage_microbiome/orthofinder/container_assets/Miniconda3.sh           /opt/Miniconda3.sh
+    /project/silage_microbiome/orthofinder/container_assets/mmseqs-linux-gpu.tar.gz /opt/mmseqs-linux-gpu.tar.gz
+    /project/silage_microbiome/orthofinder/container_assets/wheels                  /opt/wheels
+
+%post
+    set -e
+    bash /opt/Miniconda3.sh -b -p /opt/conda
+
+    # --- deps needed by OrthoFinder & ETE4 (install from staged wheels, no WAN) ---
+    /opt/conda/bin/pip install --no-index --find-links=/opt/wheels \
+      numpy==2.0.2 scipy==1.14.1 scikit-learn==1.5.2 networkx rich biopython \
+      cheroot bottle markdown-it-py mdurl pygments
+
+    # --- ETE4 itself ---
+    /opt/conda/bin/pip install --no-index --find-links=/opt/wheels ete4==4.4.0
+
+    # --- OrthoFinder (wheel) → creates /opt/conda/bin/orthofinder ---
+    /opt/conda/bin/pip install --no-index --find-links=/opt/wheels orthofinder
+
+    # --- MMseqs2-GPU (precompiled tar) ---
+    tar xzf /opt/mmseqs-linux-gpu.tar.gz -C /opt
+    ln -sf /opt/mmseqs/bin/mmseqs /usr/local/bin/mmseqs
+
+%environment
+    export PATH=/usr/local/bin:/opt/mmseqs/bin:/opt/conda/bin:$PATH
+    export MMSEQS_FORCE_GPU=1
+
+%runscript
+    exec orthofinder "$@"[maxwell.chibuogwu@atlas-0141 orthofinder]$ cat run_orthofinder.sh 
+#!/bin/bash
+#SBATCH -J orthofinder_gpu
+#SBATCH -p gpu-a100
+#SBATCH --gres=gpu:a100
 #SBATCH -A silage_microbiome
-#SBATCH -N 1
-#SBATCH -n 20
-#SBATCH --mem=80G
-#SBATCH -p ceres
-#SBATCH -t 1-0
-#SBATCH --job-name=fun_predict
-#SBATCH --array=1-8
-#SBATCH --output=/dev/null
+#SBATCH -n 40
+#SBATCH --mem=500G
+#SBATCH -t 48:00:00
+#SBATCH -o %x.%j.out
+#SBATCH -e %x.%j.err
 
 set -euo pipefail
 
-PROJECT_ROOT="/project/silage_microbiome/max.chi/fusarium_sequencing"
-source "${PROJECT_ROOT}/config/paths.sh"
+APPT="/apps/spack-managed-x86_64_v3-v1.1/gcc-11.5.0/apptainer-1.4.3-gjmkxcehl4zeatqaag3ukwzmb75g77xz/bin/apptainer"
+SIF="/project/silage_microbiome/orthofinder/orthofinder-gpu.sif"
+WORKDIR="/project/silage_microbiome/orthofinder/proteomes"
 
-module load funannotate
-export AUGUSTUS_CONFIG_PATH="${DB_ROOT}/augustus_config/config"
-export APPTAINERENV_FUNANNOTATE_DB="${DB_ROOT}/funannotate_db"
+echo "CUDA_VISIBLE_DEVICES = $CUDA_VISIBLE_DEVICES"
+echo "Node-level GPU check:"
+nvidia-smi
 
-# -----------------------------------------------------------------------
-# Standard manifest read — all 9 columns. See README §7.
-# -----------------------------------------------------------------------
-LINE_NUM=$((SLURM_ARRAY_TASK_ID + 1))
-IFS=$'\t' read -r \
-    barcode sample_id assembly_file busco_name earlgrey_species \
-    funannotate_name funannotate_species protein_evidence_file antismash_file \
-    < <(sed -n "${LINE_NUM}p" "${MANIFEST}")
+"$APPT" run --nv \
+    --env CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES \
+    --env MMSEQS_FORCE_GPU=1 \
+    -B /project -B /90daydata -B /reference \
+    "$SIF" \
+    -f "$WORKDIR" \
+    -t "${SLURM_NTASKS}" \
+    -a "${SLURM_NTASKS}" \
+    -M msa -S mmseqs -z
 
-if [[ -z "${sample_id:-}" ]]; then
-    echo "ERROR: no sample at manifest line ${LINE_NUM} of ${MANIFEST}" >&2
-    exit 1
-fi
+echo "Final GPU snapshot:"
+"$APPT" exec --nv \
+    --env CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES \
+    "$SIF" nvidia-smi || true[maxwell.chibuogwu@atlas-0141 orthofinder]$ ls
+container_assets  orthofinder-gpu.sif  orthofinder_guide_Atlas.txt  orthofinder-offline.def  proteomes  run_orthofinder.sh  ubuntu.sif
+[maxwell.chibuogwu@atlas-0141 orthofinder]$ cat orthofinder_guide_Atlas.txt 
+Title: Offline OrthoFinder + MMseqs2-GPU (Apptainer/Singularity) on Atlas (SCINet)
+Author: Maxwell Chibuogwu
+Last updated: 2026-09-30
 
-# Pick BUSCO seed species based on actual species
-case "$funannotate_species" in
-    "Fusarium graminearum"|"Fusarium sporotrichioides")
-        BUSCO_SEED="fusarium_graminearum"
-        ;;
-    "Fusarium "*)
-        BUSCO_SEED="fusarium"
-        ;;
-    *)
-        BUSCO_SEED="fusarium"  # fallback
-        ;;
-esac
+SUMMARY
+-------
+This guide installs and runs OrthoFinder v3.1.5 with MMseqs2-GPU inside an Apptainer container on Atlas (SCINet), fully OFFLINE on compute nodes. We stage artifacts on the login node (which has WAN), then build the container on a GPU compute node without WAN, and run OrthoFinder with CUDA via --nv.
 
-# Per-sample log
-mkdir -p "${LOG_DIR}/fun_predict"
-log_file="${LOG_DIR}/fun_predict/${sample_id}_${SLURM_JOB_ID}.log"
-exec >"${log_file}" 2>&1
+Key ideas:
+- Apptainer should be run from a COMPUTE node on SCINet (use salloc/srun). 【1-ad28ac】
+- Runtime access to GPUs requires Apptainer’s `--nv` flag (binds /dev/nvidia* and host CUDA libs). 【2-1eec85】
+- Bind project directories with `-B` to access data inside the container. 【3-1b1b03】
+- Offline builds: stage Miniconda + Python wheels + MMseqs2-GPU tar via `%files`, then `pip install --no-index --find-links` in `%post`. 【3-1b1b03】【4-13d3fd】
 
-echo "[$(date)] Starting predict: ${sample_id} (task ${SLURM_ARRAY_TASK_ID})"
-echo "  Manifest:          ${MANIFEST}"
-echo "  Species:           ${funannotate_species}"
-echo "  Strain:            ${sample_id}"
-echo "  Protein evidence:  ${protein_evidence_file}"
-echo "  BUSCO seed:        ${BUSCO_SEED}"
 
-# Derive paths
-MASKED="${MASK_DIR}/${sample_id}_masked.fa"
-OUTPUT_DIR="${FUN_PREDICT_DIR}/${funannotate_name}"
-PROTEIN_EVIDENCE="${PROTEIN_EVIDENCE_DIR}/${protein_evidence_file}"
-AUGUSTUS_NAME="${sample_id}"
+PREREQUISITES
+-------------
+Paths (adjust if needed):
+- Project base:  /project/silage_microbiome/orthofinder
+- Artifacts dir: /project/silage_microbiome/orthofinder/container_assets
+- Local Ubuntu base SIF: /project/silage_microbiome/orthofinder/ubuntu.sif
+- Apptainer binary (bypass broken module on compute nodes):
+  /apps/spack-managed-x86_64_v3-v1.1/gcc-11.5.0/apptainer-1.4.3-gjmkxcehl4zeatqaag3ukwzmb75g77xz/bin/apptainer
 
-# Validate inputs
-[[ -s "${MASKED}" ]]           || { echo "ERROR: masked genome missing: ${MASKED}" >&2; exit 1; }
-[[ -s "${PROTEIN_EVIDENCE}" ]] || { echo "ERROR: protein evidence missing: ${PROTEIN_EVIDENCE}" >&2; exit 1; }
+Note: SCINet’s container guidance emphasizes using Apptainer from compute nodes, obtained via `salloc`, and binding datasets when running. 【1-ad28ac】
 
-mkdir -p "${FUN_PREDICT_DIR}"
 
-##############################
-# funannotate predict
-##############################
-echo "[$(date)] Running funannotate predict"
+STEP A — On LOGIN NODE (WAN available)
+--------------------------------------
+1) Create artifact staging directory:
+   mkdir -p /project/silage_microbiome/orthofinder/container_assets
 
-if ! ls "${OUTPUT_DIR}/predict_results/"*.gff3 >/dev/null 2>&1; then
-    funannotate predict \
-        -i "${MASKED}" \
-        -o "${OUTPUT_DIR}" \
-        --species "${funannotate_species}" \
-        --strain "${sample_id}" \
-        --augustus_species "${AUGUSTUS_NAME}" \
-        --busco_seed_species "${BUSCO_SEED}" \
-        --busco_db hypocreales \
-        --protein_evidence "${PROTEIN_EVIDENCE}" \
-        --optimize_augustus \
-        --cpus "${SLURM_NTASKS}"
-else
-    echo "  Skipping — output exists: ${OUTPUT_DIR}/predict_results/"
-fi
+2) Download Miniconda (Python 3.12) installer:
+   wget -O /project/silage_microbiome/orthofinder/container_assets/Miniconda3.sh \
+     https://repo.anaconda.com/miniconda/Miniconda3-py312_26.7.1-1-Linux-x86_64.sh
+   (Miniconda offers Python-specific installers; use py312 for consistent ABI and wheels) 【5-259a19】【6-ac0e2d】
 
-echo "[$(date)] Done: ${sample_id} → ${OUTPUT_DIR}/predict_results/"​‌
+3) Download MMseqs2-GPU (precompiled tar):
+   wget -O /project/silage_microbiome/orthofinder/container_assets/mmseqs-linux-gpu.tar.gz \
+     https://mmseqs.com/latest/mmseqs-linux-gpu.tar.gz
+   (MMseqs2-GPU requires glibc ≥ 2.29 and NVIDIA driver ≥ 525.60.13; Atlas drivers ≥ 595.x are fine) 【7-e72319】
 
-Before re-running, should I delete the predict_mic directories that are currently there or would the repeat run use some of it and save time?​‌
+4) Build OrthoFinder v3.1.5 WHEEL and stage dependency wheels:
+   # Clone source (v3.1.5) and build wheel
+   cd /project/silage_microbiome/orthofinder
+   git clone --depth 1 --branch v3.1.5 https://github.com/OrthoFinder/OrthoFinder.git OrthoFinder_src315
+   python3 -m pip install --user --upgrade build
+   cd OrthoFinder_src315
+   python3 -m build
+   cp dist/orthofinder-3.1.5-*.whl /project/silage_microbiome/orthofinder/container_assets/wheels/
+
+   # Fetch binary wheels for py312 (manylinux2014_x86_64)
+   cd /project/silage_microbiome/orthofinder/container_assets
+   mkdir -p wheels
+
+   # Use pip download for wheels; `--platform` + `--python-version` + `--only-binary=:all:` are required
+   /usr/bin/pip download \
+     --only-binary=:all: \
+     --platform manylinux2014_x86_64 \
+     --python-version 312 \
+     -d wheels \
+     numpy==2.0.2 scipy==1.14.1 scikit-learn==1.5.2 networkx rich biopython \
+     cheroot bottle markdown-it-py mdurl pygments
+   (pip’s cross-platform wheel download flags are documented here) 【4-13d3fd】
+
+   # If ete4 wheel isn’t available for py312, build it locally (no deps) with Miniconda py312:
+   # Install a local Miniconda py312 for build (user-level, no root needed)
+   wget -O ~/miniconda_py312.sh https://repo.anaconda.com/miniconda/Miniconda3-py312_26.7.1-1-Linux-x86_64.sh
+   bash ~/miniconda_py312.sh -b -p ~/miniconda_py312
+   source ~/miniconda_py312/bin/activate
+   conda create -y -n build_py312 python=3.12 pip setuptools wheel cython
+   conda activate build_py312
+   pip wheel --no-deps ete4==4.4.0 -w /project/silage_microbiome/orthofinder/container_assets/wheels
+
+   # Verify the wheel cache:
+   ls -1 wheels | sed -n '1,120p'
+
+
+5) Pull Ubuntu base image to local SIF (still on LOGIN NODE):
+   module load apptainer    # (login node supports module)
+   apptainer pull /project/silage_microbiome/orthofinder/ubuntu.sif docker://ubuntu:22.04
+   (Pull on login node to avoid WAN during compute-node builds; SCINet pattern) 【1-ad28ac】
+
+
+STEP B — Create Apptainer definition file (OFFLINE build)
+---------------------------------------------------------
+Save as: /project/silage_microbiome/orthofinder/orthofinder-offline.def
+
+[BEGIN DEF FILE]
+Bootstrap: localimage
+From: /project/silage_microbiome/orthofinder/ubuntu.sif
+
+%labels
+    Author Maxwell Chibuogwu
+    Version v1.2-offline
+    Description Offline OrthoFinder (py312 wheels) + MMseqs2-GPU; no apt, no WAN
+
+%setup
+    mkdir -p "${APPTAINER_ROOTFS}/project" \
+             "${APPTAINER_ROOTFS}/90daydata" \
+             "${APPTAINER_ROOTFS}/reference"
+
+%files
+    /project/silage_microbiome/orthofinder/container_assets/Miniconda3.sh           /opt/Miniconda3.sh
+    /project/silage_microbiome/orthofinder/container_assets/mmseqs-linux-gpu.tar.gz /opt/mmseqs-linux-gpu.tar.gz
+    /project/silage_microbiome/orthofinder/container_assets/wheels                  /opt/wheels
+
+%post
+    set -e
+    bash /opt/Miniconda3.sh -b -p /opt/conda
+
+    # Install deps (NO WAN): py312 wheels only
+    /opt/conda/bin/pip install --no-index --find-links=/opt/wheels \
+      numpy==2.0.2 scipy==1.14.1 scikit-learn==1.5.2 networkx rich biopython \
+      cheroot bottle markdown-it-py mdurl pygments
+
+    # ETE4
+    /opt/conda/bin/pip install --no-index --find-links=/opt/wheels ete4==4.4.0
+
+    # OrthoFinder wheel
+    /opt/conda/bin/pip install --no-index --find-links=/opt/wheels orthofinder
+
+    # MMseqs2-GPU
+    tar xzf /opt/mmseqs-linux-gpu.tar.gz -C /opt
+    ln -sf /opt/mmseqs/bin/mmseqs /usr/local/bin/mmseqs
+
+%environment
+    export PATH=/usr/local/bin:/opt/mmseqs/bin:/opt/conda/bin:$PATH
+    export MMSEQS_FORCE_GPU=1
+
+%test
+    /opt/conda/bin/python - <<'PY'
+import sys
+import ete4, numpy, scipy, sklearn, networkx, rich, Bio
+print("Python deps OK:", sys.version)
+PY
+    /usr/local/bin/mmseqs --help | grep -- "--gpu" || exit 1
+
+%runscript
+    exec orthofinder "$@"
+[END DEF FILE]
+
+Notes:
+- `%files` + `%post` are Apptainer’s documented way to stage artifacts and install offline. 【3-1b1b03】
+- `--nv` must be used at run/exec time to expose GPUs/CUDA libraries inside the container. 【2-1eec85】
+- Bind mounts `-B` map host directories into the container (SCINet data paths). 【3-1b1b03】
+
+
+STEP C — Build OFFLINE on GPU COMPUTE NODE (NO WAN)
+---------------------------------------------------
+1) Get a compute node:
+   salloc -p gpu-a100 -n 4 --gres=gpu:1 --mem=64G -t 2:00:00 --pty bash
+   (Apptainer should run from compute nodes per SCINet guidance) 【1-ad28ac】
+
+2) Bypass broken module: use absolute Apptainer binary
+   export APPT=/apps/spack-managed-x86_64_v3-v1.1/gcc-11.5.0/apptainer-1.4.3-gjmkxcehl4zeatqaag3ukwzmb75g77xz/bin/apptainer
+
+3) Optional: local TMP/CACHE to avoid network FS quirks during build
+   export APPTAINER_TMPDIR=/tmp/$USER/appt_tmp
+   export APPTAINER_CACHEDIR=/tmp/$USER/appt_cache
+   mkdir -p "$APPTAINER_TMPDIR" "$APPTAINER_CACHEDIR"
+
+4) Build the image:
+   "$APPT" build --fakeroot /project/silage_microbiome/orthofinder/orthofinder-gpu.sif \
+     /project/silage_microbiome/orthofinder/orthofinder-offline.def
+   (Offline build: no WAN calls; `%test` will confirm GPU binary and Python deps) 【3-1b1b03】
+
+
+STEP D — Run OrthoFinder with CUDA GPUs
+---------------------------------------
+Use `--nv` to expose GPU devices & host CUDA libs; bind data directories:
+
+"$APPT" run --nv -B /project -B /90daydata -B /reference \
+  /project/silage_microbiome/orthofinder/orthofinder-gpu.sif \
+  -f /project/silage_microbiome/orthofinder/proteomes \
+  -t 32 -a 32 -M msa -S mmseqs -z
+(‘--nv’ is the documented flag to inject NVIDIA devices/libraries; data paths bound with -B per Apptainer docs/SCINet guide) 【2-1eec85】【3-1b1b03】【1-ad28ac】
+
+GPU CONFIRMATION
+----------------
+To verify GPU use inside the container:
+- See GPUs:
+  "$APPT" exec --nv /project/.../orthofinder-gpu.sif nvidia-smi
+- MMseqs2-GPU flags:
+  "$APPT" exec --nv /project/.../orthofinder-gpu.sif mmseqs search --help | grep -- --gpu
+- MMseqs2 version string (gpu build):
+  "$APPT" exec --nv /project/.../orthofinder-gpu.sif mmseqs version
+(Apptainer --nv GPU docs; MMseqs2 user/README describe GPU mode) 【2-1eec85】【7-e72319】
+
+TROUBLESHOOTING
+---------------
+- “destination /project/ doesn’t exist” during build:
+  Create bind destinations in `%setup` (e.g., /project, /90daydata, /reference). This is how system binds are handled in Apptainer. 【3-1b1b03】
+
+- WAN timeouts on compute node:
+  Compute nodes often block outbound WAN; build offline by staging artifacts on the login node. 【1-ad28ac】
+
+- Modulefile errors with Apptainer module on compute nodes:
+  Use the absolute Apptainer binary path without loading the module; SCINet allows Apptainer from compute nodes; binds and --nv still work. 【1-ad28ac】
+
+- Cross‑platform pip wheel downloads:
+  Use `pip download --platform manylinux2014_x86_64 --python-version 312 --only-binary=:all:`; build missing wheels locally (pip wheel) with a py312 conda env. 【4-13d3fd】
+
+REFERENCES
+----------
+- SCINet: Singularity/Apptainer Containers (compute-node usage; binding patterns) 【1-ad28ac】
+- Apptainer GPU flag (--nv) and device support docs (NVIDIA CUDA) 【2-1eec85】
+- Apptainer definition-file & bind/mount semantics (sections, %files, %post, %environment, %test) 【3-1b1b03】
+- pip download (cross-platform wheels; --platform/--python-version/--only-binary) 【4-13d3fd】
+- MMseqs2-GPU README (glibc/driver requirements; GPU mode) 【7-e72319】
+
+END[maxwell.chibuogwu@atlas-0141 orthofinder]$ 
