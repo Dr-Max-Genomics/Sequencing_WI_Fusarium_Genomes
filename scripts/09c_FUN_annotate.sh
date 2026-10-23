@@ -6,8 +6,9 @@
 #SBATCH -p ceres
 #SBATCH -t 6:00:00
 #SBATCH --job-name=FUN_annotate
-#SBATCH --array=1-9
+#SBATCH --array=1-10
 #SBATCH --output=/dev/null
+#SBATCH --error=/dev/null
 
 set -euo pipefail
 

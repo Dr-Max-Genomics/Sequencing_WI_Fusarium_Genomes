@@ -4,9 +4,11 @@
 #SBATCH -n 32
 #SBATCH --mem=64G
 #SBATCH -p ceres
-#SBATCH -t 6:00:00
+#SBATCH -t 8:00:00
 #SBATCH --job-name=iprscan
 #SBATCH --array=1-8
+#SBATCH --output=/dev/null
+#SBATCH --error=/dev/null
 
 set -euo pipefail
 

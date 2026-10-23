@@ -101,7 +101,7 @@ echo "=========================================="
 if [[ -z "${INPUT_GBK}" || ! -s "${INPUT_GBK}" ]]; then
     echo "ERROR: no *.gbk found in ${PREDICT_DIR}" >&2
     ls "${PREDICT_DIR}" >&2 || true
-    echo "Did 09c_FUN_annotate.sh complete for ${sample_id}?" >&2
+    echo "Did 09a_FUN_predict.sh complete for ${sample_id}?" >&2
     exit 1
 fi
 

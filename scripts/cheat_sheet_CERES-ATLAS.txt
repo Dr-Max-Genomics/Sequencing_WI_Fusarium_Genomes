@@ -1,0 +1,24 @@
+1. To run DeepTmHmm on ATLAS
+    srun -p gpu-a100 -A silage_microbiome --gres=gpu:a100:1 -n 64 --mem=500G -t 2:00:00 --pty bash
+    cd /project/silage_microbiome/softwares/ #Change to directory containing the file
+    ml miniconda3 cuda #load needed packages
+    source activate deeptmhmm-gpu #Enter appropriate python environment
+    cd DeepTMHMM-Academic-License-v1.0/DeepTMHMM-Academic-License-v1.0/ #Change to directory containing the predict.py
+    python predict.py --fasta ../../BarXX_length.fasta --output-dir ../../barXX_hmm_gpu_output #Run the prediction using concatenated length from made_fasta.
+    
+2. Run Funannotate annotate on CERES interactively to rename with NCBI
+    ml funannotate
+    export AUGUSTUS_CONFIG_PATH="/project/silage_microbiome/max.chi/fusarium_sequencing/DB_Databases/augustus_config/config"
+    export APPTAINERENV_FUNANNOTATE_DB="/project/silage_microbiome/max.chi/fusarium_sequencing/DB_Databases/funannotate_db"
+    funannotate annotate -i predict_results/ -s "Fus_gram" \
+        --iprscan ../../11b_InterProScan/FunAnnotate_BarXX.xml \
+        --antismash ../../12a_antiSMASH_gbk/FusBarXX.scaffolds.gbk \
+        --rename "AC8HPN" --cpus 64 -o upload_NCBI_bar39
+    #Can decide to add --sbt template.sbt if you'd use the generated .sqn; otherwise, table2asn will suffice
+    
+3. Wrapping an orthfinder on ATLAS job
+    srun -p gpu-a100 -A silage_microbiome --gres=gpu:a100:1 -N 1 -n 1 -c 40 --mem=500G -t 4:00:00 \
+  bash -lc 'export MMSEQS_FORCE_GPU=1; apptainer exec --nv -B /project -B /90daydata -B /reference \
+  /project/silage_microbiome/orthofinder/orthofinder-gpu.sif \
+  orthofinder -f /project/silage_microbiome/orthofinder/proteomes \
+  -t 40 -a 40 -M msa -S mmseqs -z'

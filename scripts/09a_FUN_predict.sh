@@ -85,6 +85,7 @@ if ! ls "${OUTPUT_DIR}/predict_results/"*.gff3 >/dev/null 2>&1; then
         --busco_db hypocreales \
         --protein_evidence "${PROTEIN_EVIDENCE}" \
         --optimize_augustus \
+        --keep_evm \
         --cpus "${SLURM_NTASKS}"
 else
     echo "  Skipping — output exists: ${OUTPUT_DIR}/predict_results/"

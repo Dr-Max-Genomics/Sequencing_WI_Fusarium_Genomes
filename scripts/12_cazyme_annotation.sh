@@ -6,8 +6,9 @@
 #SBATCH -p ceres
 #SBATCH -t 06:00:00
 #SBATCH --job-name=13a_cazyme_dbcan
-#SBATCH --array=1-7
+#SBATCH --array=1-10
 #SBATCH --output=/dev/null
+#SBATCH --error=/dev/null
 
 set -euo pipefail
 
@@ -141,8 +142,6 @@ echo "[$(date)] Running dbCAN..."
         --tools hmmer diamond \
         --hmm_cpu "${CPUS}" \
         --dia_cpu "${CPUS}" \
-        --hmm_eval 1e-3 \
-        --dia_eval 1e-5 \
         > "${OUT_DIR}/dbcan.stdout" 2> "${OUT_DIR}/dbcan.stderr" || true
 )
 
